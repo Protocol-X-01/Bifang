@@ -63,7 +63,7 @@ class ProviderManager:
         if not target_model:
             raise ValueError(f"No model specified for provider {target_provider}")
 
-        p = self.registry.get_for_model(target_model) or self.registry.get(target_provider)
+        p = self.registry.get(target_provider)
         if not p:
             raise ValueError(f"Provider {target_provider} not found or doesn't support model {target_model}")
 
@@ -131,7 +131,7 @@ class ProviderManager:
         if not target_model:
             raise ValueError(f"No model specified for provider {target_provider}")
 
-        p = self.registry.get_for_model(target_model) or self.registry.get(target_provider)
+        p = self.registry.get(target_provider)
         if not p:
             raise ValueError(f"Provider {target_provider} not found or doesn't support model {target_model}")
 
