@@ -5,6 +5,16 @@ performance or production-readiness claims.
 
 ## Native desktop run
 
+Reproduce it with the checked-in [desktop rehearsal tool](DESKTOP_REHEARSAL.md).
+
+[Watch/download the continuous desktop recording](assets/bifang-live-demo.mp4).
+It has explanatory labels but no voiceover, staged patch, or time compression.
+Approvals are automated, not human clicks. The accompanying
+[run evidence](evidence/desktop-demo.json) and
+[final check output](evidence/desktop-checks.txt) record the verified outcome.
+This recording is rehearsal material; the required public YouTube submission
+video and working-app demo URL are still outstanding.
+
 The release-profile Tauri Debian package was extracted and launched with its
 bundled Python sidecar on a virtual Linux display. WebDriver interacted with
 the actual application, using live Nebius Token Factory inference from

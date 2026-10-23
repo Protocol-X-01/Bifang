@@ -1,0 +1,10 @@
+test_escaped_quote (check_receipts.ReceiptChecks.test_escaped_quote) ... ok
+test_plain_fields (check_receipts.ReceiptChecks.test_plain_fields) ... ok
+test_quoted_comma (check_receipts.ReceiptChecks.test_quoted_comma) ... ok
+test_trailing_newline (check_receipts.ReceiptChecks.test_trailing_newline) ... ok
+test_wrong_field_count (check_receipts.ReceiptChecks.test_wrong_field_count) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.000s
+
+OK

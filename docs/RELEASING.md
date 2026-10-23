@@ -16,6 +16,9 @@ Tauri development libraries listed in `desktop/README.md`. Python packages
 come from the committed `uv.lock`; Rust dependencies use `desktop/src-tauri/Cargo.lock`;
 frontend dependencies use `desktop/package-lock.json`. The CI workflow uploads
 the Linux `.deb` package as an artifact after a successful native build.
+CI explicitly targets Ubuntu 24.04 rather than the moving `ubuntu-latest`
+label. This defines the intended Linux build baseline; it does not replace
+installed-package validation on that distribution.
 
 Before publishing a public GitHub Release:
 
