@@ -7,6 +7,8 @@ from bifang.config import Config
 from bifang.provider import ProviderManager
 from bifang.providers.base import CompletionResponse
 from bifang.providers.registry import ProviderRegistry
+from bifang.providers.types import ProviderConfig
+from bifang.routing import TaskType, TieredProviderManager
 
 
 @pytest.mark.parametrize("stream", [False, True])
@@ -45,3 +47,34 @@ def test_provider_selection_overrides_shared_model_prefix(monkeypatch, stream, s
     else:
         asyncio.run(request())
         assert calls == [selected or "nebius"]
+
+
+@pytest.mark.parametrize("stream", [False, True])
+@pytest.mark.parametrize("provider", ["nebius", "nvidia"])
+def test_agent_router_preserves_configured_deployment(stream, provider):
+    calls = []
+    model = "deployment-specific-model"
+    cfg = Config(default_provider=provider, providers={
+        provider: ProviderConfig(name=provider, api_key="test-key", default_model=model),
+    })
+
+    async def complete(**kwargs):
+        calls.append((kwargs["provider"], kwargs["model"]))
+        return {"content": "ok"}
+
+    async def complete_stream(**kwargs):
+        yield await complete(**kwargs)
+
+    manager = TieredProviderManager(SimpleNamespace(complete=complete, complete_stream=complete_stream), cfg)
+
+    async def request():
+        for task in TaskType:
+            if stream:
+                chunks = [chunk async for chunk in manager.complete_stream(messages=[], task_type=task)]
+                assert chunks[0]["routing"]["model"] == model
+            else:
+                await manager.complete(messages=[], task_type=task)
+            assert manager.get_routing_info(task)["provider"] == provider
+
+    asyncio.run(request())
+    assert calls == [(provider, model)] * len(TaskType)

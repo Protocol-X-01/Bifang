@@ -12,6 +12,11 @@ keeps the demo runnable without NGC image-pull or cluster setup. Set
 in the root `.env.example`. Confirm the model is enabled for the account and
 test a real request before recording the demo.
 
+The configured default provider and model are authoritative for agent tasks,
+including streaming. Task classification does not automatically switch the
+endpoint or model. This keeps deployment-specific NIM identifiers and the
+Token Factory account's chosen model intact.
+
 ## NVIDIA NIM path
 
 For a separately deployed NIM, set `NVIDIA_API_KEY`,

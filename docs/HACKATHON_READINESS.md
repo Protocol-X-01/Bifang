@@ -32,11 +32,14 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   a prior truncated upload of `ChatPanel.tsx`; use this commit or a newer
   verified revision rather than the earlier affected revision.
 - Python is constrained to `>=3.11,<3.12`; all source files pass Python
-  compilation and the current test suite passes (22 tests).
+  compilation and the current test suite passes (26 tests).
 - Provider selection is authoritative for streamed and regular requests;
   an NVIDIA-prefixed model identifier no longer overrides the selected
   Nebius endpoint. Eight routing checks cover default/explicit selections
   and refusal to silently fall back from a missing provider.
+- The agent's outer task router now preserves the configured deployment
+  model and provider for every task type. Automatic task classification no
+  longer substitutes a hard-coded NVIDIA endpoint or an unverified model ID.
 - Session deletion refuses active agent requests with HTTP 409. A concurrent
   request regression test verifies that the worktree cleanup happens only
   after the chat finishes; desktop submission is also disabled during reset.

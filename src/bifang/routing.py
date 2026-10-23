@@ -303,6 +303,16 @@ class TieredRouter:
     
     def select_model(self, task_type: TaskType) -> Optional[ModelSpec]:
         """Select the best model for a task type."""
+        if self.config:
+            configured_model = self.config.get_default_model()
+            if configured_model:
+                known_model = NEMOTRON_MODELS.get(configured_model)
+                return ModelSpec(
+                    model_id=configured_model,
+                    provider=self.config.default_provider,
+                    tier=known_model.tier if known_model else ModelTier.REASONING,
+                    use_case="Configured inference deployment",
+                )
         # Filter rules that match the task type
         matching_rules = [r for r in self.rules if task_type in r.task_types]
         
@@ -370,7 +380,7 @@ class TieredProviderManager:
     
     def __init__(self, provider_manager: ProviderManager, config: Config):
         self.provider_manager = provider_manager
-        self.router = TieredRouter(provider_manager, None)
+        self.router = TieredRouter(provider_manager, config)
         self._initialize_routing()
     
     def _initialize_routing(self):
