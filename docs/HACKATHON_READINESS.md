@@ -90,8 +90,10 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   without `BIFANG_SERVER_API_KEY`.
 - The Docker build now uses the checked-in `uv.lock`, and `.dockerignore`
   excludes environment files and generated assets. The local Docker daemon is
-  inaccessible in this environment, so the image itself remains unverified;
-  CI builds it on pushes and pull requests.
+  inaccessible on the host, but the image now builds in a fresh Ubuntu 24.04
+  VM. Its smoke test verifies non-root execution, key enforcement, workspace
+  path confinement, and an authenticated session lifecycle. CI includes the
+  same smoke check. This does not verify live container inference or sandboxing.
 - The project has an Apache-2.0 license and `.env` is ignored.
 - The original supplied archive contains an `.env`; the working release copy
   does not. Never publish or reuse the original archive as the repository
@@ -106,8 +108,9 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   Local native compilation was unblocked using development packages extracted
   under `/tmp`, with `PKG_CONFIG_PATH` and a native link search path pointing
   there. System package installation still requires administrator access.
-  The release-profile build and extracted-app UI test now pass; clean-machine
-  installation and the native folder chooser remain pending. This build
+  The release-profile build, extracted-app UI test, and fresh Ubuntu 24.04
+  installation/live UI task now pass. The VM test preselects its workspace;
+  successful native folder selection remains unverified. This build
   references GLIBC symbols through 2.39 and must not be advertised as Debian
   12 compatible without a suitable baseline rebuild and runtime test.
 - The public Apache-2.0 source repository is
@@ -123,8 +126,8 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Critical path
 
-1. Test the release-profile package installed on a clean supported Linux
-   machine, including the native folder chooser. Resolve CI billing or use
+1. Complete native folder selection on a supported desktop session; the
+   installed package's live UI loop already passes in a clean VM. Resolve CI billing or use
    a working builder with an explicitly supported distribution baseline.
 2. Preserve the successful native UI rehearsal and verify any separately
    deployed NIM endpoint. Distinguish hosted NVIDIA API access from NIM.

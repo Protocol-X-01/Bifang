@@ -45,7 +45,7 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     private = dotenv_values(options.env_file) if options.env_file else {}
     env = {name: value for name, value in os.environ.items() if name in {
-        "PATH", "LANG", "LC_ALL", "DISPLAY", "XAUTHORITY",
+        "PATH", "LANG", "LC_ALL", "DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS",
     }}
     for name in ("NEBIUS_API_KEY", "BIFANG_NEBIUS_BASE_URL", "BIFANG_NEBIUS_MODEL"):
         value = private.get(name) or os.environ.get(name)
@@ -60,9 +60,12 @@ def main():
     driver = None
     with tempfile.TemporaryDirectory(prefix="bifang-demo-", ignore_cleanup_errors=True) as temporary:
         root = Path(temporary)
+        (root / "runtime").mkdir(mode=0o700)
         env.update(HOME=str(root), XDG_CONFIG_HOME=str(root / "config"),
                    XDG_STATE_HOME=str(root / "state"), XDG_CACHE_HOME=str(root / "cache"),
                    XDG_DATA_HOME=str(root / "data"), GDK_BACKEND="x11",
+                   XDG_RUNTIME_DIR=str(root / "runtime"),
+                   GIO_USE_VFS="local", GTK_USE_PORTAL="0",
                    LIBGL_ALWAYS_SOFTWARE="1", BIFANG_DEFAULT_PROVIDER="nebius",
                    BIFANG_ENABLE_MEMORY="0", BIFANG_BWRAP="0")
         workspace = root / "receipt-demo"

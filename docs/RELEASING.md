@@ -45,8 +45,10 @@ The build used existing system runtime libraries plus development packages
 extracted under `/tmp`; no privileged package installation was performed.
 The native executable references GLIBC symbols through `GLIBC_2.39` on this
 build host. Do not claim Debian 12 compatibility or broad Linux portability
-from the `.deb` format alone. Clean-machine installation, the native folder
-chooser, and a public video remain unverified. Do not distribute this local
+from the `.deb` format alone. A fresh Ubuntu 24.04 VM now passes installation
+and the live UI loop with a preselected workspace; see
+[installation evidence](INSTALLATION_EVIDENCE.md). Successful native folder
+selection and a public YouTube video remain unverified. Do not distribute this local
 preview as a validated production release.
 
 ## Other targets

@@ -44,6 +44,27 @@ The image installs dependencies from the checked-in `uv.lock`; `.dockerignore`
 excludes local `.env` files, virtual environments, build output, and unrelated
 project assets from the build context.
 
+The service runs as the non-root `bifang` user (UID 10001), with `/workspace`
+as its writable working directory and `/app` holding the installed code.
+Mounted project directories must be readable and writable by that user.
+Use disposable repositories and keep the published port on loopback behind
+an authenticated, TLS-terminating gateway; do not mount the Docker socket or
+personal home directory into an agent container.
+
+Build and check the API runtime without inference credentials:
+
+```bash
+docker build -t bifang:validation .
+uv run --locked --no-dev python scripts/smoke-container.py
+```
+
+The check creates and removes a temporary container bound only to loopback.
+It generates a temporary authentication key privately and verifies startup
+refusal without a key, wrong/missing-key rejection, workspace-root confinement,
+non-root file permissions, and authenticated session creation/diff/cleanup.
+It does not test model inference or command sandboxing. See
+[installation evidence](INSTALLATION_EVIDENCE.md) for the independent VM run.
+
 ## Guardrails and tracing
 
 Lobster Trap is an optional OpenAI-compatible reverse proxy. To inspect model

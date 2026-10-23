@@ -45,13 +45,16 @@ controls using an exact-action allowlist; this is not a recording of human click
 | Live Token Factory coding task | Only `receipts.py` changed; all five checks passed after apply. |
 | Runtime regression suite | 29 passing tests, including an HTTP model → tool → model exchange. |
 | Linux desktop loop | Release-profile Debian package; native UI approvals, diff and apply verified. |
+| Independent installation | Fresh Ubuntu 24.04 VM: installed preview completes the live task with preselected workspace. |
+| Container runtime | Built and tested in the VM: non-root, authenticated API, confined workspace paths. |
 | NVIDIA-compatible endpoint | Configured hosted NVIDIA API returned a Nemotron Ultra completion. |
 
 The native UI rehearsal used synthetic code, a preselected test workspace,
 and automated approvals restricted to the demo's edit and test actions.
 See [demo evidence](docs/DEMO_EVIDENCE.md) and
 [remaining release gates](docs/HACKATHON_READINESS.md). Clean-machine
-installation and the native folder chooser have not been tested.
+installation is now verified on [Ubuntu 24.04](docs/INSTALLATION_EVIDENCE.md);
+successful native folder selection remains unverified.
 
 <p align="center"><img src="docs/assets/bifang-workflow.svg" alt="Bifang's coding loop: inspect, reason, review, verify and decide." /></p>
 
