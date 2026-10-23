@@ -113,6 +113,9 @@ Use `bifang models` to inspect the live model catalog rather than relying on a h
 
 ## Use
 
+Try the [repeatable receipt-parser demo](docs/DEMO.md) to rehearse the
+inspect → approve → edit → test → apply loop on synthetic code.
+
 ```bash
 cd your-project
 bifang doctor
