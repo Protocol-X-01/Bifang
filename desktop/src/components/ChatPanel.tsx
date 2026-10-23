@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 2269)
-Total output lines: 221
-
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, MessageSquare } from 'lucide-react';
 import { useSessionStore, useWorkspaceStore } from '../stores/bifangStore';
@@ -105,7 +102,31 @@ export function ChatPanel() {
         }
       };
       const approvalPolling = pollApprovals();
-      const respon…269 tokens truncated…teResponse.ok) throw new Error('Could not close the current session.');
+      const response = await chatRequest;
+      chatFinished = true;
+      await approvalPolling;
+      if (!response.ok) throw new Error((await response.text()) || 'Chat request failed.');
+      const data = await response.json();
+      addMessage({ role: 'assistant', content: data.response });
+    } catch (error) {
+      addMessage({ role: 'assistant', content: `Error: ${error}` });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNewChat = async () => {
+    if (isLoading || isResetting) return;
+    setIsResetting(true);
+    try {
+      if (sessionId) {
+        const diffResponse = await fetch(`http://127.0.0.1:8000/sessions/${sessionId}/diff`);
+        if (!diffResponse.ok) throw new Error('Could not check the current workspace changes.');
+        const { diff } = await diffResponse.json();
+        if (diff && !window.confirm('Starting a new chat discards un-applied changes in this disposable worktree. Continue?')) return;
+
+        const deleteResponse = await fetch(`http://127.0.0.1:8000/sessions/${sessionId}`, { method: 'DELETE' });
+        if (!deleteResponse.ok) throw new Error('Could not close the current session.');
       }
       setSessionId(null);
       clearMessages();
