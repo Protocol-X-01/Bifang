@@ -1,0 +1,45 @@
+{
+  "name": "bifang-desktop",
+  "version": "0.2.0",
+  "description": "Bifang Desktop - AI Coding Agent",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:server": "bash ../scripts/build-server-sidecar.sh",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "npm run build:server && tauri dev",
+    "tauri:build": "npm run build:server && tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-shell": "^2.0.0",
+    "@tauri-apps/plugin-fs": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-os": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zustand": "^4.5.0",
+    "monaco-editor": "^0.47.0",
+    "@monaco-editor/react": "^4.6.0",
+    "lucide-react": "^0.400.0",
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "typescript": "^5.4.0",
+    "vite": "^7.3.7",
+    "tailwindcss": "^4.3.3",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
+  }
+}

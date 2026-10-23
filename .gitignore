@@ -1,0 +1,16 @@
+.venv/
+.build-server-venv/
+.build-cli-venv/
+.env
+node_modules/
+target/
+desktop/src-tauri/binaries/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.spec
+.arca/
+*.tar.gz
+copilot_image_*.png
