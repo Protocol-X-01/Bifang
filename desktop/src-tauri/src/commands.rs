@@ -1,12 +1,11 @@
 // Tauri commands for Bifang Desktop
 
-use tauri::command;
-use std::process::Command;
 use std::fs;
 use std::path::Path;
+use tauri::command;
 
 #[command]
-async fn get_file_tree(path: String) -> Result<String, String> {
+pub(crate) async fn get_file_tree(path: String) -> Result<String, String> {
     let path = Path::new(&path);
     if !path.exists() {
         return Err("Path does not exist".to_string());
@@ -39,17 +38,28 @@ fn read_dir_recursive(
         if name.starts_with('.') && name != ".github" && name != ".gitignore" {
             continue;
         }
-        if matches!(name.as_str(), "node_modules" | "target" | "dist" | "build" | "__pycache__" | ".venv" | "venv") {
+        if matches!(
+            name.as_str(),
+            "node_modules" | "target" | "dist" | "build" | "__pycache__" | ".venv" | "venv"
+        ) {
             continue;
         }
 
         let is_dir = path.is_dir();
-        let relative = path.strip_prefix(root).map_err(|e| e.to_string())?.to_string_lossy().to_string();
+        let relative = path
+            .strip_prefix(root)
+            .map_err(|e| e.to_string())?
+            .to_string_lossy()
+            .to_string();
 
         let mut file_entry = FileEntry {
             name,
             path: relative,
-            type_: if is_dir { "directory".to_string() } else { "file".to_string() },
+            type_: if is_dir {
+                "directory".to_string()
+            } else {
+                "file".to_string()
+            },
             children: None,
             expanded: false,
             has_changes: false,
@@ -71,26 +81,30 @@ fn read_dir_recursive(
 struct FileEntry {
     name: String,
     path: String,
+    #[serde(rename = "type")]
     type_: String,
     children: Option<Vec<FileEntry>>,
     expanded: bool,
     has_changes: bool,
 }
 
-#[command]
-async fn run_bifang_command(args: Vec<String>) -> Result<String, String> {
-    let output = Command::new("bifang")
-        .args(args)
-        .output()
-        .map_err(|e| format!("Failed to execute bifang: {}", e))?;
+#[cfg(test)]
+mod tests {
+    use super::FileEntry;
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
+    #[test]
+    fn file_tree_serializes_frontend_type_field() {
+        let entry = FileEntry {
+            name: "src".to_string(),
+            path: "src".to_string(),
+            type_: "directory".to_string(),
+            children: None,
+            expanded: false,
+            has_changes: false,
+        };
 
-    if output.status.success() {
-        Ok(stdout.to_string())
-    } else {
-        Err(format!("Command failed: {}", stderr))
+        let value = serde_json::to_value(entry).unwrap();
+        assert_eq!(value["type"], "directory");
+        assert!(value.get("type_").is_none());
     }
 }
-
