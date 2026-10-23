@@ -30,6 +30,10 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   compilation and the current test suite passes (13 tests).
 - The desktop frontend passes the production TypeScript/Vite build; the
   production dependency audit reports zero vulnerabilities.
+- The desktop New Chat action now closes its server-side session and asks
+  before discarding un-applied worktree changes. Unused dashboard, reasoning,
+  and verification panels containing fabricated sample metrics were removed;
+  no measured performance claims are shown as live data.
 - The Linux Python server sidecar builds with PyInstaller and its packaged
   executable successfully serves `/health` on loopback.
 - A local OTLP collector test verifies Phoenix span export, and a server test
@@ -57,10 +61,13 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 ## Not yet demonstrated
 
 - The Rust/Tauri native bundle has not compiled in this workstation because
-  WebKitGTK/libsoup development libraries are missing. CI now installs these
-  libraries and builds a Debian package; that CI result remains pending.
-- The worktree copy has no Git remote or public GitHub repository yet, so the
-  code is not publicly submitted.
+  WebKitGTK/libsoup development libraries are missing. CI installs these
+  libraries and builds a Debian package, but GitHub did not start the jobs:
+  the account is locked due to a billing issue. Treat this as an external CI
+  blocker, not evidence that the source build failed.
+- The public Apache-2.0 source repository is
+  [Protocol-X-01/bifang](https://github.com/Protocol-X-01/bifang). The
+  sanitized source tree is on `main`; the original archive was not published.
 - No live 8×H200 deployment is evidenced. Token Factory inference does not
   prove that this project provisioned eight H200s.
 - KV-cache quantization is a standalone prototype, not connected to the NIM or
@@ -71,15 +78,15 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Critical path
 
-1. Get the native Tauri/sidecar Linux package green in CI and smoke-test the
-   installed app through the full approve → edit → diff → apply → test loop.
+1. Resolve the GitHub Actions billing lock, rerun CI, obtain the native
+   Tauri/sidecar Linux package, and smoke-test the installed app through the
+   full approve → edit → diff → apply → test loop.
 2. Verify the packaged app's Token Factory path and the separately configured
    NIM path without exposing credentials; record exact model and deployment
    details. Add measured response and task-quality evidence, not GPU claims.
-3. Publish the Apache-2.0 repository and a reproducible desktop test build.
-   Run secret scanning before publication and verify the public source comes
-   only from the sanitized working copy. Rotate credentials from the supplied
-   archive before publication.
+3. Keep the public Apache-2.0 repository limited to the sanitized working
+   copy. Rotate credentials from the supplied archive promptly; confirm no
+   actual credentials were used in the public source, build context, or demo.
 4. Record and publish a concise demo (≤3 minutes) showing the user-visible IDE,
    Nebius Token Factory, NVIDIA Nemotron, approvals, real diff, and test result.
 5. Keep NIM, Phoenix, Lobster Trap, KV-cache benchmarks, and mobile companion
