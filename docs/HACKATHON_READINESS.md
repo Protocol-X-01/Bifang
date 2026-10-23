@@ -32,7 +32,10 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   a prior truncated upload of `ChatPanel.tsx`; use this commit or a newer
   verified revision rather than the earlier affected revision.
 - Python is constrained to `>=3.11,<3.12`; all source files pass Python
-  compilation and the current test suite passes (13 tests).
+  compilation and the current test suite passes (14 tests).
+- Session deletion refuses active agent requests with HTTP 409. A concurrent
+  request regression test verifies that the worktree cleanup happens only
+  after the chat finishes; desktop submission is also disabled during reset.
 - The desktop frontend passes the production TypeScript/Vite build; the
   production dependency audit reports zero vulnerabilities.
 - The Tauri bridge now registers file-tree and server-status commands, and

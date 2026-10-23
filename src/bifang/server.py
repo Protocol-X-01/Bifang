@@ -178,7 +178,10 @@ def resolve_workspace(value: str) -> Path:
 async def delete_session(session_id: str):
     if session_id not in sessions:
         raise HTTPException(404, "Session not found")
-    session = sessions.pop(session_id)
+    session = sessions[session_id]
+    if session.busy:
+        raise HTTPException(409, "Wait for the current agent request to finish before discarding the session")
+    sessions.pop(session_id)
     if session.approval_future and not session.approval_future.done():
         session.approval_future.cancel()
     try:

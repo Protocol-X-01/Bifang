@@ -54,7 +54,7 @@ export function ChatPanel() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isResetting) return;
 
     const userMessage = input;
     setInput('');
@@ -201,7 +201,7 @@ export function ChatPanel() {
             />
             <button
               type="submit"
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isResetting}
               className="absolute right-2 bottom-2 p-2 rounded-lg bg-bifang-500 text-white hover:bg-bifang-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (
