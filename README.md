@@ -12,6 +12,10 @@
 
 <p align="center"><a href="#see-the-coding-loop">See the demo</a> · <a href="#quickstart">Run Bifang</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
+**Linux preview:** [Download the Ubuntu 24.04-tested preview](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.2).
+Unsigned prerelease; bring your own provider key. Use **Open by path…** to
+select a project without relying on a native file chooser.
+
 Bifang is a desktop coding IDE and terminal agent built around a practical, reviewable engineering loop. It can map a repository, propose focused edits, run approved commands and tests, and show the resulting diff before you keep or discard the work. Git repositories use a disposable worktree by default, leaving the original checkout untouched until you explicitly export or apply a patch.
 
 | Understand | Change | Verify |
@@ -45,16 +49,18 @@ controls using an exact-action allowlist; this is not a recording of human click
 | Live Token Factory coding task | Only `receipts.py` changed; all five checks passed after apply. |
 | Runtime regression suite | 29 passing tests, including an HTTP model → tool → model exchange. |
 | Linux desktop loop | Release-profile Debian package; native UI approvals, diff and apply verified. |
-| Independent installation | Fresh Ubuntu 24.04 VM: installed preview completes the live task with preselected workspace. |
+| Independent installation | Fresh Ubuntu 24.04 VM: actual workspace dialog → live task → apply → five passing checks. |
 | Container runtime | Built and tested in the VM: non-root, authenticated API, confined workspace paths. |
 | NVIDIA-compatible endpoint | Configured hosted NVIDIA API returned a Nemotron Ultra completion. |
 
-The native UI rehearsal used synthetic code, a preselected test workspace,
+The original recorded rehearsal used synthetic code, a preselected test workspace,
 and automated approvals restricted to the demo's edit and test actions.
 See [demo evidence](docs/DEMO_EVIDENCE.md) and
 [remaining release gates](docs/HACKATHON_READINESS.md). Clean-machine
 installation is now verified on [Ubuntu 24.04](docs/INSTALLATION_EVIDENCE.md);
 successful native folder selection remains unverified.
+The newer preview also passes workspace selection through its in-app path
+dialog, including rejection of relative, missing, and non-directory paths.
 
 <p align="center"><img src="docs/assets/bifang-workflow.svg" alt="Bifang's coding loop: inspect, reason, review, verify and decide." /></p>
 

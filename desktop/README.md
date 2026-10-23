@@ -15,6 +15,16 @@ do not need to install Python or the CLI separately to run the desktop app.
 
 ## Install and run
 
+An unsigned [Linux prerelease](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.2)
+is available for testing on Ubuntu 24.04. Download the `.deb`, checksums, and
+third-party notice archive together. Verify the checksum and install with
+`sudo apt install ./bifang-linux-preview2_0.2.0_amd64.deb`.
+Configure your provider below, then launch Bifang from the application menu.
+Choose a project with the native folder button or **Open by path…**. The path
+dialog accepts existing absolute directories and validates them without
+running a shell command. Native chooser automation is still unverified;
+the path dialog and coding loop pass in a clean Ubuntu VM.
+
 For a desktop-launched app, store provider settings in the per-user app config
 directory as `.env` (on Linux, typically
 `${XDG_CONFIG_HOME:-~/.config}/com.bifang.desktop/.env`). Copy the root

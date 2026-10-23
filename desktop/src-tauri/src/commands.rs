@@ -5,6 +5,20 @@ use std::path::Path;
 use tauri::command;
 
 #[command]
+pub(crate) fn resolve_workspace_path(path: String) -> Result<String, String> {
+    let directory = Path::new(&path);
+    if !directory.is_absolute() {
+        return Err("Enter an absolute directory path".to_string());
+    }
+    let directory = fs::canonicalize(directory)
+        .map_err(|_| "Directory does not exist or is not accessible".to_string())?;
+    if !directory.is_dir() {
+        return Err("Choose a directory, not a file".to_string());
+    }
+    Ok(directory.to_string_lossy().into_owned())
+}
+
+#[command]
 pub(crate) async fn get_file_tree(path: String) -> Result<String, String> {
     let path = Path::new(&path);
     if !path.exists() {
@@ -90,7 +104,29 @@ struct FileEntry {
 
 #[cfg(test)]
 mod tests {
-    use super::FileEntry;
+    use super::{resolve_workspace_path, FileEntry};
+    use std::path::Path;
+
+    #[test]
+    fn workspace_path_rejects_relative_paths() {
+        assert!(resolve_workspace_path(".".to_string()).is_err());
+    }
+
+    #[test]
+    fn workspace_path_rejects_files() {
+        let executable = std::env::current_exe().unwrap();
+        assert!(resolve_workspace_path(executable.to_string_lossy().into_owned()).is_err());
+    }
+
+    #[test]
+    fn workspace_path_resolves_existing_directories() {
+        let directory = std::env::temp_dir();
+        let resolved = resolve_workspace_path(directory.to_string_lossy().into_owned()).unwrap();
+        assert_eq!(
+            Path::new(&resolved),
+            std::fs::canonicalize(directory).unwrap()
+        );
+    }
 
     #[test]
     fn file_tree_serializes_frontend_type_field() {

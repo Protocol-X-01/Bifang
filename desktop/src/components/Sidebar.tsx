@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { FolderOpen, Play, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useWorkspaceStore } from '../stores/bifangStore';
@@ -11,21 +12,65 @@ interface SidebarProps {
 
 export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [pathInput, setPathInput] = useState('');
+  const [pathError, setPathError] = useState('');
+  const [openingPath, setOpeningPath] = useState(false);
+  const pathDialog = useRef<HTMLDialogElement>(null);
   const workspacePath = useWorkspaceStore((state) => state.workspacePath);
+
+  const openPathDialog = () => {
+    setPathInput(workspacePath || '');
+    setPathError('');
+    pathDialog.current?.showModal();
+  };
+
+  const selectWorkspace = async (path: string) => {
+    const resolved = await invoke<string>('resolve_workspace_path', { path });
+    useWorkspaceStore.getState().setWorkspace(resolved);
+  };
+
+  const handleOpenPath = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!pathInput.trim() || openingPath) return;
+    setOpeningPath(true);
+    setPathError('');
+    try {
+      await selectWorkspace(pathInput);
+      pathDialog.current?.close();
+    } catch (error) {
+      setPathError(String(error));
+    } finally {
+      setOpeningPath(false);
+    }
+  };
 
   const handleOpenFolder = async () => {
     try {
       const path = await open({ directory: true, multiple: false });
       if (path) {
-        useWorkspaceStore.getState().setWorkspace(path);
+        await selectWorkspace(path);
       }
     } catch (e) {
-      console.error('Failed to open folder:', e);
+      openPathDialog();
+      setPathError(`The folder chooser could not open this workspace. ${String(e)}`);
     }
   };
 
   return (
     <aside className={`sidebar transition-all duration-300 ${collapsed ? 'w-16' : ''}`}>
+      <dialog ref={pathDialog} onCancel={(event) => { if (openingPath) event.preventDefault(); }} aria-labelledby="workspace-path-title" className="m-auto w-full max-w-xl rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-xl backdrop:bg-black/70">
+        <form onSubmit={handleOpenPath}>
+          <h2 id="workspace-path-title" className="text-xl font-semibold">Open a workspace</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Enter the absolute path to an existing project directory. This does not run a command or change its files.</p>
+          <label htmlFor="workspace-path" className="mt-5 block text-sm font-medium">Directory path</label>
+          <input id="workspace-path" name="workspace-path" value={pathInput} onChange={(event) => setPathInput(event.target.value)} aria-describedby={pathError ? 'workspace-path-error' : undefined} aria-invalid={Boolean(pathError)} className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary" autoFocus autoComplete="off" spellCheck={false} disabled={openingPath} />
+          {pathError && <p id="workspace-path-error" role="alert" className="mt-3 text-sm text-red-300">{pathError}</p>}
+          <div className="mt-6 flex justify-end gap-3">
+            <button type="button" className="btn-secondary" onClick={() => pathDialog.current?.close()} disabled={openingPath}>Cancel</button>
+            <button type="submit" className="btn-primary" disabled={openingPath || !pathInput.trim()}>{openingPath ? 'Opening…' : 'Open workspace'}</button>
+          </div>
+        </form>
+      </dialog>
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b border-surface-800 ${collapsed ? 'justify-center' : ''}`}>
@@ -62,6 +107,8 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
             )}
           </button>
         </div>
+
+        {!collapsed && <button type="button" className="mx-4 mb-4 text-left text-xs text-surface-400 underline-offset-4 hover:text-surface-100 hover:underline" onClick={openPathDialog}>Open by path…</button>}
 
         {/* Server Controls */}
         <div className={`p-4 border-b border-surface-800 ${collapsed ? 'px-2' : ''}`}>

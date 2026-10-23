@@ -23,6 +23,7 @@ def arguments():
     parser.add_argument("--env-file", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--record", action="store_true")
+    parser.add_argument("--preselect-workspace", action="store_true")
     return parser.parse_args()
 
 
@@ -119,8 +120,37 @@ def main():
 
                     request("/window/rect", {"x": 0, "y": 0, "width": 1400, "height": 900})
                     time.sleep(2)
-                    execute("localStorage.setItem('bifang-workspace', arguments[0])", json.dumps({"state": {"workspacePath": str(workspace), "activeWorkspacePath": str(workspace)}, "version": 0}))
-                    request("/refresh", {})
+                    if options.preselect_workspace:
+                        execute("localStorage.setItem('bifang-workspace', arguments[0])", json.dumps({"state": {"workspacePath": str(workspace), "activeWorkspacePath": str(workspace)}, "version": 0}))
+                        request("/refresh", {})
+                    else:
+                        click("xpath", "//button[normalize-space(.)='Open by path…']")
+                        path_input = request("/element", {"using": "css selector", "value": "input[name=workspace-path]"})["element-6066-11e4-a52e-4f735466cecf"]
+                        for invalid, expected in [(".", "absolute"), (str(workspace / "receipts.py"), "not a file"), (str(workspace / "missing-directory"), "does not exist")]:
+                            request(f"/element/{path_input}/clear", {})
+                            request(f"/element/{path_input}/value", {"text": invalid})
+                            click("xpath", "//dialog[@open]//button[normalize-space(.)='Open workspace']")
+                            for attempt in range(100):
+                                error = execute("return document.querySelector('[role=alert]')?.innerText || ''")
+                                if expected in error:
+                                    break
+                                time.sleep(0.05)
+                            else:
+                                raise RuntimeError("Invalid workspace path was not visibly rejected")
+                            state = execute("return JSON.parse(localStorage.getItem('bifang-workspace') || '{}')")
+                            if state.get("state", {}).get("workspacePath"):
+                                raise RuntimeError("Invalid path changed the selected workspace")
+                        screenshot("workspace-validation.png")
+                        request(f"/element/{path_input}/clear", {})
+                        request(f"/element/{path_input}/value", {"text": str(workspace)})
+                        click("xpath", "//dialog[@open]//button[normalize-space(.)='Open workspace']")
+                        for attempt in range(100):
+                            state = execute("return JSON.parse(localStorage.getItem('bifang-workspace') || '{}')")
+                            if state.get("state", {}).get("workspacePath") == str(workspace):
+                                break
+                            time.sleep(0.1)
+                        else:
+                            raise RuntimeError("Workspace selection through the path dialog failed")
                     time.sleep(2)
                     if options.record:
                         recorder = subprocess.Popen(["ffmpeg", "-nostdin", "-y", "-f", "x11grab", "-video_size", "1400x900", "-framerate", "20", "-i", env["DISPLAY"], "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", str(output / "desktop-demo.mp4")], env=env, stdout=recording_log, stderr=recording_log, start_new_session=True)
@@ -128,13 +158,19 @@ def main():
                     prompt = "Run python3 -m unittest -v check_receipts. Fix receipts.py so quoted CSV commas and escaped quotes work, using the standard library. Preserve the return shape and reject wrong field counts. Do not edit check_receipts.py. Use read_file, write_file and run_command; the only approved command is exactly python3 -m unittest -v check_receipts. Rerun checks. Keep the final answer to four concise bullets, without repeating the source code."
                     textarea = request("/element", {"using": "css selector", "value": "textarea"})["element-6066-11e4-a52e-4f735466cecf"]
                     request(f"/element/{textarea}/value", {"text": prompt})
-                    click("css selector", "form button[type=submit]")
+                    click("xpath", "//form[.//textarea]//button[@type='submit']")
                     approvals = []
                     started = time.monotonic()
                     while time.monotonic() - started < 180:
                         action = execute("return document.querySelector('dialog[open] pre')?.innerText || null")
                         if action:
-                            allowed = action in {"Allow Bifang to write receipts.py?", "Run command?\npython3 -m unittest -v check_receipts"}
+                            allowed_actions = {"Allow Bifang to write receipts.py?", "Run command?\npython3 -m unittest -v check_receipts"}
+                            active_workspace = execute("return JSON.parse(localStorage.getItem('bifang-workspace') || '{}').state?.activeWorkspacePath || null")
+                            if active_workspace:
+                                active_path = Path(active_workspace).resolve()
+                                if active_path.is_relative_to(root / "state" / "bifang" / "boxes"):
+                                    allowed_actions.add(f"Allow Bifang to write {active_path / 'receipts.py'}?")
+                            allowed = action in allowed_actions
                             approvals.append({"action": action, "approved": allowed})
                             screenshot("approval.png")
                             time.sleep(1.5 if options.record else 0)
@@ -168,7 +204,7 @@ def main():
                     (output / "final-checks.txt").write_text(final.stderr)
                     (output / "change.patch").write_bytes(subprocess.check_output(["git", "diff"], cwd=workspace))
                     screenshot("verified.png")
-                    (output / "evidence.json").write_text(json.dumps({"provider": "nebius", "model": env["BIFANG_NEBIUS_MODEL"], "application_sha256": hashlib.sha256(application.read_bytes()).hexdigest(), "interface": "native Tauri WebDriver", "workspace_selection": "preseeded fixture", "approval_mode": "automated exact-action allowlist", "approvals": approvals, "changed_files": changed, "checks_unchanged": True, "baseline_returncode": baseline.returncode, "final_returncode": final.returncode, "continuous_screen_recording": options.record}, indent=2) + "\n")
+                    (output / "evidence.json").write_text(json.dumps({"provider": "nebius", "model": env["BIFANG_NEBIUS_MODEL"], "application_sha256": hashlib.sha256(application.read_bytes()).hexdigest(), "interface": "native Tauri WebDriver", "workspace_selection": "preseeded fixture" if options.preselect_workspace else "in-app path dialog", "invalid_workspace_paths_rejected": [] if options.preselect_workspace else ["relative", "file", "nonexistent"], "approval_mode": "automated exact-action allowlist", "approvals": approvals, "changed_files": changed, "checks_unchanged": True, "baseline_returncode": baseline.returncode, "final_returncode": final.returncode, "continuous_screen_recording": options.record}, indent=2) + "\n")
                     time.sleep(5 if options.record else 0)
                     stop(recorder)
                     if recorder is not None and (recorder.returncode not in (0, 255) or not (output / "desktop-demo.mp4").is_file()):

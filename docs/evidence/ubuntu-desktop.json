@@ -1,9 +1,14 @@
 {
   "provider": "nebius",
   "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
-  "application_sha256": "7a9611f12d6e66c0b66f6b97aba9af709ca66213005c3c45f1d47348fdc65da7",
+  "application_sha256": "3abcf6be5927650d7a9af619036dd02b40ce1b83807a728a9f19b400343cc592",
   "interface": "native Tauri WebDriver",
-  "workspace_selection": "preseeded fixture",
+  "workspace_selection": "in-app path dialog",
+  "invalid_workspace_paths_rejected": [
+    "relative",
+    "file",
+    "nonexistent"
+  ],
   "approval_mode": "automated exact-action allowlist",
   "approvals": [
     {

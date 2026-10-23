@@ -34,7 +34,9 @@ normal desktop or publish raw diagnostic logs without reviewing them.
 
 ## What it verifies
 
-The baseline fails. The actual app submits the task, presents approval
+The baseline fails. The actual app opens the workspace through **Open by
+path…**, visibly rejects relative paths, files, and missing directories,
+then accepts the existing fixture directory. It submits the task, presents approval
 dialogs, shows the generated diff and confirms applying it. The harness
 approves only `receipts.py` writes and the exact
 `python3 -m unittest -v check_receipts` command. Unexpected actions are denied
@@ -48,7 +50,9 @@ all artifacts before publishing. A video is saved during capture even if a
 later check fails; only a successful exit plus passing evidence establishes
 a successful rehearsal. The recording has no voiceover or time compression.
 
-Workspace selection is preseeded, approvals use automated UI clicks, and
+Use `--preselect-workspace` only when reproducing older builds; that bypasses
+workspace-dialog validation and is labeled in the report. By default,
+workspace selection and approvals use actual automated UI clicks, and
 Bubblewrap is disabled for this synthetic fixture. This is not proof of the
 native folder chooser, sandbox isolation, hostile-repository safety,
 clean-machine installation, general model quality, or inference performance.

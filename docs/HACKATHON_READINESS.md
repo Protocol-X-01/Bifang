@@ -109,8 +109,9 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   under `/tmp`, with `PKG_CONFIG_PATH` and a native link search path pointing
   there. System package installation still requires administrator access.
   The release-profile build, extracted-app UI test, and fresh Ubuntu 24.04
-  installation/live UI task now pass. The VM test preselects its workspace;
-  successful native folder selection remains unverified. This build
+  installation/live UI task now pass. The newer preview selects its workspace
+  through the actual in-app path dialog, rejecting invalid input first;
+  native GTK chooser selection remains unverified. This build
   references GLIBC symbols through 2.39 and must not be advertised as Debian
   12 compatible without a suitable baseline rebuild and runtime test.
 - The public Apache-2.0 source repository is
@@ -127,7 +128,7 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 ## Critical path
 
 1. Complete native folder selection on a supported desktop session; the
-   installed package's live UI loop already passes in a clean VM. Resolve CI billing or use
+   in-app path dialog and installed live UI loop already pass in a clean VM. Resolve CI billing or use
    a working builder with an explicitly supported distribution baseline.
 2. Preserve the successful native UI rehearsal and verify any separately
    deployed NIM endpoint. Distinguish hosted NVIDIA API access from NIM.

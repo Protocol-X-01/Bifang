@@ -49,7 +49,37 @@ from the `.deb` format alone. A fresh Ubuntu 24.04 VM now passes installation
 and the live UI loop with a preselected workspace; see
 [installation evidence](INSTALLATION_EVIDENCE.md). Successful native folder
 selection and a public YouTube video remain unverified. Do not distribute this local
-preview as a validated production release.
+preview as a validated production release. The newer
+[preview 2](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.2)
+adds validated workspace selection through its in-app path dialog and passes
+the same installed live task in a second clean Ubuntu VM without preselection.
+
+## Preview distribution and notices
+
+Preview 2 is an unsigned prerelease, not a signed or production-certified
+installer. Retain the accompanying third-party notice archive with the binary.
+Its generated inventory conservatively includes build dependencies, available
+Python/npm/Cargo license texts, the Python runtime license, and supplementary
+distribution notices. It is not a complete binary SBOM or legal certification.
+Upstream Cargo source links and retained supplementary notice provenance are
+included in the archive; third-party code retains its own licensing.
+
+To regenerate the inventory after building and installing locked dependencies:
+
+```bash
+cargo metadata --manifest-path desktop/src-tauri/Cargo.toml --locked \
+  --filter-platform x86_64-unknown-linux-gnu --format-version 1 > /tmp/bifang-cargo.json
+.build-server-venv/bin/python scripts/collect-release-notices.py \
+  --cargo-metadata /tmp/bifang-cargo.json \
+  --supplementary-notices /path/to/extracted/notices/supplementary \
+  --output /tmp/bifang-notices
+```
+
+The supplementary files fill notices omitted from six published crate
+archives. Their provenance uses the revisions recorded in `.cargo_vcs_info.json`
+or the standard MPL 2.0 text; no third-party source modifications are claimed.
+Review missing notices and actual binary contents for each new release rather
+than treating a successful generator exit as proof of compliance.
 
 ## Other targets
 

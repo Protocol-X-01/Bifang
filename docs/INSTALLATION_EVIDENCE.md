@@ -21,10 +21,11 @@ the host's development libraries were not copied into it.
 
 ## Installed desktop preview
 
-The release-profile `0.2.0` Debian preview installed through APT. Its SHA-256:
+The release-profile `0.2.0` preview 2 installed through APT in a second fresh
+Ubuntu VM. Its SHA-256:
 
 ```text
-1117b08c02b0fc52639c93de477ae8c570b49bd8728416b267d284f99f23d927
+7b30414e287434ec81415633451b1e53bdedc419b9d94e828955637c2522d3d4
 ```
 
 The installed `/usr/bin/bifang-desktop` launched its bundled Python sidecar.
@@ -33,7 +34,12 @@ native UI: approvals, generated diff, apply confirmation, and successful
 source-checkout verification. All five checks passed, only `receipts.py`
 changed, and the original checks remained byte-identical.
 
-The workspace was **preselected in test storage**. Attempts to drive the
+The newer test selects the workspace through the actual **Open by path…**
+dialog, not injected storage. Relative paths, files, and missing directories
+are visibly rejected before a valid directory is accepted. Four native-shell
+tests also pass, covering path validation and file-tree serialization.
+The original preview used preselected storage; its earlier evidence remains
+in repository history. Attempts to drive the
 native GTK folder chooser with headless keyboard automation did not complete;
 the dialog opens, but successful folder selection is still unverified.
 This limitation is not evidence that human folder selection works or fails.
@@ -54,7 +60,7 @@ production deployment, or hostile-code isolation.
 ## Remaining gates
 
 - Successful native folder selection on a normal supported desktop session.
-- Public distribution/download instructions and a final submission video URL.
+- A final public submission video and working-app demo URL accepted by the event.
 - CI execution once the account billing restriction is removed.
 - Other Linux baselines, Windows, macOS, and physical-GPU behavior.
 

@@ -99,6 +99,7 @@ fn main() {
         })
         .invoke_handler(generate_handler![
             commands::get_file_tree,
+            commands::resolve_workspace_path,
             start_bifang_server,
             stop_bifang_server,
             get_server_status,
