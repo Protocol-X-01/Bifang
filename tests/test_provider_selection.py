@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path, PureWindowsPath
 from types import SimpleNamespace
 
 import pytest
@@ -8,7 +9,7 @@ from bifang.provider import ProviderManager
 from bifang.providers.base import CompletionResponse
 from bifang.providers.registry import ProviderRegistry
 from bifang.providers.types import ProviderConfig
-from bifang.routing import TaskType, TieredProviderManager
+from bifang.routing import TaskClassifier, TaskType, TieredProviderManager
 
 
 @pytest.mark.parametrize("stream", [False, True])
@@ -78,3 +79,9 @@ def test_agent_router_preserves_configured_deployment(stream, provider):
 
     asyncio.run(request())
     assert calls == [(provider, model)] * len(TaskType)
+
+
+@pytest.mark.parametrize("file_path", [Path("src/parser.py"), PureWindowsPath("src/parser.py")])
+def test_task_classifier_accepts_workspace_paths(file_path):
+    expected = TaskClassifier.classify("Fix the parser", {"files": [str(file_path)]})
+    assert TaskClassifier.classify("Fix the parser", {"files": [file_path]}) == expected

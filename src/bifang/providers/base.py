@@ -50,7 +50,7 @@ class CompletionResponse(BaseModel):
     content: str | None = None
     tool_calls: list[ToolCall] | None = None
     model: str
-    usage: dict[str, int] | None = None
+    usage: dict[str, Any] | None = None
     finish_reason: str | None = None
 
 

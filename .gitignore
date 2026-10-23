@@ -12,5 +12,6 @@ dist/
 build/
 *.spec
 .arca/
+.bifang/
 *.tar.gz
 copilot_image_*.png

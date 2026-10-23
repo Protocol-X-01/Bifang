@@ -48,7 +48,7 @@ class Workspace:
 
     def diff(self) -> str:
         untracked = subprocess.run(
-            ["git", "-C", str(self.root), "ls-files", "--others", "--exclude-standard"],
+            ["git", "-C", str(self.root), "ls-files", "--others", "--exclude-standard", "--", ".", ":(top,exclude).bifang", ":(top,exclude).arca"],
             capture_output=True,
             text=True,
             check=False,
@@ -62,7 +62,7 @@ class Workspace:
                 check=False,
             )
         result = subprocess.run(
-            ["git", "-C", str(self.root), "diff", "--binary", "HEAD"],
+            ["git", "-C", str(self.root), "diff", "--binary", "HEAD", "--", ".", ":(top,exclude).bifang", ":(top,exclude).arca"],
             capture_output=True,
             text=True,
             check=False,

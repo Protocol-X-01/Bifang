@@ -28,6 +28,20 @@ Before publishing a public GitHub Release:
 4. Publish the public source repository under Apache-2.0 and link to the
    release build from the Devpost submission.
 
+## Local test evidence (2026-10-23)
+
+A Linux debug Debian package was built with `tauri build --debug --bundles deb
+--ci`. Its extracted application launched on a virtual X display and started
+the bundled server. The refreshed server passed a live Token Factory Nemotron
+Ultra receipt-parser rehearsal, with five checks passing after patch apply.
+The rehearsal used automated, exact-action approvals and synthetic code.
+
+The build used existing system runtime libraries plus development packages
+extracted under `/tmp`; no privileged package installation was performed.
+An installed desktop UI test, clean-machine compatibility test, release-profile
+package, and public video are still required. Do not distribute the debug
+artifact as a validated production release.
+
 ## Other targets
 
 Windows and macOS Rust code is not equivalent to a validated desktop build.

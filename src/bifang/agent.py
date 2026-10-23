@@ -287,7 +287,7 @@ class Agent:
             ) as span:
                 msg = await self.provider.complete(
                     self.messages,
-                    self._get_tools_schema(),
+                    tools=self._get_tools_schema(),
                     task_type=task_type,
                 )
                 usage = msg.get("usage") or {}
@@ -348,7 +348,7 @@ class Agent:
             accumulated_content = ""
             accumulated_tool_calls = []
 
-            async for chunk in self.provider.complete_stream(self.messages, self._get_tools_schema(), task_type=task_type):
+            async for chunk in self.provider.complete_stream(self.messages, tools=self._get_tools_schema(), task_type=task_type):
                 if chunk.get("content"):
                     accumulated_content += chunk["content"]
                     if on_text:

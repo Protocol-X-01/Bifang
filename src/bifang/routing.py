@@ -235,7 +235,7 @@ class TaskClassifier:
         # Check file patterns from context
         if context and "files" in context:
             for file_path in context.get("files", []):
-                file_lower = file_path.lower()
+                file_lower = str(file_path).lower()
                 for task_type, patterns in cls.FILE_PATTERNS.items():
                     if any(p in file_lower for p in patterns):
                         scores[task_type] = scores.get(task_type, 0) + 2

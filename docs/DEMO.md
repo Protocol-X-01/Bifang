@@ -13,9 +13,10 @@ the `mkdir` command should fail if that directory already exists.
 ```bash
 mkdir /tmp/bifang-receipt-demo
 cp examples/demo/receipts.py examples/demo/check_receipts.py /tmp/bifang-receipt-demo/
+cp examples/demo/.gitignore /tmp/bifang-receipt-demo/
 cd /tmp/bifang-receipt-demo
 git init
-git add receipts.py check_receipts.py
+git add .gitignore receipts.py check_receipts.py
 git -c user.name='Bifang Demo' -c user.email='demo@example.invalid' commit -m 'Demo baseline'
 python3 -m unittest -v check_receipts
 ```

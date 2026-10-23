@@ -18,6 +18,8 @@ def test_diff_includes_untracked_files(tmp_path:Path):
  subprocess.run(["git","-C",str(tmp_path),"commit","-m","initial"],check=True,capture_output=True)
  tracked.write_text("after\n")
  (tmp_path/"new.txt").write_text("new file\n")
+ (tmp_path/".bifang").mkdir()
+ (tmp_path/".bifang"/"audit.jsonl").write_text("private-transcript-content\n")
 
  diff=Workspace(tmp_path,tmp_path).diff()
 
@@ -25,6 +27,8 @@ def test_diff_includes_untracked_files(tmp_path:Path):
  assert "+after" in diff
  assert "diff --git a/new.txt b/new.txt" in diff
  assert "+new file" in diff
+ assert ".bifang" not in diff
+ assert "private-transcript-content" not in diff
 
 
 def test_apply_patch_to_clean_source(tmp_path:Path):

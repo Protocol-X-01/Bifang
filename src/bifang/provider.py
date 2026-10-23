@@ -102,6 +102,7 @@ class ProviderManager:
         )
 
         return {
+            "role": "assistant",
             "content": response.content,
             "tool_calls": [
                 {

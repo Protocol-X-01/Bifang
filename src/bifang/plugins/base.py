@@ -84,7 +84,7 @@ class PluginContext:
 
     def __init__(self):
         self.tools: dict[str, Callable] = {}
-        self.schemas: list[dict] = {}
+        self.schemas: list[dict] = []
         self.skills: dict[str, Callable] = {}
         self.config: dict[str, Any] = {}
 

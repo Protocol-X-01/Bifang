@@ -32,7 +32,10 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   a prior truncated upload of `ChatPanel.tsx`; use this commit or a newer
   verified revision rather than the earlier affected revision.
 - Python is constrained to `>=3.11,<3.12`; all source files pass Python
-  compilation and the current test suite passes (26 tests).
+  compilation and the current test suite passes (29 tests).
+- An agent regression test exercises the model → read-file tool → model
+  exchange through the HTTP provider adapter, including nested usage metadata.
+  It covers task-schema argument binding and assistant message roles.
 - Provider selection is authoritative for streamed and regular requests;
   an NVIDIA-prefixed model identifier no longer overrides the selected
   Nebius endpoint. Eight routing checks cover default/explicit selections
@@ -60,12 +63,26 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   verifies non-loopback requests require the configured API key.
 - The Rust/Tauri app now uses packaged frontend assets, least-privilege dialog
   capability, a scoped CSP, a private per-user `.env` path, and the bundled
-  server sidecar. A native Tauri package has **not** yet been built locally.
+  server sidecar. A native Linux **debug/test Debian package** now builds.
+  Vite emits assets to `desktop/dist`, matching Tauri's packaged asset path.
+  The extracted app launched under a virtual X display and started a healthy
+  sidecar. This is not an installed-app click-through or release-build test.
 - The Rust app passes a Windows GNU target `cargo check`; this is compile-time
   evidence only, not a Windows installer or runtime test.
 - Prior same-day live checks confirmed both configured inference paths
   authenticated and accepted a tiny Nemotron Ultra request. Do not show API
   keys in logs, repository history, screenshots, or video.
+- A live Token Factory Nemotron Ultra rehearsal through the packaged server
+  fixed the receipt-parser demo, preserved the original checks, applied only
+  `receipts.py`, and passed all five checks. Three approvals were resolved by
+  an exact-action automated allowlist. The local report records 7.48 seconds
+  for this one run, including server startup; this is not a general performance
+  benchmark. The sidecar hash matches the final Debian test package.
+- The configured NVIDIA endpoint authenticated and returned text from
+  `nvidia/nemotron-3-ultra-550b-a55b`. That endpoint is NVIDIA's public hosted
+  API; no self-hosted NIM deployment is established by this result.
+- Workspace patch export excludes Bifang/Arca audit directories, preventing
+  internal transcripts from being applied to the source checkout.
 - Docker now binds on the container interface and refuses non-loopback startup
   without `BIFANG_SERVER_API_KEY`.
 - The Docker build now uses the checked-in `uv.lock`, and `.dockerignore`
@@ -82,14 +99,11 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Not yet demonstrated
 
-- The Rust/Tauri native bundle has not compiled in this workstation because
-  WebKitGTK/libsoup development libraries are missing. CI installs these
-  libraries and builds a Debian package, but GitHub did not start the jobs:
-  the account is locked due to a billing issue. Treat this as an external CI
-  blocker, not evidence that the source build failed.
-- A local dependency-install simulation requires 14 new development packages
-  with no upgrades or removals. Installation stopped because `sudo` requires
-  the workstation administrator password; the dependencies remain missing.
+- CI jobs previously stopped before execution under an account billing lock.
+  Local native compilation was unblocked using development packages extracted
+  under `/tmp`, with `PKG_CONFIG_PATH` and a native link search path pointing
+  there. System package installation still requires administrator access.
+  A release-profile build and clean-machine installation test remain pending.
 - The public Apache-2.0 source repository is
   [Protocol-X-01/bifang](https://github.com/Protocol-X-01/bifang). The
   sanitized source tree is on `main`; the original archive was not published.
@@ -103,12 +117,12 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Critical path
 
-1. Resolve the GitHub Actions billing lock, rerun CI, obtain the native
-   Tauri/sidecar Linux package, and smoke-test the installed app through the
+1. Resolve the GitHub Actions billing lock or use a working build host, build
+   the release-profile package, and test the installed desktop app through the
    full approve → edit → diff → apply → test loop.
-2. Verify the packaged app's Token Factory path and the separately configured
-   NIM path without exposing credentials; record exact model and deployment
-   details. Add measured response and task-quality evidence, not GPU claims.
+2. Repeat the successful packaged-server Token Factory rehearsal through the
+   desktop UI and verify any separately deployed NIM endpoint. Record exact
+   model/deployment details and distinguish hosted NVIDIA API access from NIM.
 3. Keep the public Apache-2.0 repository limited to the sanitized working
    copy. Rotate credentials from the supplied archive promptly; confirm no
    actual credentials were used in the public source, build context, or demo.
