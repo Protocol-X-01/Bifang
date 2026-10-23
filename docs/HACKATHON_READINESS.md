@@ -26,6 +26,11 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Verified implementation
 
+- Public commit `1372625f51954c43b2377efd47aa9b0a51141ee9` was downloaded
+  into a separate directory and passed `npm ci` followed by `npm run build`.
+  Its tracked files match the local working copy byte for byte. This repairs
+  a prior truncated upload of `ChatPanel.tsx`; use this commit or a newer
+  verified revision rather than the earlier affected revision.
 - Python is constrained to `>=3.11,<3.12`; all source files pass Python
   compilation and the current test suite passes (13 tests).
 - The desktop frontend passes the production TypeScript/Vite build; the
@@ -72,6 +77,9 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   libraries and builds a Debian package, but GitHub did not start the jobs:
   the account is locked due to a billing issue. Treat this as an external CI
   blocker, not evidence that the source build failed.
+- A local dependency-install simulation requires 14 new development packages
+  with no upgrades or removals. Installation stopped because `sudo` requires
+  the workstation administrator password; the dependencies remain missing.
 - The public Apache-2.0 source repository is
   [Protocol-X-01/bifang](https://github.com/Protocol-X-01/bifang). The
   sanitized source tree is on `main`; the original archive was not published.
