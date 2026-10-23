@@ -55,8 +55,10 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 - The project has an Apache-2.0 license and `.env` is ignored.
 - The original supplied archive contains an `.env`; the working release copy
   does not. Never publish or reuse the original archive as the repository
-  source. Rotate credentials from that file before public release, and keep
-  real credentials out of commits, build contexts, screenshots, and recordings.
+  source. Because the archive was shared during project review and the
+  repository is now public, rotate credentials from that file immediately.
+  Keep real credentials out of commits, build contexts, screenshots, and
+  recordings.
 
 ## Not yet demonstrated
 
