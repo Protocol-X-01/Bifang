@@ -13,6 +13,7 @@ interface Message {
 export function ChatPanel() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { sessionId, setSessionId, messages, addMessage, clearMessages } = useSessionStore();
   const workspacePath = useWorkspaceStore((state) => state.workspacePath);
@@ -114,6 +115,29 @@ export function ChatPanel() {
     }
   };
 
+  const handleNewChat = async () => {
+    if (isLoading || isResetting) return;
+    setIsResetting(true);
+    try {
+      if (sessionId) {
+        const diffResponse = await fetch(`http://127.0.0.1:8000/sessions/${sessionId}/diff`);
+        if (!diffResponse.ok) throw new Error('Could not check the current workspace changes.');
+        const { diff } = await diffResponse.json();
+        if (diff && !window.confirm('Starting a new chat discards un-applied changes in this disposable worktree. Continue?')) return;
+
+        const deleteResponse = await fetch(`http://127.0.0.1:8000/sessions/${sessionId}`, { method: 'DELETE' });
+        if (!deleteResponse.ok) throw new Error('Could not close the current session.');
+      }
+      setSessionId(null);
+      clearMessages();
+      setActiveWorkspace(workspacePath);
+    } catch (error) {
+      window.alert(String(error));
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const formatMessage = (msg: Message) => {
     const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return (
@@ -137,7 +161,7 @@ export function ChatPanel() {
           <h2 className="text-lg font-semibold">Chat</h2>
         </div>
         <div className="flex items-center gap-2">
-          <button className="p-2 rounded-lg hover:bg-surface-800" title="New chat">
+          <button className="p-2 rounded-lg hover:bg-surface-800 disabled:opacity-50" title="New chat" aria-label="New chat" onClick={handleNewChat} disabled={isLoading || isResetting}>
             <MessageSquare className="w-4 h-4" />
           </button>
           <button className="p-2 rounded-lg hover:bg-surface-800" title="Clear chat" onClick={() => useSessionStore.getState().clearMessages()}>
