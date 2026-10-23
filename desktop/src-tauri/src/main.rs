@@ -5,6 +5,8 @@ use std::sync::{Arc, Mutex};
 use tauri::{command, generate_context, generate_handler, AppHandle, Manager, State};
 use tauri_plugin_shell::{process::CommandChild, ShellExt};
 
+mod commands;
+
 // App state for bifang server
 struct BifangServerState {
     process: Mutex<Option<RunningServer>>,
@@ -80,6 +82,14 @@ async fn stop_bifang_server(state: State<'_, BifangServerState>) -> Result<Strin
     }
 }
 
+#[command]
+async fn get_server_status(state: State<'_, BifangServerState>) -> Result<bool, String> {
+    let process_guard = state.process.lock().unwrap();
+    Ok(process_guard
+        .as_ref()
+        .is_some_and(|server| server.running.load(Ordering::Acquire)))
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -87,7 +97,12 @@ fn main() {
         .manage(BifangServerState {
             process: Mutex::new(None),
         })
-        .invoke_handler(generate_handler![start_bifang_server, stop_bifang_server,])
+        .invoke_handler(generate_handler![
+            commands::get_file_tree,
+            start_bifang_server,
+            stop_bifang_server,
+            get_server_status,
+        ])
         .setup(|app| {
             let state = app.state::<BifangServerState>();
             tauri::async_runtime::block_on(async {
