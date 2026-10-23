@@ -30,6 +30,11 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   compilation and the current test suite passes (13 tests).
 - The desktop frontend passes the production TypeScript/Vite build; the
   production dependency audit reports zero vulnerabilities.
+- The Tauri bridge now registers file-tree and server-status commands, and
+  file nodes serialize the `type` field expected by the frontend. A locked
+  Windows GNU `cargo check --tests` passes with a temporary check-only config
+  that omits the platform-specific sidecar. This type-check is not a native
+  package build or runtime test.
 - The desktop New Chat action now closes its server-side session and asks
   before discarding un-applied worktree changes. Unused dashboard, reasoning,
   and verification panels containing fabricated sample metrics were removed;
