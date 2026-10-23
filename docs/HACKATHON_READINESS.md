@@ -63,10 +63,13 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   verifies non-loopback requests require the configured API key.
 - The Rust/Tauri app now uses packaged frontend assets, least-privilege dialog
   capability, a scoped CSP, a private per-user `.env` path, and the bundled
-  server sidecar. A native Linux **debug/test Debian package** now builds.
+  server sidecar. A native Linux **release-profile Debian preview** now builds.
   Vite emits assets to `desktop/dist`, matching Tauri's packaged asset path.
-  The extracted app launched under a virtual X display and started a healthy
-  sidecar. This is not an installed-app click-through or release-build test.
+  The extracted app completed a live Token Factory task under a virtual X
+  display through its actual UI, including action approvals, diff review,
+  confirmation, and apply. Only the parser changed and all five original
+  checks passed. Automated clicks used an exact-action allowlist; workspace
+  selection was preseeded. See [demo evidence](DEMO_EVIDENCE.md).
 - The Rust app passes a Windows GNU target `cargo check`; this is compile-time
   evidence only, not a Windows installer or runtime test.
 - Prior same-day live checks confirmed both configured inference paths
@@ -103,7 +106,10 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   Local native compilation was unblocked using development packages extracted
   under `/tmp`, with `PKG_CONFIG_PATH` and a native link search path pointing
   there. System package installation still requires administrator access.
-  A release-profile build and clean-machine installation test remain pending.
+  The release-profile build and extracted-app UI test now pass; clean-machine
+  installation and the native folder chooser remain pending. This build
+  references GLIBC symbols through 2.39 and must not be advertised as Debian
+  12 compatible without a suitable baseline rebuild and runtime test.
 - The public Apache-2.0 source repository is
   [Protocol-X-01/bifang](https://github.com/Protocol-X-01/bifang). The
   sanitized source tree is on `main`; the original archive was not published.
@@ -117,12 +123,11 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Critical path
 
-1. Resolve the GitHub Actions billing lock or use a working build host, build
-   the release-profile package, and test the installed desktop app through the
-   full approve → edit → diff → apply → test loop.
-2. Repeat the successful packaged-server Token Factory rehearsal through the
-   desktop UI and verify any separately deployed NIM endpoint. Record exact
-   model/deployment details and distinguish hosted NVIDIA API access from NIM.
+1. Test the release-profile package installed on a clean supported Linux
+   machine, including the native folder chooser. Resolve CI billing or use
+   a working builder with an explicitly supported distribution baseline.
+2. Preserve the successful native UI rehearsal and verify any separately
+   deployed NIM endpoint. Distinguish hosted NVIDIA API access from NIM.
 3. Keep the public Apache-2.0 repository limited to the sanitized working
    copy. Rotate credentials from the supplied archive promptly; confirm no
    actual credentials were used in the public source, build context, or demo.

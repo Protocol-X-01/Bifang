@@ -1,11 +1,8 @@
-# Bifang
-
 <p align="center">
-  <img src="desktop/public/favicon.svg" width="88" alt="Bifang bird mark" />
+  <img src="docs/assets/bifang-hero.svg" width="1280" alt="Bifang — Build. Run. Verify. A Nemotron coding workspace with disposable worktrees, approvals and diffs." />
 </p>
 
-<h3 align="center">Build. Run. Verify.</h3>
-<p align="center">An open-source, Nemotron-powered coding workspace<br />for agentic engineering—with the human in control.</p>
+<p align="center"><strong>Give the agent a failing test. Keep control of the change.</strong><br />Open-source desktop and terminal tools for agentic engineering.</p>
 
 <p align="center">
   <a href="https://github.com/Protocol-X-01/bifang/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-E63946?style=flat-square" alt="Apache 2.0 license" /></a>
@@ -13,17 +10,50 @@
   <img src="https://img.shields.io/badge/Track-01%20Agentic%20Engineering-FF8A3D?style=flat-square" alt="Track 1: Agentic Engineering" />
 </p>
 
-<p align="center"><strong>Understand the code. Make a focused change. Run the checks. Review the diff.</strong></p>
-
-<p align="center"><img src="docs/assets/bifang-workflow.svg" alt="Bifang's coding loop: inspect a repository, ask Nemotron through Nebius Token Factory or NVIDIA NIM, review a proposed patch, approve tests, and keep or discard the change." /></p>
-
-<p align="center"><a href="#quickstart">Quickstart</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/SECURITY.md">Safety model</a> · <a href="docs/HACKATHON_READINESS.md">Hackathon status</a></p>
+<p align="center"><a href="#see-the-coding-loop">See the demo</a> · <a href="#quickstart">Run Bifang</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
 Bifang is a desktop coding IDE and terminal agent built around a practical, reviewable engineering loop. It can map a repository, propose focused edits, run approved commands and tests, and show the resulting diff before you keep or discard the work. Git repositories use a disposable worktree by default, leaving the original checkout untouched until you explicitly export or apply a patch.
 
-Our performance research explores KV-cache quantization as a way to reduce memory pressure while preserving long-context recall. The current quantizer is an experimental prototype, not yet wired into the serving path; measured quality and performance results are required before making optimization claims. See `docs/PERFORMANCE.md` for the experiment plan.
+| Understand | Change | Verify |
+| --- | --- | --- |
+| Inspect files and repository context. | Approve edits in a disposable Git worktree. | Run checks, review the diff, then apply or discard. |
 
 > Independent open-source project for the Nebius x NVIDIA Global AI Hackathon. Not an official NVIDIA or Nebius product.
+
+## See the coding loop
+
+The [receipt-parser demo](docs/DEMO.md) starts with two broken CSV cases.
+Nemotron Ultra fixes the parser through Bifang's tools, leaving the original
+checks intact. The release-profile desktop app completed the live task,
+approval dialogs, diff review, and patch application. All five original
+checks passed in the source checkout afterward.
+
+![Bifang desktop after a real Nemotron coding task: formatted chat, repository files, reviewed diff and successful apply.](docs/assets/bifang-desktop.png)
+
+<details>
+<summary><strong>Review an action before it runs</strong></summary>
+
+![Bifang's in-app approval dialog with the exact proposed action, Deny and Allow once controls.](docs/assets/bifang-approval.png)
+
+Approvals are scoped to one action. The demo harness clicked these actual
+controls using an exact-action allowlist; this is not a recording of human clicks.
+
+</details>
+
+| Verified on October 23 | Evidence |
+| --- | --- |
+| Live Token Factory coding task | Only `receipts.py` changed; all five checks passed after apply. |
+| Runtime regression suite | 29 passing tests, including an HTTP model → tool → model exchange. |
+| Linux desktop loop | Release-profile Debian package; native UI approvals, diff and apply verified. |
+| NVIDIA-compatible endpoint | Configured hosted NVIDIA API returned a Nemotron Ultra completion. |
+
+The native UI rehearsal used synthetic code, a preselected test workspace,
+and automated approvals restricted to the demo's edit and test actions.
+See [demo evidence](docs/DEMO_EVIDENCE.md) and
+[remaining release gates](docs/HACKATHON_READINESS.md). Clean-machine
+installation and the native folder chooser have not been tested.
+
+<p align="center"><img src="docs/assets/bifang-workflow.svg" alt="Bifang's coding loop: inspect, reason, review, verify and decide." /></p>
 
 ## Quickstart
 
@@ -37,7 +67,9 @@ Our performance research explores KV-cache quantization as a way to reduce memor
 sudo apt update
 sudo apt install -y pipx git ripgrep bubblewrap
 pipx ensurepath
-pipx install .
+git clone https://github.com/Protocol-X-01/bifang.git
+cd bifang
+pipx install --python python3.11 .
 ```
 
 Configure your provider, then open a project:
@@ -49,10 +81,9 @@ cd your-project
 bifang chat
 ```
 
-For development:
+For development, from the cloned repository:
 
 ```bash
-cd bifang
 uv sync --locked --extra dev --extra observability
 ```
 
@@ -71,6 +102,16 @@ sidecar; users do not need Python installed to run the packaged app. See
 [`desktop/README.md`](desktop/README.md) for configuration and Linux packaging.
 
 ## Why this build
+
+The Bifang bird identity represents watchfulness and controlled fire: the
+agent moves the work forward while the engineer can inspect what changed.
+The engineering focus is a complete coding loop with visible evidence.
+
+KV-cache quantization remains an experimental research thread, with its
+benchmark plan in [Performance](docs/PERFORMANCE.md). It is not connected to
+the serving path yet. [TensorRT compatibility notes](docs/TENSORRT_COMPATIBILITY.md)
+explain the Debian-package Python constraint and the separation between the
+desktop client and a model-serving environment.
 
 The GPU-acceleration motivation is to make a coding agent feel responsive while
 it understands a large codebase and runs an iterative edit/test loop. The

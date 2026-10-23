@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, MessageSquare } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { useSessionStore, useWorkspaceStore } from '../stores/bifangStore';
 
 interface Message {
@@ -14,11 +15,23 @@ export function ChatPanel() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState<{ action: string; resolve: (approved: boolean) => void } | null>(null);
+  const approvalDialog = useRef<HTMLDialogElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { sessionId, setSessionId, messages, addMessage, clearMessages } = useSessionStore();
   const workspacePath = useWorkspaceStore((state) => state.workspacePath);
   const setActiveWorkspace = useWorkspaceStore((state) => state.setActiveWorkspace);
   const previousWorkspace = useRef(workspacePath);
+
+  useEffect(() => {
+    if (pendingApproval) approvalDialog.current?.showModal();
+    else approvalDialog.current?.close();
+  }, [pendingApproval]);
+
+  const resolveApproval = (approved: boolean) => {
+    pendingApproval?.resolve(approved);
+    setPendingApproval(null);
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -90,7 +103,9 @@ export function ChatPanel() {
           if (!stateResponse.ok) break;
           const approval = await stateResponse.json();
           if (approval.approval_id) {
-            const approved = window.confirm(approval.action);
+            const approved = await new Promise<boolean>((resolve) => {
+              setPendingApproval({ action: approval.action, resolve });
+            });
             await fetch(`http://127.0.0.1:8000/sessions/${activeSessionId}/approval`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -144,7 +159,21 @@ export function ChatPanel() {
       <div key={msg.timestamp} className={`flex gap-3 animate-in ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
         <div className={`flex-1 max-w-[80%] ${msg.role === 'user' ? 'text-right' : ''}`}>
           <div className={`inline-block px-4 py-2 rounded-2xl ${msg.role === 'user' ? 'bg-bifang-500 text-white rounded-tr-sm' : 'bg-surface-800 text-surface-100 rounded-tl-sm'}`}>
-            <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
+            {msg.role === 'user' ? <p className="whitespace-pre-wrap text-sm">{msg.content}</p> : (
+              <div className="text-sm leading-relaxed [&_pre_code]:bg-transparent [&_pre_code]:p-0">
+                <ReactMarkdown skipHtml components={{
+                  p: ({ children }) => <p className="my-2 first:mt-0 last:mb-0">{children}</p>,
+                  pre: ({ children }) => <pre className="my-3 max-w-full overflow-x-auto rounded-lg bg-surface-950 p-3">{children}</pre>,
+                  code: ({ children }) => <code className="rounded bg-surface-950/60 px-1 py-0.5 font-mono text-xs">{children}</code>,
+                  ul: ({ children }) => <ul className="my-2 list-disc space-y-1 pl-5">{children}</ul>,
+                  ol: ({ children }) => <ol className="my-2 list-decimal space-y-1 pl-5">{children}</ol>,
+                  h1: ({ children }) => <h3 className="mb-2 mt-4 text-lg font-semibold">{children}</h3>,
+                  h2: ({ children }) => <h3 className="mb-2 mt-4 text-lg font-semibold">{children}</h3>,
+                  h3: ({ children }) => <h3 className="mb-2 mt-3 font-semibold">{children}</h3>,
+                  a: ({ href, children }) => <a href={href} target="_blank" rel="noreferrer noopener" className="text-orange-300 underline">{children}</a>,
+                }}>{msg.content}</ReactMarkdown>
+              </div>
+            )}
           </div>
           <p className={`text-xs text-surface-500 mt-1 ${msg.role === 'user' ? 'text-right' : ''}`}>{time}</p>
         </div>
@@ -154,6 +183,16 @@ export function ChatPanel() {
 
   return (
     <div className="flex flex-col h-full bg-surface-950">
+      <dialog ref={approvalDialog} onCancel={(event) => { event.preventDefault(); resolveApproval(false); }} aria-labelledby="approval-title" className="m-auto w-full max-w-xl rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-xl backdrop:bg-black/70">
+        <p className="text-xs font-semibold uppercase tracking-widest text-brand-primary">Permission required</p>
+        <h2 id="approval-title" className="mt-2 text-xl font-semibold">Review requested action</h2>
+        <pre className="my-5 max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-background p-4 text-sm">{pendingApproval?.action}</pre>
+        <p className="text-sm text-muted-foreground">Your choice applies to this action only.</p>
+        <div className="mt-6 flex justify-end gap-3">
+          <button type="button" className="btn-secondary" onClick={() => resolveApproval(false)} autoFocus>Deny</button>
+          <button type="button" className="btn-primary" onClick={() => resolveApproval(true)}>Allow once</button>
+        </div>
+      </dialog>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-surface-800">
         <div className="flex items-center gap-2">
@@ -179,6 +218,7 @@ export function ChatPanel() {
           messages.map((msg) => formatMessage(msg))
         )}
         <div ref={messagesEndRef} />
+        {isLoading && <p role="status" className="flex items-center gap-2 text-sm text-surface-400"><Loader2 className="h-4 w-4 animate-spin" />{pendingApproval ? 'Waiting for your approval' : 'Bifang is working in your workspace…'}</p>}
       </div>
 
       {/* Input */}

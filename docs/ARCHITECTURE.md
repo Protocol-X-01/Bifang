@@ -13,7 +13,8 @@ creates an assist-mode session for the selected workspace, sends prompts to
 the session endpoint, polls for explicit tool approvals, and displays the
 resulting worktree diff. The user can review and apply a patch to the original
 Git checkout, or close the session to discard its isolated worktree. The
-current desktop approval prompt uses the native confirmation dialog.
+desktop presents each action in an in-app modal with Deny and Allow once
+controls. Applying a reviewed diff requires a separate confirmation.
 
 ## Isolation and evidence
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FileText, Minus, Plus, Copy, Check } from 'lucide-react';
 import { useSessionStore } from '../stores/bifangStore';
 
@@ -15,6 +15,8 @@ export function DiffViewer() {
   const [diffText, setDiffText] = useState('');
   const [viewMode, setViewMode] = useState<'unified' | 'split'>('unified');
   const [applying, setApplying] = useState(false);
+  const [applyMessage, setApplyMessage] = useState('');
+  const applyDialog = useRef<HTMLDialogElement>(null);
   const sessionId = useSessionStore((state) => state.sessionId);
 
   const parseDiff = (diffText: string): DiffLine[] => {
@@ -78,14 +80,16 @@ export function DiffViewer() {
   }, [sessionId]);
 
   const applyChanges = async () => {
-    if (!sessionId || !diffText || !window.confirm('Apply these changes to the original repository? This requires a clean checkout.')) return;
+    if (!sessionId || !diffText) return;
+    applyDialog.current?.close();
     setApplying(true);
+    setApplyMessage('');
     try {
       const response = await fetch(`http://127.0.0.1:8000/sessions/${sessionId}/apply`, { method: 'POST' });
       if (!response.ok) throw new Error((await response.json()).detail || 'Could not apply changes.');
-      window.alert('Changes applied to the original repository.');
+      setApplyMessage('Changes applied to the original repository.');
     } catch (error) {
-      window.alert(String(error));
+      setApplyMessage(String(error));
     } finally {
       setApplying(false);
     }
@@ -93,6 +97,14 @@ export function DiffViewer() {
 
   return (
     <div className="flex flex-col w-80 bg-surface-950 border-l border-surface-800">
+      <dialog ref={applyDialog} aria-labelledby="apply-title" className="m-auto max-w-lg rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-xl backdrop:bg-black/70">
+        <h2 id="apply-title" className="text-xl font-semibold">Apply reviewed changes?</h2>
+        <p className="mt-3 text-sm text-muted-foreground">This copies the displayed patch to your original repository. The checkout must be clean.</p>
+        <div className="mt-6 flex justify-end gap-3">
+          <button type="button" className="btn-secondary" onClick={() => applyDialog.current?.close()} autoFocus>Cancel</button>
+          <button type="button" className="btn-primary" onClick={applyChanges}>Apply to repository</button>
+        </div>
+      </dialog>
       <div className="p-4 border-b border-surface-800 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-bifang-500" />
@@ -113,7 +125,7 @@ export function DiffViewer() {
         >
           Split
         </button>
-        <button className="px-3 py-1.5 rounded text-sm bg-green-700 text-white disabled:opacity-50" onClick={applyChanges} disabled={applying || !diffText}>
+        <button className="px-3 py-1.5 rounded text-sm bg-green-700 text-white disabled:opacity-50" onClick={() => applyDialog.current?.showModal()} disabled={applying || !diffText}>
           <Check className="w-3 h-3 inline mr-1" />{applying ? 'Applying…' : 'Apply'}
         </button>
         <span className="flex-1" />
@@ -121,6 +133,8 @@ export function DiffViewer() {
           <Copy className="w-4 h-4" />
         </button>
       </div>
+
+      {applyMessage && <p role="status" className="border-b border-surface-800 px-4 py-3 text-sm text-surface-300">{applyMessage}</p>}
 
       <div className="flex-1 overflow-auto p-4 font-mono text-sm scrollbar-thin">
         {diff.length === 0 && <p className="text-sm text-surface-500">{sessionId ? 'No workspace changes yet.' : 'Choose a workspace and ask Bifang to make a change.'}</p>}

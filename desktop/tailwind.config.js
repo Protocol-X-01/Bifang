@@ -14,7 +14,7 @@ export default {
         'card-foreground': '#F7F7F7',
         popover: '#1A2338',
         'popover-foreground': '#F7F7F7',
-        primary: '#E63906',
+        primary: '#E63946',
         'primary-foreground': '#F7F7F7',
         secondary: '#243048',
         'secondary-foreground': '#F7F7F7',
@@ -26,9 +26,22 @@ export default {
         'destructive-foreground': '#F7F7F7',
         border: '#2D3A50',
         input: '#2D3A50',
-        ring: '#E63906',
+        ring: '#E63946',
+        surface: {
+          50: '#F7F7F7',
+          100: '#E2E8F0',
+          300: '#CBD5E1',
+          400: '#94A3B8',
+          500: '#8493AC',
+          700: '#334155',
+          800: '#1E293B',
+          900: '#162033',
+          950: '#0F172A',
+        },
         // Bifang Brand Palette (from brand spec)
         bifang: {
+          500: '#E63946',
+          600: '#CC293B',
           red: '#E63906',        // Bifang Red - Energy, focus
           orange: '#FF8A5D',     // Flame Orange - Action, creativity
           white: '#F7F7F7',      // Cloud White - Clarity, simplicity
@@ -38,7 +51,7 @@ export default {
         },
         // Semantic aliases for easy theming
         brand: {
-          primary: '#E63906',
+          primary: '#E63946',
           secondary: '#FF8A5D',
           background: '#0F1728',
           surface: '#1A2338',

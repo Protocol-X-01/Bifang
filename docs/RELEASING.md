@@ -30,17 +30,21 @@ Before publishing a public GitHub Release:
 
 ## Local test evidence (2026-10-23)
 
-A Linux debug Debian package was built with `tauri build --debug --bundles deb
---ci`. Its extracted application launched on a virtual X display and started
-the bundled server. The refreshed server passed a live Token Factory Nemotron
-Ultra receipt-parser rehearsal, with five checks passing after patch apply.
-The rehearsal used automated, exact-action approvals and synthetic code.
+A Linux release-profile Debian package was built with
+`tauri build --bundles deb --ci`. Its extracted application completed a live
+Token Factory Nemotron Ultra receipt-parser task through the native Tauri UI
+on a virtual X display: submit prompt, approve actions, review diff, confirm
+apply. All five original checks passed afterward. The rehearsal used
+automated, exact-action approval clicks and a preselected synthetic workspace.
+See [demo evidence](DEMO_EVIDENCE.md) for scope and screenshots.
 
 The build used existing system runtime libraries plus development packages
 extracted under `/tmp`; no privileged package installation was performed.
-An installed desktop UI test, clean-machine compatibility test, release-profile
-package, and public video are still required. Do not distribute the debug
-artifact as a validated production release.
+The native executable references GLIBC symbols through `GLIBC_2.39` on this
+build host. Do not claim Debian 12 compatibility or broad Linux portability
+from the `.deb` format alone. Clean-machine installation, the native folder
+chooser, and a public video remain unverified. Do not distribute this local
+preview as a validated production release.
 
 ## Other targets
 

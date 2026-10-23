@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
-import { FolderOpen, Play, Square, Server, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FolderOpen, Play, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useWorkspaceStore } from '../stores/bifangStore';
 
 interface SidebarProps {
@@ -31,7 +31,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
         <div className={`flex items-center justify-between p-4 border-b border-surface-800 ${collapsed ? 'justify-center' : ''}`}>
           {!collapsed && (
             <h1 className="flex items-center gap-2 text-lg font-bold text-bifang-500">
-              <Server className="w-5 h-5" />
+              <img src="/favicon.svg" className="h-8 w-8" alt="Bifang bird" />
               <span>Bifang</span>
             </h1>
           )}
