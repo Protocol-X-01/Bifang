@@ -11,6 +11,8 @@ from typing import Any, Callable, Optional
 
 import httpx
 
+from .tasks import TaskPlan
+
 
 class ToolRegistry:
     """Registry for agent tools."""
@@ -338,20 +340,22 @@ async def git_status(path: str = ".") -> str:
     "type": "function",
     "function": {
         "name": "todo_write",
-        "description": "Write/update todo list",
+        "description": "Replace this session's task plan. At most one task may be in progress. An empty list clears it.",
         "parameters": {
             "type": "object",
             "properties": {
                 "todos": {
                     "type": "array",
+                    "maxItems": 100,
                     "items": {
                         "type": "object",
                         "properties": {
-                            "content": {"type": "string"},
+                            "content": {"type": "string", "minLength": 1, "maxLength": 1000},
                             "status": {"type": "string", "enum": ["pending", "in_progress", "completed", "cancelled"]},
                             "priority": {"type": "string", "enum": ["high", "medium", "low"]},
                         },
                         "required": ["content", "status", "priority"],
+                        "additionalProperties": False,
                     },
                 },
             },
@@ -359,9 +363,20 @@ async def git_status(path: str = ".") -> str:
         },
     },
 })
-async def todo_write(todos: list[dict]) -> str:
-    """Write todo list (placeholder - would integrate with UI)."""
-    return f"Updated {len(todos)} todos"
+async def todo_write(todos: list[dict], *, state: TaskPlan) -> str:
+    return json.dumps(state.replace(todos), ensure_ascii=False)
+
+
+@register_tool("todo_read", {
+    "type": "function",
+    "function": {
+        "name": "todo_read",
+        "description": "Read the current session's task plan without changing it.",
+        "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+})
+async def todo_read(*, state: TaskPlan) -> str:
+    return json.dumps(state.snapshot(), ensure_ascii=False)
 
 
 def get_builtin_tools() -> dict[str, dict]:

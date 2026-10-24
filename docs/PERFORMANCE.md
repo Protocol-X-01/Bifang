@@ -6,6 +6,18 @@ more concurrent context without materially reducing recall.
 
 ## Current state
 
+**Scope update:** Token Factory-first development takes priority. The creator
+has deferred GPU rentals; quantization is conditional on a supported Token
+Factory control. None is verified in the current API schema. See the
+[current scope and evidence](TOKEN_FACTORY_STRATEGY.md). Preserve this research
+separately rather than advertising it as a submission capability.
+
+The local [controlled experiment](KV_CACHE_EXPERIMENT.md) now includes explicit
+BF16/FP8 TensorRT-LLM serving-option files and a paired streaming recall/latency
+harness (`python -m bifang.kv_benchmark`). Its synthetic-stream regression tests
+are not GPU measurements. Controlled serving, effective dtype verification and
+memory/task-quality measurements remain pending; no speedup is claimed.
+
 `src/bifang/kv_quant.py` is a standalone prototype, not connected to Bifang's
 OpenAI-compatible provider or a NIM/TensorRT-LLM serving process. It must not be
 presented as an active optimization or as measured evidence. The live Token

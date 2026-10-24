@@ -28,6 +28,7 @@ fn spawn_server(app: &AppHandle) -> Result<RunningServer, String> {
         .shell()
         .sidecar("bifang-server")
         .map_err(|error| error.to_string())?
+        .set_process_group(true)
         .env("BIFANG_SERVER_HOST", "127.0.0.1")
         .env("BIFANG_ALLOW_ABSOLUTE_WORKSPACES", "1")
         .env("BIFANG_ENV_FILE", config_path.to_string_lossy().as_ref())

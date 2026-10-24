@@ -6,6 +6,9 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from rich.markdown import Markdown as RichMarkdown
+from rich.text import Text
+
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
@@ -228,6 +231,19 @@ class ChatPanel(Widget):
             yield RichLog(id="chat-log", markup=True, wrap=True, highlight=True)
             yield Input(placeholder="Ask Bifang...", id="chat-input")
 
+    def on_mount(self):
+        log = self.query_one("#chat-log", RichLog)
+        restored = [message for message in self.agent.messages
+                    if message.get("role") in ("user", "assistant") and message.get("content")]
+        if restored:
+            log.write(Text("Resumed history. Verify current files before continuing.", style="yellow"))
+        for message in restored:
+            if message["role"] == "user":
+                log.write(Text(f"You: {message['content']}", style="cyan"))
+            else:
+                log.write(RichMarkdown(message["content"]))
+        self.query_one("#chat-input", Input).focus()
+
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         prompt = event.value.strip()
         event.input.value = ""
@@ -235,17 +251,25 @@ class ChatPanel(Widget):
             return
 
         log = self.query_one("#chat-log", RichLog)
-        log.write(f"[bold cyan]You:[/bold cyan] {prompt}")
+        log.write(Text(f"You: {prompt}", style="cyan"))
 
         event.input.disabled = True
         self.streaming = True
 
         try:
+            parts = []
+            stopped = None
             async for chunk in self.agent.ask_stream(prompt):
-                if chunk and not chunk.startswith("Stopped after"):
-                    log.write(chunk)
+                if chunk.startswith("Stopped after"):
+                    stopped = chunk
+                elif chunk:
+                    parts.append(chunk)
+            if parts:
+                log.write(RichMarkdown("".join(parts)))
+            if stopped:
+                log.write(Text(stopped, style="yellow"))
         except Exception as e:
-            log.write(f"[bold red]Error:[/bold red] {e}")
+            log.write(Text(f"Error: {e}", style="bold red"))
         finally:
             event.input.disabled = False
             event.input.focus()
@@ -407,14 +431,14 @@ class BifangApp(App):
         Binding("ctrl+r", "refresh_tree", "Refresh Files"),
         Binding("ctrl+d", "show_diff", "Show Diff"),
         Binding("ctrl+v", "toggle_verify", "Verify Panel"),
-        Binding("ctrl+y", "toggle_reasoning", "Reasoning"),
+        Binding("ctrl+y", "toggle_reasoning", "Activity"),
         Binding("ctrl+m", "toggle_metrics", "Metrics"),
         Binding("ctrl+g", "toggle_github", "GitHub"),
         Binding("ctrl+s", "sudo_grant", "Sudo Grant"),
-        Binding("ctrl+k", "toggle_reasoning", "Reasoning Panel"),
+        Binding("ctrl+k", "toggle_reasoning", "Activity Panel"),
         Binding("f1", "help", "Help"),
         Binding("f2", "toggle_verify", "Verify Panel"),
-        Binding("f3", "toggle_reasoning", "Reasoning"),
+        Binding("f3", "toggle_reasoning", "Activity"),
         Binding("f4", "toggle_metrics", "Metrics"),
         Binding("f5", "toggle_github", "GitHub"),
     ]
@@ -449,17 +473,17 @@ class BifangApp(App):
                 with TabbedContent():
                     with TabPane("Verify", id="verify-tab"):
                         yield VerifyPanel(self.agent.cfg, session_id=self.agent.cfg.get_default_model())
-                    with TabPane("Reasoning", id="reasoning-tab"):
-                        yield ReasoningPanel(session_id=self.agent.cfg.get_default_model())
+                    with TabPane("Activity", id="reasoning-tab"):
+                        yield ReasoningPanel(self.agent)
                     with TabPane("Metrics", id="metrics-tab"):
-                        yield MetricsPanel()
+                        yield MetricsPanel(self.agent)
                     with TabPane("GitHub", id="github-tab"):
                         yield Static("GitHub integration - Press Ctrl+G to toggle")
 
             # Far right - Agent status + Memory + Metrics compact
             with Vertical(id="far-right-panel"):
                 yield AgentPanel(self.agent)
-                yield MetricsPanel(compact=True)
+                yield MetricsPanel(self.agent, compact=True)
 
         yield Footer()
 

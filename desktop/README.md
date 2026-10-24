@@ -25,6 +25,11 @@ dialog accepts existing absolute directories and validates them without
 running a shell command. Native chooser automation is still unverified;
 the path dialog and coding loop pass in a clean Ubuntu VM.
 
+Before running agent commands on Ubuntu 24.04, follow the
+[Bubblewrap prerequisite and scoped AppArmor setup](../docs/UBUNTU_SANDBOX.md).
+An installed executable alone does not establish that namespaces are allowed.
+The documented setup keeps Ubuntu's global namespace restriction enabled.
+
 For a desktop-launched app, store provider settings in the per-user app config
 directory as `.env` (on Linux, typically
 `${XDG_CONFIG_HOME:-~/.config}/com.bifang.desktop/.env`). Copy the root

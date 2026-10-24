@@ -33,6 +33,28 @@ Before publishing a public GitHub Release:
 
 ## Local test evidence (2026-10-23)
 
+### Newer local approval-level candidate (2026-10-24)
+
+The current unreleased candidate separately passes fresh Ubuntu 24.04.5
+installation/live coding, and native approval/sandbox checks with Ubuntu's
+scoped distribution AppArmor profile. See
+[local native validation](LOCAL_NATIVE_VALIDATION.md) and
+[Ubuntu prerequisites](UBUNTU_SANDBOX.md). The paragraphs below retain earlier
+package identities; they are not substitutes for the current candidate's evidence.
+
+For publication, retain the original frozen build-input archive and its
+manifest. A new source archive can include later documentation without a
+runtime rebuild only after checking that every runtime, build, dependency-lock,
+asset, script and test input is unchanged. Keep the later source archive's
+checksum separate, and include
+[build-input provenance](evidence/publication-provenance.json). Distribute the
+matching candidate package, checksums and notice archive together. Do not
+replace immutable captures or describe cached native rebuilds as bit-identical.
+Use [submission handoff](SUBMISSION_CHECKLIST.md) for the remaining approval,
+public-link, video and judging-access gates.
+
+### Historical retained build
+
 A Linux release-profile Debian package was built with
 `tauri build --bundles deb --ci`. Its extracted application completed a live
 Token Factory Nemotron Ultra receipt-parser task through the native Tauri UI

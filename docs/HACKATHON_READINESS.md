@@ -1,4 +1,95 @@
-# Hackathon readiness — 2026-10-23
+# Hackathon readiness — 2026-10-24
+
+## Latest local checkpoint
+
+The working source now includes three desktop tool-approval levels: manual,
+automatic ordinary worktree edits and explicit full tool approval. A dedicated
+pause control returns subsequent actions to review during a turn. The full
+source suite passes 295 tests, the frontend passes 13 helper tests and its
+production build. A new frozen-source release-profile Debian candidate now
+passes actual native approval controls, full sandboxed command execution,
+policy denial, pause/denial and reset checks with eight synthetic model replies.
+Its own frozen API fails closed when the sandbox is missing; authenticated
+Phoenix also passes against the same new sidecar. All 336 source files remain
+unchanged after build/tests. See `evidence/approval-native.json` for host proof.
+This exact package now also passes fresh Ubuntu installation and a live Ultra
+coding task, with an explicit sandbox opt-out in that trusted VM. A separate
+scoped distribution AppArmor profile probe keeps global namespace restrictions
+enabled; see `UBUNTU_SANDBOX.md`. Installed-desktop profile integration also
+passes with eight synthetic replies, a real sandboxed sentinel and the native
+approval/pause/reset controls; see `evidence/ubuntu-native-sandbox.json`.
+The live opt-out task and synthetic sandboxed task are separate proofs.
+Publication remains held.
+See `APPROVAL_MODES.md`.
+
+A frozen 328-file source archive now produces a release-profile Debian package
+that passes its own frozen API, synthetic native model/history/Apply checks
+and real authenticated Phoenix collector test. All 328 source files still
+match after validation; nine synthetic model responses and zero hosted calls
+were used. The source/package identities and exact scope are recorded in
+`evidence/source-candidate-runtime.json`. The newer reading-friendly private
+video runs 2:50, with the complete earlier live capture at half speed and
+clearly labelled detail pauses; see `SUBMISSION_VIDEO.md`.
+
+The pre-approval-mode working copy passed 263 backend tests; its desktop helper
+run passed 11 tests. Six newer tests covered relay-only Vercel packaging,
+explicit runtime selection and shared model IDs. The
+minimal local bundle separately passes synthetic ASGI checks with fresh locked
+dependencies on Python 3.11 and 3.12. A relay-only Vercel Hobby preview is now
+deployed using managed Python 3.12, with provider credentials stored as secrets.
+External HTTPS verifies authorization, the three-model catalog, an actual
+Ultra client completion and Nano SSE completion (177 reported tokens total).
+There is no agent execution on the relay. A subsequent retained-package native
+desktop coding task through this URL passed with judge-only credentials,
+Bubblewrap enabled, exact-action approvals, patch apply and five unchanged
+checks. It made five Ultra calls reporting 12,252 tokens; see
+`evidence/native-vercel-relay.json`. Shared quotas and judging-period
+availability remain unverified.
+The operator access check passes seven metadata requests without inference;
+28 new tests cover credential-safe reporting, redirects, metadata bounds and
+invalid input. `JUDGE_OPERATIONS.md` defines the remaining operating gates.
+The creator published the WAF burst-observation rule. Preview matching is
+verified by five log events from 125 empty unauthenticated requests, all
+rejected with 401; this is log-only observation, not enforcing throttling.
+The additional 16 tests cover an optional inference-only judge relay, including
+the real Nebius client against synthetic upstream responses. Its Docker image
+now builds, but was not run before Vercel replaced the earlier hosting proposal.
+See `VERCEL_SETUP.md` and `evidence/vercel-relay-hosted.json` for the preview
+and cleanup of two automatically promoted preliminary deployments.
+One separate live relay request reported 42 tokens and matching
+Ultra IDs, using an in-process relay rather than a hosted URL. The later HTTPS
+and native task checks do not prove funding or availability through judging;
+see `JUDGE_ACCESS.md`.
+A later missing-sandbox UX fix returns actionable HTTP 503 errors without
+host-shell fallback. A new recovery-message package verifies its frozen API
+and native UI formatting. Its own fresh Ubuntu installation/live coding and
+frozen authenticated Phoenix checks now pass; its 31.55-second raw video is
+separate from the previous package's captioned draft. The new release-profile
+streaming-repair package passes the synthetic native model-selection/history
+regression, while live SSE passes separately from source. A fresh Ubuntu
+APT installation now independently verifies this exact new sidecar's live
+native coding loop, path selection, approvals, apply and five unchanged checks.
+The older public preview's clean-VM results were not reused for that claim.
+See `LOCAL_NATIVE_VALIDATION.md` for exact package hashes and boundaries.
+
+The newest sandbox-repair package now verifies the command-runner fail-closed
+fix through its frozen API and passes synthetic native/Phoenix regression
+checks. Fresh Ubuntu installation and a live trusted-fixture recording now
+also pass for that exact new sidecar. The guest denied a benign Bubblewrap
+namespace probe, so the rehearsal's explicit in-VM opt-out must not be
+presented as default sandbox support. No kernel controls were weakened.
+
+The curated dataset now has 10,414 training examples (347 MB) and 558
+validation examples (19 MB), each below 1 GB. The creator has authorized its
+private Token Factory upload, not training, LangSmith upload or publication.
+Only a completed remote-content checksum receipt establishes upload success.
+Both Files API objects now have that receipt; training has not started.
+The small held-out module trial scored Nano 1/3, Super 2/3 and Ultra 3/3;
+see `evaluations/coding-v1/README.md` for the single-trial limits and disclosed
+test-contract correction. No broad superiority or router-quality claim follows.
+
+The milestones below include historical evidence; source/package identity
+must be matched before interpreting any result as current delivery proof.
 
 ## Product and track
 
@@ -21,18 +112,23 @@ weakening the current cloud-backed Track 1 demo.
 The official [Devpost rules](https://nebiusglobalaihackathon.devpost.com/rules)
 require a working app using an NVIDIA open model on Token Factory or Nebius AI
 Cloud, a public code repository with an open-source license and setup README, a
-working demo URL, and a public YouTube demo of no more than three minutes. The
+working demo, hosted app, or test-build URL, and a public YouTube demo of no
+more than three minutes. Testing access must remain free and unrestricted
+through the judging period ending December 15. The
 submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Verified implementation
 
 - Public commit `1372625f51954c43b2377efd47aa9b0a51141ee9` was downloaded
   into a separate directory and passed `npm ci` followed by `npm run build`.
-  Its tracked files match the local working copy byte for byte. This repairs
+  Its tracked files matched the then-current local working copy byte for byte.
+  Subsequent local changes are not published. This repaired
   a prior truncated upload of `ChatPanel.tsx`; use this commit or a newer
   verified revision rather than the earlier affected revision.
 - Python is constrained to `>=3.11,<3.12`; all source files pass Python
-  compilation and the current test suite passes (29 tests).
+  compilation; the earlier development milestone passed 93 tests, superseded
+  by the current 202-test result above.
+  The newer compaction, memory and history changes are not yet in the public desktop package.
 - An agent regression test exercises the model → read-file tool → model
   exchange through the HTTP provider adapter, including nested usage metadata.
   It covers task-schema argument binding and assistant message roles.
@@ -108,8 +204,11 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   Local native compilation was unblocked using development packages extracted
   under `/tmp`, with `PKG_CONFIG_PATH` and a native link search path pointing
   there. System package installation still requires administrator access.
-  The release-profile build, extracted-app UI test, and fresh Ubuntu 24.04
-  installation/live UI task now pass. The newer preview selects its workspace
+  The earlier preview's release-profile build, extracted-app UI test, and fresh
+  Ubuntu 24.04 installation/live UI task passed. The latest approval-level
+  candidate now independently passes fresh installation/live coding and a
+  separate scoped-profile synthetic sandboxed native workflow, as documented
+  at the top of this page. The newer preview selects its workspace
   through the actual in-app path dialog, rejecting invalid input first;
   native GTK chooser selection remains unverified. This build
   references GLIBC symbols through 2.39 and must not be advertised as Debian
@@ -121,15 +220,23 @@ submission deadline is October 30, 2026 at 10:00 PDT.
   prove that this project provisioned eight H200s.
 - KV-cache quantization is a standalone prototype, not connected to the NIM or
   TensorRT-LLM serving path; no speed, memory, or recall claim is supported.
-- Phoenix export has not been verified against a live collector. Lobster Trap
-  remains an optional proxy and must not be presented as integrated metrics.
-- The final public demo URL and ≤3-minute YouTube video are still required.
+- Phoenix export passes a real temporary authenticated Phoenix collector and
+  bounded live model/tool rehearsal from source. The newer frozen sidecar also
+  passes a synthetic provider/file/error collector rehearsal, but frozen SSE
+  and production operations remain unverified. Lobster Trap
+  remains disabled after pinned synthetic compatibility checks found SSE,
+  tool-argument and structured-content inspection gaps; see `LOBSTERTRAP.md`.
+  It must not be presented as integrated metrics or serving-path guardrails.
+- A public Linux test build is available in
+  [preview 2](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.0-preview.2).
+  The public YouTube video and a funded, free judge-access arrangement remain
+  required. Bring-your-own-key installation alone does not prove free access.
 
 ## Critical path
 
-1. Complete native folder selection on a supported desktop session; the
-   in-app path dialog and installed live UI loop already pass in a clean VM. Resolve CI billing or use
-   a working builder with an explicitly supported distribution baseline.
+1. Use the verified in-app path dialog for the supported Ubuntu walkthrough;
+   native GTK chooser automation remains a separate unverified UI path.
+   Resolve CI billing or retain the verified local builder and distribution baseline.
 2. Preserve the successful native UI rehearsal and verify any separately
    deployed NIM endpoint. Distinguish hosted NVIDIA API access from NIM.
 3. Keep the public Apache-2.0 repository limited to the sanitized working
@@ -139,3 +246,6 @@ submission deadline is October 30, 2026 at 10:00 PDT.
    Nebius Token Factory, NVIDIA Nemotron, approvals, real diff, and test result.
 5. Keep NIM, Phoenix, Lobster Trap, KV-cache benchmarks, and mobile companion
    work on the roadmap unless they strengthen the demonstrated core loop.
+
+Use [submission handoff](SUBMISSION_CHECKLIST.md) for the current remaining
+gates and [judge walkthrough](JUDGE_QUICKSTART.md) for the unreleased candidate.

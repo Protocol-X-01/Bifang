@@ -1,0 +1,20 @@
+FROM ghcr.io/astral-sh/uv:0.11.17 AS uv
+
+FROM python:3.11-slim
+
+COPY --from=uv /uv /bin/uv
+WORKDIR /app
+COPY pyproject.toml uv.lock README.md ./
+COPY src/ ./src/
+RUN uv sync --locked --no-dev --no-cache \
+    && useradd --create-home --uid 10001 bifang
+
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV BIFANG_JUDGE_HOST=0.0.0.0
+ENV PORT=10000
+
+USER bifang
+EXPOSE 10000
+CMD ["python", "-m", "bifang.judge_relay"]

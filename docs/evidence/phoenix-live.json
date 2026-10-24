@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "collector": "real Phoenix service",
+  "model_mode": "live Token Factory Ultra",
+  "model_requests": 2,
+  "spans_retrieved": 6,
+  "span_names": {
+    "agent.request": 2,
+    "llm.complete": 3,
+    "tool.execute": 1
+  },
+  "span_kinds": {
+    "AGENT": 2,
+    "LLM": 3,
+    "TOOL": 1
+  },
+  "parent_relationships_verified": true,
+  "synthetic_content_and_supplied_credentials_absent": true,
+  "missing_key_status": 401,
+  "wrong_key_status": 401,
+  "ui_document_status": 200,
+  "rendered_ui_verified": false,
+  "grpc_listener": "Phoenix wildcard default; authentication enabled",
+  "automated_evaluations_verified": false
+}

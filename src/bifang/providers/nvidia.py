@@ -11,6 +11,8 @@ from .base import (
     CompletionResponse,
     ToolFunction,
 )
+from .embeddings import request_embedding
+from .streaming import decode_chat_stream
 
 
 class NVIDIAProvider(Provider):
@@ -47,6 +49,20 @@ class NVIDIAProvider(Provider):
             return models
         except Exception:
             return self._get_fallback_models()
+
+    async def verified_model_ids(self) -> set[str]:
+        response = await self.client.get("/models", headers=self.config.get_headers())
+        response.raise_for_status()
+        data = response.json().get("data")
+        if not isinstance(data, list) or any(not isinstance(item, dict) or
+                                           not isinstance(item.get("id"), str) for item in data):
+            raise ValueError("Invalid live model catalog")
+        return {item["id"] for item in data}
+
+    async def embed(self, text: str, model: str, purpose: str = "passage") -> list[float]:
+        use_input_type = self.config.extra.get("embedding_input_type", self.name == "nvidia")
+        return await request_embedding(self.client, self.config, text, model,
+                                       purpose if use_input_type else None)
 
     def _get_fallback_models(self) -> list[ModelInfo]:
         """Fallback model list."""
@@ -156,24 +172,8 @@ class NVIDIAProvider(Provider):
             json=payload,
         ) as response:
             response.raise_for_status()
-            async for line in response.aiter_lines():
-                if line.startswith("data: "):
-                    data_str = line[6:]
-                    if data_str == "[DONE]":
-                        break
-                    try:
-                        import json
-                        data = json.loads(data_str)
-                        delta = data["choices"][0].get("delta", {})
-                        if "content" in delta or "tool_calls" in delta:
-                            yield CompletionResponse(
-                                content=delta.get("content"),
-                                tool_calls=self._parse_tool_calls(delta.get("tool_calls")),
-                                model=model,
-                                finish_reason=data["choices"][0].get("finish_reason"),
-                            )
-                    except Exception:
-                        continue
+            async for chunk in decode_chat_stream(response.aiter_lines(), model):
+                yield chunk
 
     def _to_api_message(self, msg: ChatMessage) -> dict[str, Any]:
         """Convert internal message to API format."""
@@ -203,6 +203,7 @@ class NVIDIAProvider(Provider):
             content=msg.get("content"),
             tool_calls=self._parse_tool_calls(msg.get("tool_calls")),
             model=model,
+            reported_model=data.get("model") if isinstance(data.get("model"), str) else None,
             usage=data.get("usage"),
             finish_reason=choice.get("finish_reason"),
         )

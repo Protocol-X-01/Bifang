@@ -11,6 +11,7 @@ from rich.console import Console
 from . import __version__
 from .agent import Agent
 from .config import Config
+from .context import ContextManager
 from .policy import Policy
 from .provider import ProviderManager
 from .tools import run_command
@@ -36,11 +37,16 @@ def doctor(cfg: Config):
 
 async def amain(a):
     cfg = Config.load()
-    pm = ProviderManager(cfg)
+    if getattr(a, "provider", None):
+        cfg.default_provider = a.provider
 
     if a.cmd == "models":
         provider_name = getattr(a, "provider", None) or cfg.default_provider
-        models = await pm.list_models(provider_name)
+        pm = ProviderManager(cfg)
+        try:
+            models = await pm.list_models(provider_name)
+        finally:
+            await pm.close()
         for m in models:
             if "nvidia" in m.lower() or "nemotron" in m.lower() or "gpt" in m.lower() or "claude" in m.lower():
                 print(m)
@@ -49,11 +55,43 @@ async def amain(a):
     if a.cmd == "doctor":
         raise SystemExit(doctor(cfg))
 
+    if a.cmd == "conversations":
+        source = Path(a.workspace).resolve()
+        if cfg.use_worktree:
+            source = Workspace.resolve_source(source)
+        context = ContextManager(cfg, project_path=source)
+        try:
+            if not context.conversation_cache:
+                C.print("Conversation history is disabled.")
+                return
+            cache = context.conversation_cache.cache
+            if not (cache.storage_path / "conversations.db").exists():
+                C.print("No saved conversations.")
+                return
+            await context.initialize()
+            for session in cache.list_sessions():
+                C.print(f"{session.session_id}  {len(session.turns)} turns")
+        finally:
+            await context.close()
+        return
+
     ws = Workspace.create(Path(a.workspace), cfg.use_worktree)
 
     if a.cmd == "chat":
         from .tui import BifangApp
-        await BifangApp(Agent(cfg, ws)).run_async()
+        agent = Agent(cfg, ws)
+        try:
+            identity = getattr(a, "session", None)
+            if identity:
+                if not agent.context.conversation_cache:
+                    raise RuntimeError("Conversation history is disabled")
+                await agent.context.initialize()
+                if agent.context.conversation_cache.cache.get_session(identity) is None:
+                    raise RuntimeError("Conversation not found in this workspace")
+                await agent.context.start_session(identity)
+            await BifangApp(agent).run_async()
+        finally:
+            await agent.close()
     elif a.cmd == "patch":
         print(ws.diff(), end="")
     elif a.cmd == "discard":
@@ -67,9 +105,6 @@ async def amain(a):
             return
         print(await run_command(p, command, cfg.timeout, cfg.use_bwrap))
 
-    await pm.close()
-
-
 def main():
     p = argparse.ArgumentParser(prog="bifang", description="Build. Run. Verify.")
     p.add_argument("--version", action="version", version=__version__)
@@ -77,7 +112,9 @@ def main():
     p.add_argument("--provider", help="Provider to use (nvidia, nebius, openai, anthropic, openrouter)")
     sub = p.add_subparsers(dest="cmd")
     sub.required = True
-    sub.add_parser("chat")
+    chat = sub.add_parser("chat")
+    chat.add_argument("--session", help="Resume a saved conversation from this project")
+    sub.add_parser("conversations")
     sub.add_parser("doctor")
     m = sub.add_parser("models")
     m.add_argument("--provider", help="Provider to list models from")

@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "application_sha256": "5fbbfcb268893d42657e93d87ecbc1718823a12fd339dc99e4a8007d72ff6847",
+  "interface": "native Tauri WebDriver",
+  "model_requests": 0,
+  "history_fixture": "preseeded synthetic SQLite completed turns",
+  "history_picker_verified": true,
+  "restored_messages_verified": true,
+  "historical_markup_not_executed": true,
+  "http_503_fault_injection_preserved_current_session": true,
+  "failed_candidate_session_cleaned_up": true,
+  "server_process_restart_resume_verified": true,
+  "historical_commands_not_replayed": true,
+  "source_unchanged": true
+}

@@ -1,0 +1,22 @@
+{
+  "date_utc": "2026-10-24",
+  "status": "scoped_distribution_profile_probe_passed",
+  "guest": "fresh disposable Ubuntu 24.04 VM",
+  "distribution_profile": "/usr/share/apparmor/extra-profiles/bwrap-userns-restrict",
+  "profile_sha256": "11d39094f044f0cda0febb3ad517b830301da6b2ce929664af09ee9e4dd264f9",
+  "profile_attachment": "/usr/bin/bwrap",
+  "bubblewrap_version": "0.9.0-1ubuntu0.3",
+  "apparmor_version": "4.0.1really4.0.1-0ubuntu0.24.04.9",
+  "before_profile_exit": 1,
+  "with_profile_exit": 0,
+  "after_profile_removal_exit": 1,
+  "global_namespace_restriction_before_during_after": [1, 1, 1],
+  "bifang_command_layout_used": true,
+  "workspace_write_and_outside_home_canary_checks_passed": true,
+  "profile_removed_after_probe": true,
+  "host_security_policy_changed": false,
+  "model_requests": 0,
+  "raw_receipt_sha256": "e3e9da65e8824e80958460023de2ec401f3fc6333c3dd6102b9364c087234c02",
+  "vm_overlay_key_removed_and_ports_closed": true,
+  "scope": "Harmless command-layout A/B/A probe; not an installed desktop test or general hostile-code isolation proof."
+}

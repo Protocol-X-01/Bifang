@@ -67,7 +67,13 @@ It does not test model inference or command sandboxing. See
 
 ## Guardrails and tracing
 
-Lobster Trap is an optional OpenAI-compatible reverse proxy. To inspect model
+The intended optional proxy is [Veea Lobster Trap](https://github.com/veeainc/lobstertrap),
+not the unrelated LobsterTrap GitHub organization. A pinned external binary
+has now been executed against a synthetic loopback backend with the actual
+Bifang provider client. Plain-text rules work, but SSE output, tool arguments
+and structured-content inspection gaps were observed; see
+[compatibility evidence and integration gates](LOBSTERTRAP.md).
+It remains disabled on the real serving path. To inspect model
 requests and responses, run it with a policy and a backend pointed at the
 chosen Token Factory or NIM API, then set the matching
 `BIFANG_NEBIUS_BASE_URL` or `BIFANG_NVIDIA_BASE_URL` to the proxy's `/v1`
@@ -81,6 +87,9 @@ Phoenix traces can be enabled with `BIFANG_ENABLE_TRACING=1` and the optional
 `observability` extra. Set `BIFANG_TRACING_ENDPOINT` to the OTLP HTTP traces
 endpoint and `PHOENIX_API_KEY` only for an authenticated Phoenix collector.
 Traces record model/tool names and argument names, not prompt or file contents.
+The local working copy now has a [real collector and live Ultra check](PHOENIX.md),
+with sanitized evidence and explicit remaining limits. This is observability,
+not an additional approval or guardrail layer.
 
 ## GPU and KV-cache claims
 

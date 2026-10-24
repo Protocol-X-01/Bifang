@@ -22,6 +22,20 @@ Bifang is a desktop coding IDE and terminal agent built around a practical, revi
 | --- | --- | --- |
 | Inspect files and repository context. | Approve edits in a disposable Git worktree. | Run checks, review the diff, then apply or discard. |
 
+### Choose your pace
+
+The desktop **Approvals** selector is separate from automatic model routing:
+
+| Mode | Workflow |
+| --- | --- |
+| Off · manual review | Review edits, commands and external tool requests. |
+| Auto · workspace edits | Ordinary source edits in disposable worktrees proceed automatically; commands, sensitive files and external tools ask. |
+| Full tool approval | Explicit opt-in lets enabled tools proceed without repeated approval dialogs. |
+
+The active level stays visible. New chats, workspace changes, restored
+conversations and page reloads return to manual review. Final **Apply** remains
+a separate confirmation. See [approval modes](docs/APPROVAL_MODES.md).
+
 > Independent open-source project for the Nebius x NVIDIA Global AI Hackathon. Not an official NVIDIA or Nebius product.
 
 ## See the coding loop
@@ -40,14 +54,17 @@ checks passed in the source checkout afterward.
 ![Bifang's in-app approval dialog with the exact proposed action, Deny and Allow once controls.](docs/assets/bifang-approval.png)
 
 Approvals are scoped to one action. The demo harness clicked these actual
-controls using an exact-action allowlist; this is not a recording of human clicks.
+controls using an exact-action allowlist.
 
 </details>
 
-| Verified on October 23 | Evidence |
+| Verified milestones on October 24 | Evidence |
 | --- | --- |
 | Live Token Factory coding task | Only `receipts.py` changed; all five checks passed after apply. |
-| Runtime regression suite | 29 passing tests, including an HTTP model → tool → model exchange. |
+| Local development regression suite | 295 backend tests pass; the public preview predates this source candidate. |
+| Frozen-source native rebuild | 328 source files verified; rebuilt package passes synthetic desktop, sandbox API and authenticated Phoenix checks. |
+| Hosted judge relay | Judge-only HTTPS access, model catalog, Ultra completion and Nano streaming verified; no provider key distributed. |
+| Native desktop through relay | Five Ultra calls, sandbox enabled, approved edit/test actions, patch apply and five unchanged checks. |
 | Linux desktop loop | Release-profile Debian package; native UI approvals, diff and apply verified. |
 | Independent installation | Fresh Ubuntu 24.04 VM: actual workspace dialog → live task → apply → five passing checks. |
 | Container runtime | Built and tested in the VM: non-root, authenticated API, confined workspace paths. |
@@ -67,10 +84,13 @@ dialog, including rejection of relative, missing, and non-directory paths.
 ## Quickstart
 
 - Python 3.11 (the supported range is `>=3.11,<3.12`)
-- Git for isolated worktrees; Bubblewrap is optional on Linux
+- Git for isolated worktrees; Bubblewrap for the default Linux command sandbox
 - A Nebius Token Factory API key, or an OpenAI-compatible NVIDIA NIM endpoint
 - Building the desktop app additionally requires Rust 1.90+, Node.js 20.19+,
   `uv`, and the platform's Tauri system dependencies
+
+On Ubuntu 24.04, check the [Bubblewrap/AppArmor prerequisite](docs/UBUNTU_SANDBOX.md)
+before agent commands. The scoped setup keeps global namespace restrictions enabled.
 
 ```bash
 sudo apt update
@@ -116,20 +136,10 @@ The Bifang bird identity represents watchfulness and controlled fire: the
 agent moves the work forward while the engineer can inspect what changed.
 The engineering focus is a complete coding loop with visible evidence.
 
-KV-cache quantization remains an experimental research thread, with its
-benchmark plan in [Performance](docs/PERFORMANCE.md). It is not connected to
-the serving path yet. [TensorRT compatibility notes](docs/TENSORRT_COMPATIBILITY.md)
-explain the Debian-package Python constraint and the separation between the
-desktop client and a model-serving environment.
-
-The GPU-acceleration motivation is to make a coding agent feel responsive while
-it understands a large codebase and runs an iterative edit/test loop. The
-inspiration includes the new class of desk-side AI systems exemplified by
-NVIDIA RTX Spark and DGX Spark. Bifang currently sends model inference to
-Nebius Token Factory by default, with an OpenAI-compatible NIM endpoint as an
-alternative; it does not yet run models locally on Spark hardware or claim
-measured GPU speedups. Local inference is a potential future backend, not a
-requirement for the current hackathon demo.
+NVIDIA Nemotron models on Nebius Token Factory power the iterative edit/test
+loop. Visible model receipts, explicit action approvals and reviewable diffs
+help the engineer follow the work from the first failing check to the final
+patch. An OpenAI-compatible NIM endpoint is also available as a provider option.
 
 The long-term vision includes desktop and mobile clients. The hackathon build
 focuses on making the desktop coding loop complete and demonstrable; a mobile
@@ -137,6 +147,13 @@ companion for session review and approvals can follow without turning the
 deadline into two parallel IDE builds.
 
 ## Configure
+
+Persistent [project memory](docs/MEMORY_RETRIEVAL.md) uses local ranked text
+retrieval by default in the development version. Provider embeddings are
+explicitly opt-in and use a separate embedding model, not the chat model.
+[Conversation history](docs/CONVERSATION_HISTORY.md) additionally supports
+durable API/terminal sessions and explicit resume; the desktop history picker
+is still pending.
 
 ```bash
 export NEBIUS_API_KEY='...'
@@ -198,7 +215,7 @@ bifang --version
 - disposable Git worktree by default;
 - filesystem tools confined to the Bifang workspace;
 - typed model tools, validated before use;
-- `observe`, `assist`, and `trusted` modes;
+- read-only observation plus manual, workspace-edit auto and full tool-approval levels;
 - approval required for mutation and execution in `assist` mode;
 - destructive patterns blocked in every mode;
 - environment allowlist, timeout, and output cap;

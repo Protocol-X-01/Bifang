@@ -1,5 +1,24 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { SessionMessage } from '../api/conversations';
+
+let cacheWarning = false;
+export const sessionCacheWarning = () => cacheWarning;
+const warnCache = () => {
+  cacheWarning = true;
+  window.dispatchEvent(new Event('bifang-cache-warning'));
+};
+const sessionStorage = createJSONStorage(() => ({
+  getItem: (key: string) => {
+    try { return localStorage.getItem(key); } catch { warnCache(); return null; }
+  },
+  setItem: (key: string, value: string) => {
+    try { localStorage.setItem(key, value); } catch { warnCache(); }
+  },
+  removeItem: (key: string) => {
+    try { localStorage.removeItem(key); } catch { warnCache(); }
+  },
+}));
 
 interface WorkspaceState {
   workspacePath: string | null;
@@ -11,9 +30,12 @@ interface WorkspaceState {
 
 interface SessionState {
   sessionId: string | null;
-  messages: Array<{ role: 'user' | 'assistant' | 'tool' | 'system'; content: string; timestamp: number }>;
+  messages: SessionMessage[];
+  busy: boolean;
+  setBusy: (busy: boolean) => void;
+  replaceConversation: (sessionId: string, messages: SessionMessage[]) => void;
   setSessionId: (sessionId: string | null) => void;
-  addMessage: (message: { role: 'user' | 'assistant' | 'tool' | 'system'; content: string }) => void;
+  addMessage: (message: Omit<SessionMessage, 'timestamp' | 'id'>) => void;
   clearMessages: () => void;
 }
 
@@ -44,14 +66,17 @@ export const useSessionStore = create<SessionState>()(
     (set) => ({
       sessionId: null,
       messages: [],
+      busy: false,
+      setBusy: (busy) => set({ busy }),
+      replaceConversation: (sessionId, messages) => set({ sessionId, messages }),
       setSessionId: (sessionId) => set({ sessionId }),
       addMessage: (message) =>
         set((state) => ({
-          messages: [...state.messages, { ...message, timestamp: Date.now() }],
+          messages: [...state.messages, { ...message, id: crypto.randomUUID(), timestamp: Date.now() }],
         })),
       clearMessages: () => set({ messages: [] }),
     }),
-    { name: 'bifang-session' }
+    { name: 'bifang-session', storage: sessionStorage, partialize: ({ sessionId, messages }) => ({ sessionId, messages }) }
   )
 );
 

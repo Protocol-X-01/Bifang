@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-10-23T23:08:23.714009+00:00",
+  "destination": "Nebius Token Factory Files API; private API-key project",
+  "purpose": "fine-tune",
+  "files": {
+    "train": {
+      "rows": 10414,
+      "bytes": 346725366,
+      "sha256": "3f8cebfb718592fbfff3f20840436b7dc87ac0ad620da813330fa3290189aefa",
+      "remote_content_verified": true
+    },
+    "validation": {
+      "rows": 558,
+      "bytes": 18538201,
+      "sha256": "d9f629bc4c4d6a0a3c096738de9116be47e2b9a66efe073a2dfe6868a5518f61",
+      "remote_content_verified": true
+    }
+  },
+  "verification": "Both remotely stored files downloaded as streams and matched full local SHA-256 and byte counts.",
+  "training_started": false,
+  "data_lab_table_created": false,
+  "account_file_ids": "Retained only in private local upload receipts.",
+  "limitations": "File storage verification does not establish target-model training/context compatibility, functional correctness or superiority."
+}

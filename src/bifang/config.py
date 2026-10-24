@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=os.getenv("BIFANG_ENV_FILE") or None)
 
+from bifang.approvals import APPROVAL_MODES, ApprovalMode
 from bifang.providers.types import ProviderConfig
 
 
@@ -18,9 +19,12 @@ class Config:
     # Provider settings
     default_provider: str = "nebius"
     providers: dict[str, ProviderConfig] = field(default_factory=dict)
+    routing_mode: str = "pinned"
+    routing_models: dict[str, str] = field(default_factory=dict)
 
     # Agent settings
     mode: str = "assist"
+    approval_mode: ApprovalMode = "manual"
     max_steps: int = 12
     timeout: int = 180
     use_worktree: bool = True
@@ -34,6 +38,10 @@ class Config:
     # Memory
     enable_memory: bool = True
     memory_db_path: str | None = None
+    memory_embedding_model: str | None = None
+    memory_embedding_provider: str | None = None
+    enable_conversation_history: bool = True
+    conversation_cache_path: str | None = None
 
     # Tracing
     enable_tracing: bool = False
@@ -45,6 +53,9 @@ class Config:
     @classmethod
     def load(cls) -> "Config":
         """Load configuration from environment variables."""
+        approval_mode = os.getenv("BIFANG_APPROVAL_MODE", "manual")
+        if approval_mode not in APPROVAL_MODES:
+            raise ValueError("BIFANG_APPROVAL_MODE must be manual, auto or full")
         providers = {}
 
         # NVIDIA
@@ -105,7 +116,12 @@ class Config:
         return cls(
             default_provider=default_provider,
             providers=providers,
+            routing_mode=os.getenv("BIFANG_ROUTING_MODE", "pinned"),
+            routing_models={role: os.environ[name] for role, name in {
+                "fast": "BIFANG_FAST_MODEL", "balanced": "BIFANG_BALANCED_MODEL",
+                "reasoning": "BIFANG_REASONING_MODEL"}.items() if os.getenv(name)},
             mode=os.getenv("BIFANG_MODE", "assist"),
+            approval_mode=approval_mode,
             max_steps=int(os.getenv("BIFANG_MAX_STEPS", "12")),
             timeout=int(os.getenv("BIFANG_TIMEOUT", "180")),
             use_worktree=os.getenv("BIFANG_WORKTREE", "1") != "0",
@@ -115,6 +131,10 @@ class Config:
             summarization_threshold=float(os.getenv("BIFANG_SUMMARIZATION_THRESHOLD", "0.8")),
             enable_memory=os.getenv("BIFANG_ENABLE_MEMORY", "1") != "0",
             memory_db_path=os.getenv("BIFANG_MEMORY_DB_PATH"),
+            memory_embedding_model=os.getenv("BIFANG_MEMORY_EMBEDDING_MODEL") or None,
+            memory_embedding_provider=os.getenv("BIFANG_MEMORY_EMBEDDING_PROVIDER") or None,
+            enable_conversation_history=os.getenv("BIFANG_ENABLE_CONVERSATION_HISTORY", "1") != "0",
+            conversation_cache_path=os.getenv("BIFANG_CONVERSATION_CACHE_PATH") or None,
             enable_tracing=os.getenv("BIFANG_ENABLE_TRACING", "0") != "0",
             tracing_endpoint=os.getenv("BIFANG_TRACING_ENDPOINT"),
             mcp_servers=_parse_mcp_servers(os.getenv("BIFANG_MCP_SERVERS", "")),

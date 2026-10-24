@@ -15,6 +15,14 @@ jobs:
           uv run ruff check src/bifang/workspace.py src/bifang/tracing
           tests/test_workspace.py tests/test_config_env.py tests/test_ngc.py
           tests/test_phoenix_tracing.py tests/test_server_auth.py
+          src/bifang/judge_relay.py src/bifang/judge_access.py
+          src/bifang/model_ids.py src/bifang/vercel_bundle.py
+          src/bifang/approvals.py tests/test_approvals.py
+          tests/test_judge_relay.py tests/test_judge_access.py
+          tests/test_vercel_bundle.py tests/test_desktop_rehearsal.py
+          scripts/rehearse-desktop.py scripts/check-judge-access.py
+          scripts/smoke-lobstertrap.py
+          scripts/smoke-desktop-approvals.py
       - run: uv run pytest -q
 
   desktop:
@@ -29,6 +37,8 @@ jobs:
       - run: npm ci
         working-directory: desktop
       - run: npm run build
+        working-directory: desktop
+      - run: npm test
         working-directory: desktop
 
   desktop-native:

@@ -1,0 +1,8 @@
+.env*
+.venv/
+__pycache__/
+.pytest_cache/
+BUNDLE_MANIFEST.json
+validation.json
+verify.py
+Dockerfile.vercel

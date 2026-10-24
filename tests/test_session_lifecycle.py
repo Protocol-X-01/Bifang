@@ -1,5 +1,6 @@
 import asyncio
 from types import SimpleNamespace
+from unittest.mock import Mock
 
 import httpx
 
@@ -16,12 +17,15 @@ def test_delete_waits_for_running_chat(monkeypatch):
         started = asyncio.Event()
         release = asyncio.Event()
 
-        async def ask(prompt):
+        async def ask(prompt, *, selection=None):
+            assert selection is None
             started.set()
             await release.wait()
             return "Finished"
 
-        session = server.Session(id="test-session", agent=SimpleNamespace(ask=ask), created_at=0)
+        session = server.Session(id="test-session", agent=SimpleNamespace(
+            ask=ask, cfg=SimpleNamespace(approval_mode="manual"), audit=Mock(),
+            provider=SimpleNamespace(requests=[])), created_at=0)
         server.sessions[session.id] = session
         transport = httpx.ASGITransport(app=server.app)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:

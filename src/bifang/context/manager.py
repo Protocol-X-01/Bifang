@@ -1,13 +1,13 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
-from typing import Any, Optional
-import time
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from .summarizer import Summarizer, ContextSummary, create_summarizer
-from .kv_cache import ConversationCacheManager, ConversationSession, ConversationTurn, create_conversation_cache
 from ..config import Config
+from .kv_cache import create_conversation_cache
+from .summarizer import ContextSummary, Summarizer, create_summarizer, estimate_message_tokens
 
 if TYPE_CHECKING:
     from ..provider import ProviderManager
@@ -23,10 +23,10 @@ class ContextWindow:
 
     def add_message(self, message: dict) -> None:
         self.messages.append(message)
-        self.current_tokens += self._estimate_tokens(message.get("content", "") or "")
-        if message.get("tool_calls"):
-            for tc in message["tool_calls"]:
-                self.current_tokens += self._estimate_tokens(str(tc))
+        self.current_tokens += self.estimate_message_tokens(message)
+
+    def estimate_message_tokens(self, message: dict) -> int:
+        return estimate_message_tokens(message)
 
     def _estimate_tokens(self, text: str) -> int:
         return max(1, len(text) // 4)
@@ -38,8 +38,9 @@ class ContextManager:
     def __init__(
         self,
         config: Config,
-        provider: Optional["ProviderManager"] = None,
-        summarizer: Optional[Summarizer] = None,
+        provider: ProviderManager | None = None,
+        summarizer: Summarizer | None = None,
+        project_path: Path | None = None,
     ):
         self.config = config
         self.provider = provider
@@ -54,17 +55,34 @@ class ContextManager:
         self.total_summarized = 0
 
         # Conversation cache for persistent history
-        self.conversation_cache = create_conversation_cache(config)
+        self.conversation_cache = (create_conversation_cache(config, project_path)
+                                   if config.enable_conversation_history else None)
         self._current_session_id: str | None = None
+        self._pending_messages: list[dict] = []
+        self._pending_snapshot: list[dict] = []
+        self._track_messages = False
 
     async def initialize(self):
         """Initialize the context manager and conversation cache."""
-        await self.conversation_cache.initialize()
+        if self.conversation_cache:
+            await self.conversation_cache.initialize()
 
     async def start_session(self, session_id: str | None = None, metadata: dict | None = None) -> str:
         """Start a new conversation session."""
-        session_id = await self.conversation_cache.start_session(session_id, metadata)
-        return session_id
+        if not self.conversation_cache:
+            raise ValueError("Conversation history is disabled")
+        previous = self._current_session_id
+        self.finish_pending("interrupted")
+        identity = await self.conversation_cache.start_session(session_id, metadata)
+        self._current_session_id = identity
+        self._track_messages = True
+        session = self.conversation_cache.get_current_session()
+        if session.turns:
+            self._restore_history(session.turns)
+        elif previous and previous != identity:
+            self._reset_messages([message for message in self.window.messages
+                                  if message.get("role") == "system"])
+        return identity
 
     def get_current_session_id(self) -> str | None:
         """Get the current session ID."""
@@ -72,12 +90,74 @@ class ContextManager:
 
     def add_message(self, message: dict) -> None:
         """Add a message to context and conversation cache."""
+        if self._track_messages and message.get("role") == "user":
+            if self._pending_messages:
+                raise RuntimeError("A conversation turn is already pending")
+            self._pending_snapshot = list(self.window.messages)
         self.window.add_message(message)
-        
-        # Also store in conversation cache if we have a session
-        if self._current_session_id and message.get("role") in ("user", "assistant"):
-            # We'll pair user/assistant messages in the tool calling logic
-            pass
+        if self._track_messages and (self._pending_messages or message.get("role") == "user"):
+            self._pending_messages.append(copy.deepcopy(message))
+            if message.get("role") == "assistant" and not message.get("tool_calls"):
+                self.finish_pending("completed")
+
+    def begin_request(self):
+        self._track_messages = True
+
+    def finish_pending(self, status: str):
+        if not self._pending_messages:
+            return
+        messages = self._pending_messages
+        if self.conversation_cache and self._current_session_id:
+            response = (messages[-1].get("content") or "") if status == "completed" else ""
+            self.conversation_cache.add_turn(
+                messages[0].get("content") or "", response,
+                metadata={"status": status, "messages": messages},
+            )
+        self._pending_messages = []
+        self._pending_snapshot = []
+
+    def abort_pending(self, status: str):
+        snapshot = self._pending_snapshot
+        was_pending = bool(self._pending_messages)
+        try:
+            self.finish_pending(status)
+        finally:
+            if was_pending:
+                self._reset_messages(snapshot)
+            self._pending_messages = []
+            self._pending_snapshot = []
+
+    def _reset_messages(self, messages: list[dict]):
+        self.window.messages[:] = messages
+        self.window.current_tokens = sum(estimate_message_tokens(message) for message in messages)
+
+    def _restore_history(self, turns):
+        messages = [message for message in self.window.messages if message.get("role") == "system"]
+        for turn in turns:
+            if turn.metadata.get("status", "completed") != "completed":
+                continue
+            saved = turn.metadata.get("messages") or [
+                {"role": "user", "content": turn.user_message},
+                {"role": "assistant", "content": turn.assistant_response},
+            ]
+            pending = set()
+            for message in saved:
+                role = message.get("role")
+                if role == "assistant":
+                    if pending:
+                        raise ValueError("Stored conversation has unresolved tool calls")
+                    pending = {call["id"] for call in message.get("tool_calls") or []}
+                elif role == "tool":
+                    identity = message.get("tool_call_id")
+                    if identity not in pending:
+                        raise ValueError("Stored conversation has an orphan tool result")
+                    pending.remove(identity)
+                elif role != "user" or pending:
+                    raise ValueError("Stored conversation contains an invalid message sequence")
+            if pending:
+                raise ValueError("Stored conversation has unresolved tool calls")
+            messages.extend(copy.deepcopy(saved))
+        self._reset_messages(messages)
 
     def get_messages(self) -> list[dict]:
         """Get current messages."""
@@ -97,15 +177,17 @@ class ContextManager:
 
         summarized_messages, summary = await self.summarizer.summarize_messages(
             self.window.messages,
-            self.window.max_tokens,
+            max(1, int(self.window.max_tokens * self.summarization_threshold)),
             keep_recent=10,
         )
 
-        self.window.messages = summarized_messages
-        self.window.current_tokens = sum(
-            self.window._estimate_tokens(m.get("content", "") or "")
-            for m in summarized_messages
-        )
+        compacted_tokens = sum(self.window.estimate_message_tokens(message)
+                               for message in summarized_messages)
+        if compacted_tokens >= self.window.current_tokens:
+            return False
+
+        self.window.messages[:] = summarized_messages
+        self.window.current_tokens = compacted_tokens
         self.window.summaries.append(summary)
         self.total_summarized += 1
 
@@ -125,7 +207,11 @@ class ContextManager:
 
     def clear(self) -> None:
         """Clear context window."""
-        self.window = ContextWindow(max_tokens=self.window.max_tokens)
+        self.abort_pending("interrupted")
+        self._reset_messages([message for message in self.window.messages
+                              if message.get("role") == "system"])
+        self.window.summaries.clear()
+        self.total_summarized = 0
 
     def set_max_tokens(self, max_tokens: int) -> None:
         """Update max tokens."""
@@ -134,14 +220,20 @@ class ContextManager:
     # Conversation cache methods
     async def start_conversation(self, session_id: str | None = None, metadata: dict | None = None) -> str:
         """Start a new conversation session."""
-        return await self.conversation_cache.start_session(session_id, metadata)
+        return await self.start_session(session_id, metadata)
 
-    def end_conversation(self, session_id: str | None = None) -> str | None:
+    async def end_conversation(self, session_id: str | None = None) -> str | None:
         """End current conversation session."""
         session_id = session_id or self._current_session_id
-        if session_id:
-            import asyncio
-            asyncio.create_task(self.conversation_cache.end_session(session_id))
+        if session_id and self.conversation_cache:
+            if session_id == self._current_session_id:
+                self.finish_pending("interrupted")
+            await self.conversation_cache.end_session(session_id)
+            if session_id == self._current_session_id:
+                self._current_session_id = None
+                self._track_messages = False
+                self._reset_messages([message for message in self.window.messages
+                                      if message.get("role") == "system"])
             return session_id
         return None
 
@@ -173,10 +265,10 @@ class ContextManager:
     ) -> str:
         """Add a conversation turn to the cache."""
         session_id = session_id or self._current_session_id
-        if not session_id:
+        if not session_id or not self.conversation_cache:
             raise ValueError("No active conversation session")
         
-        return self.conversation_cache.add_conversation_turn(
+        return self.conversation_cache.add_turn(
             user_message=user_message,
             assistant_response=assistant_response,
             session_id=session_id,
@@ -186,13 +278,13 @@ class ContextManager:
     def get_session_summary(self, session_id: str | None = None) -> str:
         """Get session summary."""
         session_id = session_id or self._current_session_id
-        if not session_id:
+        if not session_id or not self.conversation_cache:
             return ""
         return self.conversation_cache.get_session_summary(session_id)
 
     def get_conversation_stats(self) -> dict:
         """Get conversation cache statistics."""
-        session = self.conversation_cache.get_current_session()
+        session = self.conversation_cache.get_current_session() if self.conversation_cache else None
         if not session:
             return {"active": False}
         
@@ -204,3 +296,10 @@ class ContextManager:
             "updated_at": session.updated_at,
             "summary": session.summary,
         }
+
+    async def close(self):
+        try:
+            await self.end_conversation()
+        finally:
+            if self.conversation_cache:
+                self.conversation_cache.close()

@@ -1,0 +1,7 @@
+backend: pytorch
+dtype: bfloat16
+max_seq_len: 32768
+kv_cache_config:
+  dtype: fp8
+  max_tokens: 32768
+  enable_block_reuse: false

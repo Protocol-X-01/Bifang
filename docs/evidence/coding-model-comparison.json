@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-23",
+  "scope": "Three authored held-out module repairs, one trial per model; not full-agent or broad coding superiority.",
+  "provider": "nebius-token-factory",
+  "model_requests": 9,
+  "reported_total_tokens": 16962,
+  "requested_reported_ids_matched": true,
+  "results": {
+    "nano": {"passed": 1, "total": 3, "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"},
+    "super": {"passed": 2, "total": 3, "model": "nvidia/nemotron-3-super-120b-a12b"},
+    "ultra": {"passed": 3, "total": 3, "model": "nvidia/Nemotron-3-Ultra-550b-a55b"}
+  },
+  "execution": "Linux bubblewrap; no network/home mounts, read-only source/runtime, CPU/memory/output/wall-clock bounds.",
+  "test_correction": "Accept TypeError or ValueError for invalid types because the brief only prescribes ValueError for invalid ranges. Saved completed candidates rescored without inference; task pass counts unchanged.",
+  "full_rescored_report_sha256": "4498d3289d77c21170bc021c86fa37e85d2e597b4430b640c6a284ca0f7f0c4a",
+  "langsmith_uploaded": false,
+  "training_started": false
+}

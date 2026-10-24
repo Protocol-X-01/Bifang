@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { FolderOpen, Play, Square, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useWorkspaceStore } from '../stores/bifangStore';
+import { useSessionStore, useWorkspaceStore } from '../stores/bifangStore';
 
 interface SidebarProps {
   serverStatus: 'starting' | 'running' | 'stopped';
@@ -17,8 +17,10 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
   const [openingPath, setOpeningPath] = useState(false);
   const pathDialog = useRef<HTMLDialogElement>(null);
   const workspacePath = useWorkspaceStore((state) => state.workspacePath);
+  const busy = useSessionStore((state) => state.busy);
 
   const openPathDialog = () => {
+    if (busy) return;
     setPathInput(workspacePath || '');
     setPathError('');
     pathDialog.current?.showModal();
@@ -31,7 +33,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
 
   const handleOpenPath = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!pathInput.trim() || openingPath) return;
+    if (!pathInput.trim() || openingPath || busy) return;
     setOpeningPath(true);
     setPathError('');
     try {
@@ -45,6 +47,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
   };
 
   const handleOpenFolder = async () => {
+    if (busy) return;
     try {
       const path = await open({ directory: true, multiple: false });
       if (path) {
@@ -96,6 +99,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
           )}
           <button
             onClick={handleOpenFolder}
+            disabled={busy}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-800 hover:bg-surface-700 transition-colors text-left ${collapsed ? 'justify-center' : ''}`}
             title={collapsed ? 'Open workspace' : ''}
           >
@@ -108,7 +112,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
           </button>
         </div>
 
-        {!collapsed && <button type="button" className="mx-4 mb-4 text-left text-xs text-surface-400 underline-offset-4 hover:text-surface-100 hover:underline" onClick={openPathDialog}>Open by path…</button>}
+        {!collapsed && <button type="button" disabled={busy} className="mx-4 mb-4 text-left text-xs text-surface-400 underline-offset-4 hover:text-surface-100 hover:underline disabled:opacity-50" onClick={openPathDialog}>Open by path…</button>}
 
         {/* Server Controls */}
         <div className={`p-4 border-b border-surface-800 ${collapsed ? 'px-2' : ''}`}>
@@ -130,7 +134,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
               <div className="flex gap-2">
                 <button
                   onClick={onStartServer}
-                  disabled={serverStatus === 'running'}
+                  disabled={serverStatus === 'running' || busy}
                   className="flex-1 btn btn-sm btn-primary"
                 >
                   <Play className="w-3 h-3 mr-1" />
@@ -138,7 +142,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
                 </button>
                 <button
                   onClick={onStopServer}
-                  disabled={serverStatus === 'stopped'}
+                  disabled={serverStatus === 'stopped' || busy}
                   className="flex-1 btn-sm btn-destructive"
                 >
                   <Square className="w-3 h-3 mr-1" />

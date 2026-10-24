@@ -47,6 +47,7 @@ class ToolFunction(BaseModel):
 
 class CompletionResponse(BaseModel):
     """Response from a completion request."""
+    reported_model: str | None = None
     content: str | None = None
     tool_calls: list[ToolCall] | None = None
     model: str

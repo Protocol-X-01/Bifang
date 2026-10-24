@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from contextlib import aclosing
 from typing import Any, TYPE_CHECKING
 from .config import Config
-from .providers import get_registry, ProviderConfig
+from .providers import ProviderRegistry, ProviderConfig
 from .providers.nvidia import NVIDIAProvider
 from .providers.nebius import NebiusProvider
 from .providers.openai import OpenAIProvider
@@ -16,9 +17,9 @@ if TYPE_CHECKING:
 class ProviderManager:
     """Manages multiple LLM providers."""
 
-    def __init__(self, cfg: Config):
+    def __init__(self, cfg: Config, registry: ProviderRegistry | None = None):
         self.cfg = cfg
-        self.registry = get_registry()
+        self.registry = registry if registry is not None else ProviderRegistry()
         self._initialize_providers()
 
     def _initialize_providers(self) -> None:
@@ -47,6 +48,24 @@ class ProviderManager:
 
         all_models = await self.registry.list_all_models()
         return [m.id for m in all_models]
+
+    async def embed(self, text: str, model: str, provider: str | None = None,
+                    purpose: str = "passage") -> list[float]:
+        target_provider = provider or self.cfg.default_provider
+        selected = self.registry.get(target_provider)
+        if purpose not in ("passage", "query"):
+            raise ValueError("Embedding purpose must be passage or query")
+        if selected is None or not hasattr(selected, "embed"):
+            raise ValueError(f"Provider {target_provider} does not support embeddings")
+        if not model.strip():
+            raise ValueError("An embedding model must be configured explicitly")
+        return await selected.embed(text, model, purpose=purpose)
+
+    async def verified_model_ids(self, provider: str) -> set[str]:
+        selected = self.registry.get(provider)
+        if not selected or not hasattr(selected, "verified_model_ids"):
+            raise ValueError("The selected provider has no verified catalog adapter")
+        return await selected.verified_model_ids()
 
     async def complete(
         self,
@@ -103,6 +122,7 @@ class ProviderManager:
 
         return {
             "role": "assistant",
+            "provider": target_provider,
             "content": response.content,
             "tool_calls": [
                 {
@@ -113,6 +133,7 @@ class ProviderManager:
                 for tc in response.tool_calls or []
             ],
             "model": response.model,
+            "reported_model": response.reported_model,
             "usage": response.usage,
             "finish_reason": response.finish_reason,
         }
@@ -160,27 +181,30 @@ class ProviderManager:
                 tool_calls=tool_calls,
             ))
 
-        async for chunk in p.complete_stream(
+        async with aclosing(p.complete_stream(
             messages=chat_messages,
             model=target_model,
             tools=tools,
             tool_choice="auto",
             temperature=kwargs.get("temperature", 0.2),
             max_tokens=kwargs.get("max_tokens", 4096),
-        ):
-            yield {
-                "content": chunk.content,
-                "tool_calls": [
-                    {
-                        "id": tc.id,
-                        "type": tc.type,
-                        "function": {"name": tc.function.name, "arguments": tc.function.arguments},
-                    }
-                    for tc in chunk.tool_calls or []
-                ],
-                "model": chunk.model,
-                "finish_reason": chunk.finish_reason,
-            }
+        )) as completion:
+            async for chunk in completion:
+                yield {
+                    "content": chunk.content,
+                    "tool_calls": [
+                        {
+                            "id": tc.id,
+                            "type": tc.type,
+                            "function": {"name": tc.function.name, "arguments": tc.function.arguments},
+                        }
+                        for tc in chunk.tool_calls or []
+                    ],
+                    "model": chunk.model,
+                    "reported_model": chunk.reported_model,
+                    "usage": chunk.usage,
+                    "finish_reason": chunk.finish_reason,
+                }
 
     async def close(self):
         """Close all provider connections."""

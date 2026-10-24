@@ -6,7 +6,10 @@ import shutil
 from pathlib import Path
 
 from ..policy import Policy
-from .files import shlex_quote
+
+
+class SandboxUnavailableError(RuntimeError):
+    pass
 
 
 def bwrap_argv(root: Path, command: str) -> list[str]:
@@ -57,7 +60,12 @@ async def run_command(policy: Policy, command: str, timeout: int = 180, use_bwra
         raise PermissionError(d.reason)
 
     env = {k: v for k, v in os.environ.items() if k in {"PATH", "LANG", "LC_ALL", "TERM", "USER"}}
-    argv = bwrap_argv(policy.root, command) if use_bwrap and shutil.which("bwrap") else ["/bin/sh", "-lc", command]
+    if use_bwrap and not shutil.which("bwrap"):
+        raise SandboxUnavailableError(
+            "Bubblewrap was requested but is unavailable; refusing unsandboxed execution. "
+            "Install Bubblewrap in a supported isolated environment and restart Bifang. "
+            "Do not weaken kernel security controls. Explicit sandbox opt-out is only for trusted workloads.")
+    argv = bwrap_argv(policy.root, command) if use_bwrap else ["/bin/sh", "-lc", command]
 
     p = await asyncio.create_subprocess_exec(
         *argv,

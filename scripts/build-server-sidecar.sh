@@ -9,7 +9,7 @@ binary_name="bifang-server-${target_triple}"
 
 "$python_bin" -c 'import sys; assert sys.version_info[:2] == (3, 11), "Bifang desktop sidecar requires Python 3.11"'
 export UV_PROJECT_ENVIRONMENT="$build_venv"
-uv sync --locked --python "$python_bin" --extra dev
+uv sync --locked --python "$python_bin" --extra dev --extra observability
 mkdir -p "$root/desktop/src-tauri/binaries"
 "$build_venv/bin/pyinstaller" \
   --clean \

@@ -1,0 +1,22 @@
+{
+  "observed_date": "2026-10-23",
+  "source_state": "local uncommitted development changes, not the public preview runtime",
+  "provider": "nebius",
+  "embedding_model": "Qwen/Qwen3-Embedding-8B",
+  "synthetic_documents": 3,
+  "embedding_dimensions": 4096,
+  "requests": [
+    {"status": 200, "path": "/v1/embeddings"},
+    {"status": 200, "path": "/v1/embeddings"},
+    {"status": 200, "path": "/v1/embeddings"},
+    {"status": 200, "path": "/v1/embeddings"},
+    {"status": 200, "path": "/v1/embeddings"},
+    {"status": 200, "path": "/v1/embeddings"}
+  ],
+  "semantic_top_result_correct": true,
+  "default_threshold_result_ids": ["csv"],
+  "restart_recall_correct": true,
+  "scope": "three synthetic facts and one query, not a general recall benchmark",
+  "private_config_copied": false,
+  "temporary_database_removed": true
+}

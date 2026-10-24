@@ -5,6 +5,72 @@ from launching an extracted package on the development workstation.
 
 ## Environment
 
+### Latest recovery-message package
+
+The newer package SHA-256
+`81944a2639bfa486e19a329964cb2f5371ff2b705be5b1af4b68ae6deae13a91`
+was APT-installed in another fresh Ubuntu 24.04.5 guest. Installed hashes,
+native path/approval/review/apply flow and all five unchanged checks pass.
+Five live Ultra requests reported 13,722 total tokens. Its own continuous
+31.55-second recording and model-receipt/final screenshots were retained;
+screenshots were visually reviewed. It is raw local material, not a public
+submission video. See [exact recovery-package evidence](evidence/ubuntu-recovery-desktop.json).
+
+Bubblewrap's benign probes failed (uid-map permission denied with shared
+network, loopback setup denied without it). No security controls were weakened;
+the trusted fixture explicitly opted out inside the disposable VM. This does
+not prove default sandbox compatibility. Provider credentials were removed,
+the guest shut down, its overlay/private SSH key removed and ports closed.
+
+### Latest local sandbox-repair package
+
+The latest candidate was APT-installed in a fresh Ubuntu 24.04.5 guest on
+October 24 locally. Package SHA-256:
+`339a71b2824089e12fb218af600bdb8b6a5e9e511e264b9817430eb2a31d1c03`.
+The installed sidecar was
+`c482bdb0bd9a134a1c380321e9367ddd693caa60ce625684e252d490d7ace0d0`.
+Actual path selection, approvals, diff review, apply and all five unchanged
+checks passed using five real Ultra requests (13,464 reported total tokens).
+The continuous local recording lasts 32.45 seconds; the final screenshot,
+model receipts and a final video frame were visually inspected. This is raw
+demo material, not a finished or published submission video.
+
+The guest's benign Bubblewrap namespace probe failed with uid-map permission
+denied. No kernel security controls were weakened. The trusted synthetic
+fixture ran with explicit sandbox opt-out inside the disposable guest;
+this does not establish default sandbox support or hostile-code isolation.
+The precise namespace failure cause has not been isolated. See
+[exact candidate evidence](evidence/ubuntu-sandbox-desktop.json).
+The provider file was removed, guest and host test ports closed, guest shut
+down, and disposable overlay and SSH private key removed.
+
+### Earlier local streaming-repair package
+
+The exact newer local package
+`07fe7df0b8a1142cb55c6fb49f9c64689b0d222c25910bcda402f69efc725129`
+was independently APT-installed in another fresh Ubuntu 24.04.5 guest on
+October 24 locally. Its installed sidecar hash was
+`6e42087c86a2a329d2bd654bee093b6c8a20835f89320c19af5eaedfab9dd609`.
+The native UI completed the live Ultra task with actual path selection,
+approvals, diff/apply and all five unchanged checks. Only `receipts.py` changed.
+Four requests reported 10,066 total tokens. The system Python was 3.12.3;
+the package used its bundled sidecar, not a system TensorRT/Python install.
+The guest had no host mounts and used repository-supplied Ubuntu libraries.
+
+The report binds the package, app, sidecar, environment and actual model
+receipts in [newer package evidence](evidence/ubuntu-streaming-desktop.json).
+The final captured image remained dimmed immediately after dialog closure;
+do not use it as visual proof of the final success banner. The DOM success
+check, applied source diff and independent unchanged checks passed. A polished
+final video still needs a separately reviewed recording rather than recycling
+that frame. Native GTK chooser selection remains unverified.
+
+The private provider file was removed, test ports were confirmed closed,
+the guest shut down and the disposable overlay/SSH private key removed.
+The earlier preview and container evidence below retains its own identity.
+
+### Earlier preview environment
+
 A disposable KVM guest booted the official
 [Ubuntu 24.04 cloud image](https://cloud-images.ubuntu.com/noble/current/)
 dated October 17, 2026. The downloaded image matched the SHA-256 published

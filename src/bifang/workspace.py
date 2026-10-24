@@ -16,6 +16,17 @@ class Workspace:
     branch: str | None = None
     isolated: bool = False
 
+    @staticmethod
+    def resolve_source(path: Path) -> Path:
+        source = path.resolve()
+        if not shutil.which("git"):
+            return source
+        result = subprocess.run(
+            ["git", "-C", str(source), "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, check=False,
+        )
+        return Path(result.stdout.strip()).resolve() if result.returncode == 0 else source
+
     @classmethod
     def create(cls, path: Path, use_worktree: bool = True) -> Workspace:
         source = path.resolve()

@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import asyncio
+import time
+from contextlib import aclosing
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional, TYPE_CHECKING
 
+import httpx
+
 from .config import Config
+from .model_ids import TOKEN_FACTORY_ROLES
 
 if TYPE_CHECKING:
     from .provider import ProviderManager
@@ -375,12 +381,36 @@ class TieredRouter:
         }
 
 
+class ModelSelectionError(ValueError):
+    pass
+
+
+class CatalogUnavailable(RuntimeError):
+    pass
+
+
+def task_role(task_type: TaskType) -> str:
+    if task_type in {TaskType.AUTOCOMPLETE, TaskType.SYNTAX_CHECK, TaskType.DOC_LOOKUP,
+                     TaskType.SIMPLE_FIX, TaskType.SIMPLE_REFACTOR}:
+        return "fast"
+    if task_type in {TaskType.REASONING, TaskType.ARCHITECTURE, TaskType.COMPLEX_REFACTOR,
+                     TaskType.DEBUGGING, TaskType.ARCHITECTURE_DESIGN, TaskType.COMPLEX_DEBUGGING,
+                     TaskType.SECURITY_AUDIT, TaskType.PERFORMANCE_TUNING}:
+        return "reasoning"
+    return "balanced"
+
+
 class TieredProviderManager:
     """Provider manager with tiered routing."""
     
     def __init__(self, provider_manager: ProviderManager, config: Config):
         self.provider_manager = provider_manager
         self.router = TieredRouter(provider_manager, config)
+        self.config = config
+        self.requests: list[dict] = []
+        self._verified_ids: set[str] = set()
+        self._verified_at = 0.0
+        self._catalog_lock = asyncio.Lock()
         self._initialize_routing()
     
     def _initialize_routing(self):
@@ -392,12 +422,59 @@ class TieredProviderManager:
         """Initialize the router with available models."""
         await self.router.refresh_models()
     
+    async def close(self):
+        await self.provider_manager.close()
+
+    async def embed(self, text: str, model: str, provider: str | None = None,
+                    purpose: str = "passage") -> list[float]:
+        return await self.provider_manager.embed(text, model, provider=provider, purpose=purpose)
+
+    def _resolve_deployment(self, model_spec, options):
+        provider = options.pop("provider", None)
+        model = options.pop("model", None)
+        if provider:
+            return provider, model or self.config.get_default_model(provider)
+        return (
+            model_spec.provider if model_spec else self.config.default_provider,
+            model or (model_spec.model_id if model_spec else self.config.get_default_model()),
+        )
+
+    async def _select(self, task_type, routing_mode, options):
+        mode = routing_mode or self.config.routing_mode
+        if mode not in {"auto", "pinned"}:
+            raise ModelSelectionError("Routing mode must be auto or pinned")
+        explicit = bool(options.get("provider") or options.get("model"))
+        if mode == "auto" and not explicit:
+            if self.config.default_provider != "nebius":
+                raise ModelSelectionError("Automatic routing is supported only for Nebius Token Factory")
+            role = task_role(task_type)
+            model = {**TOKEN_FACTORY_ROLES, **self.config.routing_models}[role]
+            await self._verify_model(model)
+            return "nebius", model, role
+        spec = self.router.select_model(task_type)
+        provider, model = self._resolve_deployment(spec, options)
+        if routing_mode == "pinned" and explicit and provider == "nebius":
+            await self._verify_model(model)
+        return provider, model, "pinned"
+
+    async def _verify_model(self, model):
+        async with self._catalog_lock:
+            if not self._verified_at or time.monotonic() - self._verified_at > 300:
+                try:
+                    self._verified_ids = await self.provider_manager.verified_model_ids("nebius")
+                except (httpx.HTTPError, ValueError) as error:
+                    raise CatalogUnavailable("The live model catalog is unavailable; no fallback inference was attempted") from error
+                self._verified_at = time.monotonic()
+            if model not in self._verified_ids:
+                raise ModelSelectionError("Selected model is not in the verified Token Factory catalog")
+
     async def complete(
         self,
         messages: list[dict],
         task_type: TaskType | None = None,
         prompt: str | None = None,
         context: dict | None = None,
+        routing_mode: str | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Complete with automatic model selection based on task type."""
@@ -413,20 +490,25 @@ class TieredProviderManager:
                 else:
                     task_type = TaskType.CHAT
         
-        # Select model
-        model_spec = self.router.select_model(task_type)
-        
         # Prepare context for classification
         if context is None:
             context = {}
         
-        # Complete
-        return await self.provider_manager.complete(
+        selected_provider, selected_model, role = await self._select(task_type, routing_mode, kwargs)
+        response = await self.provider_manager.complete(
             messages=messages,
-            provider=model_spec.provider if model_spec else None,
-            model=model_spec.model_id if model_spec else None,
+            provider=selected_provider,
+            model=selected_model,
             **kwargs,
         )
+        receipt = {"provider": selected_provider, "requested_model": selected_model,
+                   "reported_model": response.get("reported_model"), "role": role, "task_type": task_type.value,
+                   "usage": {key: value for key, value in (response.get("usage") or {}).items()
+                             if key in {"prompt_tokens", "completion_tokens", "total_tokens"}
+                             and type(value) is int and value >= 0}}
+        self.requests.append(receipt)
+        response["routing"] = receipt
+        return response
     
     async def complete_stream(
         self,
@@ -448,20 +530,31 @@ class TieredProviderManager:
                     task_type = TaskType.CHAT
         
         model_spec = self.router.select_model(task_type)
-        
-        async for chunk in self.provider_manager.complete_stream(
+        routing_mode = kwargs.pop("routing_mode", None)
+        selected_provider, selected_model, role = await self._select(task_type, routing_mode, kwargs)
+        receipt = {"provider": selected_provider, "requested_model": selected_model,
+                   "reported_model": None, "role": role, "task_type": task_type.value, "usage": {}}
+        self.requests.append(receipt)
+
+        async with aclosing(self.provider_manager.complete_stream(
             messages=messages,
-            provider=model_spec.provider if model_spec else None,
-            model=model_spec.model_id if model_spec else None,
+            provider=selected_provider,
+            model=selected_model,
             **kwargs,
-        ):
-            # Add routing metadata to stream
-            chunk["routing"] = {
-                "task_type": task_type.value,
-                "model": model_spec.model_id if model_spec else None,
-                "tier": model_spec.tier.value if model_spec else None,
-            }
-            yield chunk
+        )) as completion:
+            async for chunk in completion:
+                if chunk.get("reported_model"):
+                    receipt["reported_model"] = chunk["reported_model"]
+                receipt["usage"].update({key: value for key, value in (chunk.get("usage") or {}).items()
+                                         if key in {"prompt_tokens", "completion_tokens", "total_tokens"}
+                                         and type(value) is int and value >= 0})
+                chunk["routing"] = {
+                    "task_type": task_type.value,
+                    "model": selected_model,
+                    "provider": selected_provider,
+                    "tier": model_spec.tier.value if model_spec else None,
+                }
+                yield chunk
     
     def get_routing_info(self, task_type: TaskType | None = None) -> dict:
         """Get routing information."""

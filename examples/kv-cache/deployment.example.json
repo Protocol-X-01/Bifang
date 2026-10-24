@@ -1,0 +1,19 @@
+{
+  "model": "REPLACE_WITH_EXACT_SERVED_MODEL_ID",
+  "checkpoint_revision": "REPLACE_WITH_IMMUTABLE_CHECKPOINT_REVISION",
+  "image_digest": "sha256:REPLACE_WITH_ACTUAL_CONTAINER_DIGEST",
+  "tensorrt_llm_version": "REPLACE_WITH_INSTALLED_VERSION",
+  "gpu_model": "REPLACE_WITH_NVIDIA_SMI_MODEL",
+  "gpu_count": 1,
+  "driver_version": "REPLACE_WITH_DRIVER_VERSION",
+  "server_options": {
+    "backend": "pytorch",
+    "dtype": "bfloat16",
+    "max_seq_len": 32768,
+    "kv_cache_config": {
+      "dtype": "bfloat16",
+      "max_tokens": 32768,
+      "enable_block_reuse": false
+    }
+  }
+}

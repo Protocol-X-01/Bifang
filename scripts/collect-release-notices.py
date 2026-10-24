@@ -83,11 +83,16 @@ def main():
         components[-1]["upstream_source"] = source
         sections.append(f"Unmodified crate source: {source}\n")
 
-    for directory in ("libssl3t64", "libffi8", "libbz2-1.0", "liblzma5", "zlib1g", "libsqlite3-0"):
+    for directory in ("libssl3t64", "libffi8", "libbz2-1.0", "liblzma5", "zlib1g", "libsqlite3-0", "libgcc-s1", "libexpat1", "libuuid1", "libedit2"):
         file = Path("/usr/share/doc") / directory / "copyright"
         if file.is_file():
             collect("Supplementary distribution notice", directory, "build-host copy",
                     "See notice; not a binary version assertion", [file])
+    for name in ("GPL-3", "LGPL-2.1"):
+        file = Path("/usr/share/common-licenses") / name
+        if file.is_file():
+            collect("Supplementary license text", name, "standard text",
+                    "Referenced by distribution notices; not Bifang's license", [file])
 
     (options.output / "THIRD_PARTY_NOTICES.txt").write_text("\n".join(sections))
     (options.output / "dependency-inventory.json").write_text(json.dumps({"components": components}, indent=2) + "\n")

@@ -12,6 +12,7 @@ from .base import (
     CompletionResponse,
     ToolFunction,
 )
+from .embeddings import request_embedding
 
 
 class OpenAIProvider(Provider):
@@ -25,6 +26,9 @@ class OpenAIProvider(Provider):
         super().__init__(config)
         self.base_url = config.base_url or "https://api.openai.com/v1"
         self.client = httpx.AsyncClient(timeout=60.0, base_url=self.base_url)
+
+    async def embed(self, text: str, model: str, purpose: str = "passage") -> list[float]:
+        return await request_embedding(self.client, self.config, text, model.removeprefix("openai/"))
 
     async def list_models(self) -> list[ModelInfo]:
         """List available OpenAI models."""

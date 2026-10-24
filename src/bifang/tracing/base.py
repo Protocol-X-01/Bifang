@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -56,7 +57,7 @@ class Tracer(ABC):
 
     def __init__(self, service_name: str = "bifang"):
         self.service_name = service_name
-        self._current_span: Span | None = None
+        self._active_span: ContextVar[Span | None] = ContextVar("bifang_span", default=None)
 
     @abstractmethod
     def start_span(
@@ -76,20 +77,26 @@ class Tracer(ABC):
     @contextmanager
     def span(self, name: str, attributes: dict[str, Any] | None = None):
         """Context manager for creating a span."""
-        span = self.start_span(name, attributes=attributes)
+        span = self.start_span(name, parent=self._active_span.get(), attributes=attributes)
+        token = self._active_span.set(span)
         try:
             yield span
-        except Exception as e:
-            span.set_status("error", str(e))
+        except BaseException as error:
+            span.set_status("error")
+            span.set_attribute("error.type", type(error).__name__)
             raise
         finally:
-            span.finish()
-            self.end_span(span)
+            try:
+                self._active_span.reset(token)
+            finally:
+                span.finish()
+                self.end_span(span)
 
     def inject_context(self, carrier: dict[str, str]) -> None:
         """Inject trace context into a carrier (for HTTP headers, etc.)."""
-        if self._current_span:
-            carrier["traceparent"] = f"00-{self._current_span.context.trace_id}-{self._current_span.context.span_id}-01"
+        current = self._active_span.get()
+        if current and current.context.trace_id and current.context.span_id:
+            carrier["traceparent"] = f"00-{current.context.trace_id}-{current.context.span_id}-01"
 
     def extract_context(self, carrier: dict[str, str]) -> SpanContext | None:
         """Extract trace context from a carrier."""

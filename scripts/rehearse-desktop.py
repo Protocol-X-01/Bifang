@@ -5,11 +5,12 @@ import json
 import os
 import shutil
 import signal
+import socket
 import subprocess
-import sys
 import tempfile
 import time
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import httpx
 from dotenv import dotenv_values
@@ -21,10 +22,57 @@ def arguments():
     parser.add_argument("--native-driver", required=True)
     parser.add_argument("--tauri-driver", default="tauri-driver")
     parser.add_argument("--env-file", type=Path)
+    parser.add_argument("--relay-url")
+    parser.add_argument("--judge-token-file", type=Path)
+    parser.add_argument("--no-command-sandbox", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--record", action="store_true")
     parser.add_argument("--preselect-workspace", action="store_true")
     return parser.parse_args()
+
+
+def provider_environment(env_file=None, relay_url=None, judge_token_file=None):
+    if relay_url or judge_token_file:
+        if not relay_url or not judge_token_file or env_file:
+            raise ValueError("Relay verification requires both relay URL and judge-token file, without --env-file")
+        parsed = urlsplit(relay_url)
+        if (parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password
+                or parsed.port not in (None, 443) or parsed.query or parsed.fragment
+                or parsed.path.rstrip("/") not in ("", "/v1")):
+            raise ValueError("Use an HTTPS relay origin or /v1 URL without credentials, query or fragment")
+        private = json.loads(judge_token_file.read_text())
+        token = private.get("judge_token")
+        if not isinstance(token, str) or len(token) < 32 or any(character.isspace() for character in token):
+            raise ValueError("Expected a private JSON file with a strong judge_token")
+        return {"NEBIUS_API_KEY": token,
+                "BIFANG_NEBIUS_BASE_URL": f"https://{parsed.netloc}/v1",
+                "BIFANG_NEBIUS_MODEL": "nvidia/Nemotron-3-Ultra-550b-a55b"}
+    private = dotenv_values(env_file) if env_file else {}
+    environment = {name: value for name in
+                   ("NEBIUS_API_KEY", "BIFANG_NEBIUS_BASE_URL", "BIFANG_NEBIUS_MODEL")
+                   if (value := private.get(name) or os.environ.get(name))}
+    if not environment.get("NEBIUS_API_KEY"):
+        raise ValueError("NEBIUS_API_KEY is required; no credential value is logged")
+    if environment.get("BIFANG_NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1").rstrip("/") != "https://api.tokenfactory.nebius.com/v1":
+        raise ValueError("Direct rehearsal only sends provider credentials to Token Factory")
+    environment.setdefault("BIFANG_NEBIUS_MODEL", "nvidia/Nemotron-3-Ultra-550b-a55b")
+    return environment
+
+
+def check_fixture(workspace, sandbox=True):
+    command = ["/usr/bin/python3", "-I", "-B", "-c",
+               "import sys,unittest;sys.path.insert(0,'.');unittest.main(module='check_receipts',verbosity=2)"]
+    if sandbox:
+        if not shutil.which("bwrap"):
+            raise RuntimeError("Bubblewrap is required; refusing unsandboxed fixture checks")
+        command = ["bwrap", "--unshare-all", "--die-with-parent", "--new-session",
+                   "--clearenv", "--ro-bind", "/usr", "/usr"] + [
+            argument for directory in ("/lib", "/lib64") if Path(directory).exists()
+            for argument in ("--ro-bind", directory, directory)] + [
+            "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp",
+            "--ro-bind", str(workspace), "/work", "--chdir", "/work", *command]
+    return subprocess.run(command, cwd=workspace, capture_output=True, text=True, check=False,
+                          timeout=30, env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
 
 
 def stop(process):
@@ -41,24 +89,20 @@ def main():
     options = arguments()
     if not os.environ.get("DISPLAY"):
         raise RuntimeError("Use a dedicated X display, for example xvfb-run")
+    for port in (8000, 4444):
+        with socket.socket() as probe:
+            if probe.connect_ex(("127.0.0.1", port)) == 0:
+                raise RuntimeError("A rehearsal port is occupied; do not interrupt an existing service")
     application = options.application.resolve(strict=True)
     output = options.output.resolve()
-    output.mkdir(parents=True, exist_ok=False)
-    private = dotenv_values(options.env_file) if options.env_file else {}
+    output.mkdir(mode=0o700, parents=True, exist_ok=False)
     env = {name: value for name, value in os.environ.items() if name in {
         "PATH", "LANG", "LC_ALL", "DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS",
     }}
-    for name in ("NEBIUS_API_KEY", "BIFANG_NEBIUS_BASE_URL", "BIFANG_NEBIUS_MODEL"):
-        value = private.get(name) or os.environ.get(name)
-        if value:
-            env[name] = value
-    if not env.get("NEBIUS_API_KEY"):
-        raise RuntimeError("NEBIUS_API_KEY is required; no credential value is logged")
-    if env.get("BIFANG_NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1").rstrip("/") != "https://api.tokenfactory.nebius.com/v1":
-        raise RuntimeError("This live Nebius rehearsal only sends credentials to Token Factory")
-    env.setdefault("BIFANG_NEBIUS_MODEL", "nvidia/Nemotron-3-Ultra-550b-a55b")
+    env.update(provider_environment(options.env_file, options.relay_url, options.judge_token_file))
     recorder = None
     driver = None
+    prefix = None
     with tempfile.TemporaryDirectory(prefix="bifang-demo-", ignore_cleanup_errors=True) as temporary:
         root = Path(temporary)
         (root / "runtime").mkdir(mode=0o700)
@@ -68,7 +112,8 @@ def main():
                    XDG_RUNTIME_DIR=str(root / "runtime"),
                    GIO_USE_VFS="local", GTK_USE_PORTAL="0",
                    LIBGL_ALWAYS_SOFTWARE="1", BIFANG_DEFAULT_PROVIDER="nebius",
-                   BIFANG_ENABLE_MEMORY="0", BIFANG_BWRAP="0")
+                   BIFANG_ENABLE_MEMORY="0", BIFANG_BWRAP="0" if options.no_command_sandbox else "1",
+                   BIFANG_MAX_STEPS="8")
         workspace = root / "receipt-demo"
         workspace.mkdir()
         fixture = Path(__file__).resolve().parents[1] / "examples/demo"
@@ -77,7 +122,9 @@ def main():
         for command in (["init", "-q"], ["add", "."], ["-c", "user.name=Bifang Demo", "-c", "user.email=demo@example.invalid", "commit", "-qm", "Baseline"]):
             subprocess.run(["git", *command], cwd=workspace, check=True, capture_output=True)
         checks_before = (workspace / "check_receipts.py").read_bytes()
-        baseline = subprocess.run([sys.executable, "-m", "unittest", "-v", "check_receipts"], cwd=workspace, capture_output=True, text=True, check=False)
+        baseline = check_fixture(workspace, sandbox=not options.no_command_sandbox)
+        if "Ran 5 tests" not in baseline.stderr:
+            raise RuntimeError("Fixture baseline did not execute five checks; inspect sandbox availability")
         if baseline.returncode == 0:
             raise RuntimeError("Demo baseline unexpectedly passes")
         (output / "baseline.txt").write_text(baseline.stderr)
@@ -116,6 +163,11 @@ def main():
                         request(f"/element/{element}/click", {})
 
                     def screenshot(name):
+                        painted = request("/execute/async", {
+                            "script": "const done=arguments[arguments.length-1]; requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>done(true),100)));",
+                            "args": []})
+                        if painted is not True:
+                            raise RuntimeError("Native screenshot frame barrier failed")
                         (output / name).write_bytes(base64.b64decode(request("/screenshot", method="GET")))
 
                     request("/window/rect", {"x": 0, "y": 0, "width": 1400, "height": 900})
@@ -188,6 +240,13 @@ def main():
                     else:
                         raise RuntimeError("Live task timed out")
                     time.sleep(3 if options.record else 2)
+                    click("xpath", "//details[.//summary[contains(., 'Model receipts')]]/summary")
+                    execute("document.querySelector('details[open] li')?.scrollIntoView({block:'center'});")
+                    if not execute("return [...document.querySelectorAll('details[open] li')].some(item=>item.innerText.includes('nebius')&&item.innerText.includes('Requested:')&&item.innerText.includes('Server reported:'))"):
+                        raise RuntimeError("Rendered provider/model receipts are missing")
+                    screenshot("model-receipts.png")
+                    time.sleep(3 if options.record else 0)
+                    click("xpath", "//details[.//summary[contains(., 'Model receipts')]]/summary")
                     click("xpath", "//button[normalize-space(.)='Apply']")
                     time.sleep(2 if options.record else 0)
                     click("xpath", "//dialog[@open]//button[normalize-space(.)='Apply to repository']")
@@ -197,22 +256,65 @@ def main():
                         time.sleep(0.1)
                     else:
                         raise RuntimeError("Apply success notice missing")
-                    final = subprocess.run([sys.executable, "-m", "unittest", "-v", "check_receipts"], cwd=workspace, capture_output=True, text=True, check=False)
+                    final = check_fixture(workspace, sandbox=not options.no_command_sandbox)
                     changed = subprocess.check_output(["git", "diff", "--name-only"], cwd=workspace, text=True).splitlines()
                     if final.returncode or changed != ["receipts.py"] or checks_before != (workspace / "check_receipts.py").read_bytes():
                         raise RuntimeError("Final source verification failed")
                     (output / "final-checks.txt").write_text(final.stderr)
                     (output / "change.patch").write_bytes(subprocess.check_output(["git", "diff"], cwd=workspace))
                     screenshot("verified.png")
-                    (output / "evidence.json").write_text(json.dumps({"provider": "nebius", "model": env["BIFANG_NEBIUS_MODEL"], "application_sha256": hashlib.sha256(application.read_bytes()).hexdigest(), "interface": "native Tauri WebDriver", "workspace_selection": "preseeded fixture" if options.preselect_workspace else "in-app path dialog", "invalid_workspace_paths_rejected": [] if options.preselect_workspace else ["relative", "file", "nonexistent"], "approval_mode": "automated exact-action allowlist", "approvals": approvals, "changed_files": changed, "checks_unchanged": True, "baseline_returncode": baseline.returncode, "final_returncode": final.returncode, "continuous_screen_recording": options.record}, indent=2) + "\n")
+                    receipts = messages[-1].get("routing", [])
+                    if not receipts:
+                        raise RuntimeError("Live model receipts are missing")
+                    evidence = {"provider": "nebius", "requested_model": env["BIFANG_NEBIUS_MODEL"],
+                                "inference_endpoint": env.get("BIFANG_NEBIUS_BASE_URL"),
+                                "credential_type": "judge_only" if options.relay_url else "provider",
+                                "command_sandbox_enabled": not options.no_command_sandbox,
+                                "independent_checks_sandbox_enabled": not options.no_command_sandbox,
+                                "routing_receipts": receipts,
+                                "application_sha256": hashlib.sha256(application.read_bytes()).hexdigest(),
+                                "sidecar_sha256": hashlib.sha256(application.with_name("bifang-server").read_bytes()).hexdigest(),
+                                "interface": "native Tauri WebDriver",
+                                "workspace_selection": "preseeded fixture" if options.preselect_workspace else "in-app path dialog",
+                                "invalid_workspace_paths_rejected": [] if options.preselect_workspace else ["relative", "file", "nonexistent"],
+                                "approval_mode": "automated exact-action allowlist", "approvals": approvals,
+                                "changed_files": changed, "checks_unchanged": True,
+                                "baseline_returncode": baseline.returncode, "final_returncode": final.returncode,
+                                "continuous_screen_recording": options.record,
+                                "rendered_provider_model_receipts_verified": True,
+                                "screenshot_frame_barrier": "Two animation frames plus 100 ms"}
+                    encoded = json.dumps(evidence, indent=2) + "\n"
+                    if env["NEBIUS_API_KEY"] in encoded:
+                        raise RuntimeError("Credential screen failed; evidence not saved")
+                    (output / "evidence.json").write_text(encoded)
                     time.sleep(5 if options.record else 0)
                     stop(recorder)
                     if recorder is not None and (recorder.returncode not in (0, 255) or not (output / "desktop-demo.mp4").is_file()):
                         raise RuntimeError("Screen recording failed; inspect recording.log privately")
+                    stopped = request("/execute/async", {
+                        "script": "const done=arguments[arguments.length-1]; window.__TAURI_INTERNALS__.invoke('stop_bifang_server').then(()=>done(true),()=>done(false));",
+                        "args": []})
+                    if stopped is not True:
+                        raise RuntimeError("Native sidecar shutdown failed")
+                    for attempt in range(50):
+                        with socket.socket() as probe:
+                            if probe.connect_ex(("127.0.0.1", 8000)) == 111:
+                                break
+                        time.sleep(0.1)
+                    else:
+                        raise RuntimeError("Rehearsal sidecar stayed alive after Stop")
                     request("", method="DELETE")
                     print("PASS: native UI, approvals, apply, unchanged checks and five passing tests")
             finally:
                 stop(recorder)
+                if prefix:
+                    try:
+                        with httpx.Client(base_url="http://127.0.0.1:4444", timeout=10, trust_env=False) as cleanup:
+                            cleanup.post(prefix + "/execute/async", json={
+                                "script": "const done=arguments[arguments.length-1]; window.__TAURI_INTERNALS__.invoke('stop_bifang_server').then(()=>done(true),()=>done(false));",
+                                "args": []})
+                    except httpx.HTTPError:
+                        pass
                 stop(driver)
 
 

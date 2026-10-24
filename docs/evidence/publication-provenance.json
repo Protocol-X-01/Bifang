@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "prepared_date_utc": "2026-10-24",
+  "status": "local_publication_source_preparation",
+  "build_input_archive_sha256": "c19975664d4ac5b1597fc64ea10740b55f4f1a02155087184a7a9db45ba547d2",
+  "build_input_manifest_sha256": "08f5120d2569c2992b82f8829d791bf5545ec3e49914555728d46a230ef594a8",
+  "build_input_files": 336,
+  "package_sha256": "160eb03fff45c5b5a562f2f05b7f0d90a6088c4f6533379b5c8cbcbb2152e024",
+  "application_sha256": "c9f59a004e18a2ba3908377a2eb59e435b2d5749baf19a4e1f04745b62f70ed5",
+  "sidecar_sha256": "f4edf41415cb6afa85def626eac6ece051d3892d675b2afeda88fbd0265f0e33",
+  "notice_archive_sha256": "7050e6970a0238d81fc61be87f83d5e2b4d93962cc67e6e23e1825ecba0bbded",
+  "publication_source_relationship": "Same runtime/build/test inputs as the retained build-input archive, with later editorial documentation and evidence added. Export-time verification must reject changes outside README files and docs/.",
+  "archive_identity": "The publication archive has its own manifest and checksum; it must not replace or reuse the build-input archive identity.",
+  "native_reproducibility": "Locked-source rebuild and measured artifact identity, not bit-identical native binary reproducibility.",
+  "video_relationship": "Accepted video retains an older package identity; see SUBMISSION_CHECKLIST.md.",
+  "published": false
+}

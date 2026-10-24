@@ -32,8 +32,7 @@ def test_provider_selection_overrides_shared_model_prefix(monkeypatch, stream, s
 
     registry.register(fake_provider("nvidia"))
     registry.register(fake_provider("nebius"))
-    monkeypatch.setattr("bifang.provider.get_registry", lambda: registry)
-    manager = ProviderManager(Config(default_provider="nebius"))
+    manager = ProviderManager(Config(default_provider="nebius"), registry=registry)
 
     async def request():
         kwargs = {"messages": [{"role": "user", "content": "Hello"}], "model": model, "provider": selected}
