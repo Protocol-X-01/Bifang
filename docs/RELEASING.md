@@ -11,6 +11,9 @@ to `0.2.1~preview.5`, verifies unchanged payload-file hashes, and checks that it
 sorts above `0.2.0` but below future stable `0.2.1`. Preserve the original bundler
 checksum separately from the normalized installer checksum. Its
 [native receipt](evidence/ubuntu-vision-native.json) binds only that installer.
+GitHub normalizes the tilde in uploaded filenames to a dot. The download is
+`Bifang-vision_0.2.1.preview.5_amd64.deb`; its internal Debian version remains
+`0.2.1~preview.5`. Checksums and installation instructions use the download name.
 Keep npm, Cargo and Tauri versions aligned, and Python metadata and `uv.lock`
 aligned. Never overwrite a retained installer or transfer its native evidence
 to the newer build.
