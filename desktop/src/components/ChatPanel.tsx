@@ -8,6 +8,8 @@ import { chatErrorMessage } from '../api/errors';
 import { ConversationHistory } from './ConversationHistory';
 import { ModelPicker } from './ModelPicker';
 import { ApprovalPicker } from './ApprovalPicker';
+import { ReviewPanel } from './ReviewPanel';
+import { CandidatePanel } from './CandidatePanel';
 import { approvalRequest, type ApprovalMode } from '../api/approvals';
 
 export function ChatPanel() {
@@ -283,6 +285,8 @@ export function ChatPanel() {
 
   return (
     <div className="flex flex-col h-full bg-surface-950">
+      <ReviewPanel />
+      <CandidatePanel />
       {historyOpen && workspacePath && <ConversationHistory key={workspacePath} workspace={workspacePath}
         busy={isResuming} onResume={handleResume} onClose={() => setHistoryOpen(false)} />}
       <dialog ref={approvalDialog} onCancel={(event) => { event.preventDefault(); resolveApproval(false); }} aria-labelledby="approval-title" className="m-auto w-full max-w-xl rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-xl backdrop:bg-black/70">

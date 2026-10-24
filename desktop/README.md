@@ -15,15 +15,21 @@ do not need to install Python or the CLI separately to run the desktop app.
 
 ## Install and run
 
-An unsigned [Linux prerelease](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.3)
+An unsigned [Linux prerelease](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.4)
 is available for testing on Ubuntu 24.04. Download the `.deb`, checksums, and
 third-party notice archive together. Verify the checksum and install with
-`sudo apt install ./Bifang-approval-styled_0.2.0_amd64.deb`.
+`sudo apt install ./Bifang-engineering_0.2.0_amd64.deb`.
 Configure your provider below, then launch Bifang from the application menu.
 Choose a project with the native folder button or **Open by path…**. The path
 dialog accepts existing absolute directories and validates them without
 running a shell command. Native chooser automation is still unverified;
 the path dialog and coding loop pass in a clean Ubuntu VM.
+
+Preview 4 includes read-only team review and an isolated implementer with
+independent checks and reviewed staging. Its exact installer passes the native
+Ubuntu walkthrough through the separate original Apply confirmation. See the
+[engineering guide](../docs/ENGINEERING_WORKFLOW.md) and
+[exact-package evidence](../docs/evidence/ubuntu-engineering-native.json).
 
 Before running agent commands on Ubuntu 24.04, follow the
 [Bubblewrap prerequisite and scoped AppArmor setup](../docs/UBUNTU_SANDBOX.md).

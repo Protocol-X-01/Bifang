@@ -1,9 +1,35 @@
 # Independent installation evidence
 
-Observed October 23, 2026. This is a fresh virtual-machine check, distinct
+Updated October 24, 2026. These are fresh virtual-machine checks, distinct
 from launching an extracted package on the development workstation.
 
 ## Environment
+
+### Preview 4: installed native engineering
+
+Package SHA-256
+`0282033adc7aa1fb55f1911a11ec60e31844e9f1ec6c840bc5b9ee10f82d87a9`
+was APT-installed in a fresh Ubuntu 24.04.5 guest. Desktop and bundled-sidecar
+hashes matched the retained installer. The actual native UI passed inference
+confirmation refusal, manual write denial, failed/passing independent checks,
+patch review, staging and the separate original Apply action. Seven synthetic
+loopback model calls were used, with zero hosted inference requests.
+
+The deliberately unsupported model success claim did not override the failing
+check. The successful check ran actual Python in Bubblewrap on a read-only
+snapshot without network or provider credentials. This verifies that exact
+command and selected files, rather than general correctness of model output.
+
+Ubuntu initially blocked the namespace probe. Its packaged scoped AppArmor
+profile enabled Bubblewrap while the global user-namespace restriction remained
+enabled. There was no sandbox opt-out or host-policy change. Guest services
+closed, the VM stopped, and its overlay/private SSH key were removed.
+See [exact native evidence](evidence/ubuntu-engineering-native.json) and the
+[reproducible engineering walkthrough](ENGINEERING_WORKFLOW.md).
+
+The new sidecar's build used Python 3.11.15; the guest's Python 3.12.3 only
+ran the test harness and fixture check. The earlier live-provider results
+below retain their own package identities.
 
 ### Latest recovery-message package
 

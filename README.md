@@ -12,7 +12,7 @@
 
 <p align="center"><a href="#see-the-coding-loop">See the demo</a> · <a href="#quickstart">Run Bifang</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
-**Linux preview:** [Download the Ubuntu 24.04-tested Preview 3](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.3).
+**Linux preview:** [Download the Ubuntu 24.04-tested Preview 4](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.4).
 Unsigned prerelease; bring your own provider key. Use **Open by path…** to
 select a project without relying on a native file chooser.
 
@@ -36,6 +36,23 @@ The active level stays visible. New chats, workspace changes, restored
 conversations and page reloads return to manual review. Final **Apply** remains
 a separate confirmation. See [approval modes](docs/APPROVAL_MODES.md).
 
+### From parallel review to a checked patch
+
+Open **Read-only team review** for bounded investigator and reviewer workers,
+with file-backed observations. Use **Isolated engineering** when you want an
+implementer to prepare a change from explicitly selected files:
+
+**Select files → approve writes → execute an independent check → review the
+patch → stage → Apply.**
+
+The check receipt records the exact command, snapshot hash and exit status.
+Staging keeps the original checkout untouched until you choose Apply.
+[Follow the engineering walkthrough](docs/ENGINEERING_WORKFLOW.md).
+
+Optional [Tavily web search and LangSmith tracing](docs/ENGINEERING_WORKFLOW.md#web-and-observability)
+complement the coding loop. The Ember terminal adapts to smaller windows with
+keyboard-accessible inspectors.
+
 > Independent open-source project for the Nebius x NVIDIA Global AI Hackathon. Not an official NVIDIA or Nebius product.
 
 ## See the coding loop
@@ -58,11 +75,14 @@ controls using an exact-action allowlist.
 
 </details>
 
-| Verified milestones on October 24 | Evidence |
+| Verified milestones on October 24 | Evidence and scope |
 | --- | --- |
+| Preview 4 frozen-source suite | All 348 backend tests pass from the retained 363-file build-input archive. |
+| Preview 4 native engineering | Exact installer on fresh Ubuntu: denied write → failed check; approved write → passing check → reviewed staging → separate Apply. Seven synthetic model calls, zero hosted calls. |
+| Optional integrations | Live Tavily public search; LangSmith synthetic parent/child trace read-back. Phoenix remains available. |
 | Live Token Factory coding task | Only `receipts.py` changed; all five checks passed after apply. |
-| Preview 3 regression suite | 295 backend tests pass for the frozen release candidate. |
-| Frozen-source native rebuild | 336 build-input files verified; rebuilt package passes synthetic desktop, sandbox API and authenticated Phoenix checks. |
+| Earlier Preview 3 suite | 295 backend tests pass for that frozen release candidate. |
+| Earlier frozen-source native rebuild | 336 build-input files verified; that package passes synthetic desktop, sandbox API and authenticated Phoenix checks. |
 | Hosted judge relay | Judge-only HTTPS access, model catalog, Ultra completion and Nano streaming verified; no provider key distributed. |
 | Native desktop through relay | Five Ultra calls, sandbox enabled, approved edit/test actions, patch apply and five unchanged checks. |
 | Linux desktop loop | Release-profile Debian package; native UI approvals, diff and apply verified. |
@@ -141,10 +161,9 @@ loop. Visible model receipts, explicit action approvals and reviewable diffs
 help the engineer follow the work from the first failing check to the final
 patch. An OpenAI-compatible NIM endpoint is also available as a provider option.
 
-The long-term vision includes desktop and mobile clients. The hackathon build
-focuses on making the desktop coding loop complete and demonstrable; a mobile
-companion for session review and approvals can follow without turning the
-deadline into two parallel IDE builds.
+The working desktop and terminal are the foundation. Vision, durable hosted
+orchestration, and iOS/Android clients remain active product requirements;
+[product expansion](docs/PRODUCT_EXPANSION.md) tracks their acceptance gates.
 
 ## Configure
 
@@ -152,8 +171,8 @@ Persistent [project memory](docs/MEMORY_RETRIEVAL.md) uses local ranked text
 retrieval by default in the development version. Provider embeddings are
 explicitly opt-in and use a separate embedding model, not the chat model.
 [Conversation history](docs/CONVERSATION_HISTORY.md) additionally supports
-durable API/terminal sessions and explicit resume; the desktop history picker
-is still pending.
+durable API/terminal sessions and explicit resume; the desktop includes a
+history picker.
 
 ```bash
 export NEBIUS_API_KEY='...'

@@ -1,6 +1,26 @@
 # Hackathon readiness — 2026-10-24
 
-## Latest local checkpoint
+## Current delivery checkpoint
+
+Preview 4 packages bounded read-only team review, an isolated selected-file
+implementer, independently executed checks, reviewed staging, Tavily search,
+optional metadata-only LangSmith export, and the responsive Ember terminal.
+All 348 backend tests pass from the retained 363-file build-input archive.
+The exact installer passes a fresh Ubuntu native walkthrough: write denial
+causes a failing check; write approval enables a passing check, reviewed
+staging and separate original Apply. Seven synthetic model calls, zero hosted
+calls, scoped distro AppArmor profile, global restriction still enabled.
+See [engineering guide](ENGINEERING_WORKFLOW.md),
+[installed package evidence](evidence/ubuntu-engineering-native.json), and
+[installation details](INSTALLATION_EVIDENCE.md).
+
+The source archive and build-input archive have distinct roles; post-build
+documentation and the native test helper are not a new binary rebuild.
+Vision, durable hosted orchestration, and actual iOS/Android clients remain
+explicit requirements in [product expansion](PRODUCT_EXPANSION.md).
+Final video publication and Devpost submission remain owner decisions.
+
+## Historical checkpoints
 
 The working source now includes three desktop tool-approval levels: manual,
 automatic ordinary worktree edits and explicit full tool approval. A dedicated
@@ -19,7 +39,8 @@ enabled; see `UBUNTU_SANDBOX.md`. Installed-desktop profile integration also
 passes with eight synthetic replies, a real sandboxed sentinel and the native
 approval/pause/reset controls; see `evidence/ubuntu-native-sandbox.json`.
 The live opt-out task and synthetic sandboxed task are separate proofs.
-Publication remains held.
+This checkpoint's publication hold was later lifted for source and Ubuntu
+prereleases; the retained historical evidence keeps its original scope.
 See `APPROVAL_MODES.md`.
 
 A frozen 328-file source archive now produces a release-profile Debian package
@@ -244,8 +265,9 @@ submission deadline is October 30, 2026 at 10:00 PDT.
    actual credentials were used in the public source, build context, or demo.
 4. Record and publish a concise demo (≤3 minutes) showing the user-visible IDE,
    Nebius Token Factory, NVIDIA Nemotron, approvals, real diff, and test result.
-5. Keep NIM, Phoenix, Lobster Trap, KV-cache benchmarks, and mobile companion
-   work on the roadmap unless they strengthen the demonstrated core loop.
+5. Complete the active product requirements tracked in `PRODUCT_EXPANSION.md`.
+   KV-cache/GPU experiments are deferred; preserve the explicit distinction
+   between hosted NVIDIA-compatible inference and a separately deployed NIM.
 
 Use [submission handoff](SUBMISSION_CHECKLIST.md) for the current remaining
 gates and [judge walkthrough](JUDGE_QUICKSTART.md) for the unreleased candidate.

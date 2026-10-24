@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import shutil
+import subprocess
 from pathlib import Path
 
 from ..policy import Policy
@@ -26,9 +26,13 @@ def read_file(policy: Policy, path: str, start: int = 1, end: int = 400) -> str:
 
 def search(root: Path, query: str) -> str:
     if shutil.which("rg"):
-        r = os.popen(
-            f"cd {shlex_quote(str(root))} && rg -n --hidden --glob '!.git' --glob '!.bifang' {shlex_quote(query)} 2>/dev/null"
-        ).read()
+        result = subprocess.run(
+            ["rg", "--no-config", "-n", "--hidden", "--glob", "!.git", "--glob", "!.bifang", "--", query],
+            cwd=root, capture_output=True, text=True, timeout=10, check=False,
+        )
+        if result.returncode not in (0, 1):
+            return "Search failed: invalid pattern or unavailable files"
+        r = result.stdout
         return r[-100000:] or "No matches"
 
     matches = []

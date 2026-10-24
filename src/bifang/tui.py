@@ -11,6 +11,8 @@ from rich.text import Text
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.events import Resize
+from textual.theme import Theme
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.message import Message
 from textual.reactive import reactive
@@ -237,6 +239,11 @@ class ChatPanel(Widget):
                     if message.get("role") in ("user", "assistant") and message.get("content")]
         if restored:
             log.write(Text("Resumed history. Verify current files before continuing.", style="yellow"))
+        else:
+            log.write(Text("B I F A N G", style="bold #FF8A5D"))
+            log.write(Text("Build. Run. Verify.", style="bold #F7F7F7"))
+            log.write(Text("\nInspect the source. Shape a patch. Keep the evidence.", style="#A0A8B8"))
+            log.write(Text("\nF2  Checks     F3  Activity     F4  Receipts", style="#A0A8B8"))
         for message in restored:
             if message["role"] == "user":
                 log.write(Text(f"You: {message['content']}", style="cyan"))
@@ -279,7 +286,8 @@ class ChatPanel(Widget):
 class BifangApp(App):
     CSS = """
     Screen {
-        background: $surface;
+        background: #0F1728;
+        color: #F7F7F7;
     }
 
     #main-container {
@@ -288,26 +296,54 @@ class BifangApp(App):
     }
 
     #left-panel {
-        width: 22%;
-        min-width: 55;
-        border-right: solid $primary;
+        width: 26;
+        min-width: 0;
+        border-right: solid #2D3A50;
     }
 
     #center-panel {
-        width: 38%;
-        min-width: 70;
-        border-right: solid $primary;
+        width: 1fr;
+        min-width: 0;
+        border-right: solid #2D3A50;
     }
 
     #right-panel {
-        width: 22%;
-        min-width: 50;
-        border-right: solid $primary;
+        width: 44;
+        min-width: 0;
+        border-right: solid #2D3A50;
     }
 
     #far-right-panel {
-        width: 18%;
-        min-width: 45;
+        width: 38;
+        min-width: 0;
+    }
+
+    Screen.compact #left-panel, Screen.narrow #right-panel, Screen.narrow #far-right-panel,
+    Screen.standard #far-right-panel {
+        display: none;
+    }
+
+    Screen.narrow.inspector-open #right-panel {
+        display: block;
+        width: 1fr;
+    }
+
+    Screen.narrow.inspector-open #center-panel, Screen.narrow.inspector-open #left-panel {
+        display: none;
+    }
+
+    Header, Footer {
+        background: #1A2338;
+        color: #F7F7F7;
+    }
+
+    TabbedContent, ContentSwitcher, TabPane, FileTree, ChatPanel, DiffViewer,
+    ChatPanel > Vertical, DiffViewer > Vertical {
+        height: 1fr;
+    }
+
+    Input:focus {
+        border: tall #E63946;
     }
 
     .panel-title {
@@ -419,9 +455,19 @@ class BifangApp(App):
         border: solid $primary;
     }
 
-    .verify-stamp-verified { border-left: 4px solid $success; }
-    .verify-stamp-failed { border-left: 4px solid $error; }
-    .verify-stamp-partial { border-left: 4px solid $warning; }
+    .panel-title, .diff-header {
+        background: #1A2338;
+        color: #FF8A5D;
+    }
+
+    RichLog, DataTable, #chat-log, #diff-original, #diff-modified,
+    #verify-panel, #reasoning-panel, #metrics-panel, #github-panel {
+        border: round #2D3A50;
+    }
+
+    .verify-stamp-verified { border-left: solid $success; }
+    .verify-stamp-failed { border-left: solid $error; }
+    .verify-stamp-partial { border-left: solid $warning; }
     """
 
     BINDINGS = [
@@ -445,6 +491,10 @@ class BifangApp(App):
 
     def __init__(self, agent: Agent):
         super().__init__()
+        self.register_theme(Theme(name="bifang-ember", primary="#E63946", secondary="#FF8A5D",
+                                  accent="#FF8A5D", foreground="#F7F7F7", background="#0F1728",
+                                  surface="#1A2338", panel="#1A2338", dark=True))
+        self.theme = "bifang-ember"
         self.agent = agent
         self.current_file: Optional[Path] = None
         self.show_verify = False
@@ -489,8 +539,17 @@ class BifangApp(App):
 
     def on_mount(self):
         self.title = "Bifang"
-        self.sub_title = f"{self.agent.cfg.get_default_model()} | {self.agent.ws.root}"
+        self._adapt_layout(self.size.width)
+        self.sub_title = f"{self.agent.cfg.get_default_model() or 'Model not configured'} | {self.agent.ws.root.name}"
         self.load_github_token()
+
+    def _adapt_layout(self, width: int):
+        self.screen.set_class(width < 100, "compact")
+        self.screen.set_class(width < 150, "narrow")
+        self.screen.set_class(width < 210, "standard")
+
+    def on_resize(self, event: Resize):
+        self._adapt_layout(event.size.width)
 
     def load_github_token(self):
         """Check for GitHub token."""
@@ -531,8 +590,7 @@ class BifangApp(App):
         tabs = self.query_one("#right-panel TabbedContent")
         if self.show_verify:
             tabs.active = "verify-tab"
-        else:
-            tabs.active = "chat-tab"
+        self.screen.set_class(self.show_verify, "inspector-open")
 
     def action_toggle_reasoning(self):
         """Toggle reasoning panel visibility."""
@@ -540,6 +598,7 @@ class BifangApp(App):
         tabs = self.query_one("#right-panel TabbedContent")
         if self.show_reasoning:
             tabs.active = "reasoning-tab"
+        self.screen.set_class(self.show_reasoning, "inspector-open")
 
     def action_toggle_metrics(self):
         """Toggle metrics panel visibility."""
@@ -547,6 +606,7 @@ class BifangApp(App):
         tabs = self.query_one("#right-panel TabbedContent")
         if self.show_metrics:
             tabs.active = "metrics-tab"
+        self.screen.set_class(self.show_metrics, "inspector-open")
 
     def action_toggle_github(self):
         """Toggle GitHub panel visibility."""
@@ -554,6 +614,7 @@ class BifangApp(App):
         tabs = self.query_one("#right-panel TabbedContent")
         if self.show_github:
             tabs.active = "github-tab"
+        self.screen.set_class(self.show_github, "inspector-open")
 
     def action_sudo_grant(self):
         """Grant sudo privilege for a command."""

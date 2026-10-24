@@ -109,3 +109,16 @@ Windows and macOS Rust code is not equivalent to a validated desktop build.
 Use native CI runners and build the Python sidecar for each target triple
 before claiming those installers are available. Signed binaries, SBOMs, and
 provenance are follow-up release hardening.
+## Preview 4 evidence and source roles
+
+Preview 4's installer is `Bifang-engineering_0.2.0_amd64.deb`, SHA-256
+`0282033adc7aa1fb55f1911a11ec60e31844e9f1ec6c840bc5b9ee10f82d87a9`.
+It passes the installed-native engineering walkthrough on fresh Ubuntu 24.04;
+see [the exact receipt](evidence/ubuntu-engineering-native.json).
+
+Release assets distinguish the retained 363-file build-input snapshot from
+the publication source, which adds post-build documentation, the native test
+helper, and its evidence. Runtime/build-input file hashes are checked rather
+than claiming a bit-identical rebuild. The source archive contains a manifest;
+checksums, provenance and third-party notices accompany the unsigned package.
+Earlier release evidence above retains its own artifact identities.

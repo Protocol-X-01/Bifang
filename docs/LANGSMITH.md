@@ -1,5 +1,68 @@
 # LangSmith evaluation plan
 
+## Source implementation update — October 24, 2026
+
+This section supersedes the older integration status below. Current source
+adds an optional metadata-only LangSmith OTLP exporter. The older Phoenix
+integration remains available; the agent framework has not been replaced.
+Live authentication and a synthetic metadata-only trace read-back now pass.
+No private source or transcript upload, balance verification or hosted
+deployment has occurred.
+
+Install the existing `observability` extra, set `BIFANG_ENABLE_TRACING=1` and
+`BIFANG_TRACING_BACKEND=langsmith`, and provide `LANGSMITH_API_KEY` through a
+private environment. Set `LANGSMITH_PROJECT` and the official regional
+`LANGSMITH_ENDPOINT` as appropriate. Remove a previously configured Phoenix
+`BIFANG_TRACING_ENDPOINT`, or explicitly set it to the LangSmith OTLP endpoint.
+
+The exporter uses the full `/otel/v1/traces` path, `x-api-key` authentication
+and the `Langsmith-Project` header. It maps safe model/tool and reported-usage
+attributes to LangSmith semantics. Prompt/output text, arbitrary events,
+environment variables and exception messages are not exported. Phoenix's
+credential is deliberately not inherited by this exporter. Mocked tests
+verify these boundaries. A dedicated integration project also received two
+actual parent/child spans (`chain`, `tool`), with empty inputs, outputs and
+error content; the parent link was verified by API read-back. This was a
+synthetic integration check, not a hosted model request. The receipt is
+`outputs/bifang-langsmith-live-trace-20261024.json` in the development workspace.
+The initial read-back helper incorrectly compared LangSmith's trace identifier
+to the OTLP trace ID. The received records used a padded root span ID; the
+corrected helper matched the exact emitted root span and confirmed both runs.
+
+Only official regional cloud endpoints are accepted by this first adapter.
+Self-hosted/custom collectors require a separately reviewed destination policy.
+Tracing is opt-in; merely finding an API key does not enable data transmission.
+
+### Hosting and Engine
+
+[LangSmith Deployment](https://docs.langchain.com/langsmith/deployment) can run
+agents built with different frameworks. It is not a generic replacement for
+the desktop sidecar or the existing Vercel relay. Its
+[Cloud deployment guide](https://docs.langchain.com/langsmith/deploy-to-cloud)
+currently requires Plus or above and an application working with `langgraph dev`.
+Program tracing credit does not establish deployment entitlement or coverage.
+
+Build a separate authenticated remote orchestrator around the existing tool
+boundaries, with durable job state and isolated execution. Do not expose the
+loopback desktop filesystem API unchanged. Validate locally before selecting
+a plan, uploading code or configuring hosted secrets. Keep Vercel intact until
+the replacement has an end-to-end authenticated regression pass.
+
+[Engine](https://docs.langchain.com/langsmith/engine) diagnoses patterns in
+production traces, tracks recurring issues and can produce evaluation examples
+and proposed fixes. It does not execute or certify Bifang's regression suite.
+Our current custom agent is not automatically a supported Engine code-fix
+integration just because it emits traces. A durable runner and actual check
+receipts remain required. Metadata-only traces also limit content diagnosis.
+
+[Enabling Engine](https://docs.langchain.com/langsmith/engine-setup) requires
+organization-admin setup, acceptance of AI terms, project configuration and
+cost review. Those owner decisions have not been made on the user's behalf.
+
+---
+
+## Historical October 23 plan
+
 Status: researched October 23, 2026; not installed, connected or credited by
 this work. No dataset, source, credentials or traces have been uploaded to
 LangSmith. The creator separately authorized the curated dataset upload to

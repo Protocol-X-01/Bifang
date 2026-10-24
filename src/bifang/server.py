@@ -21,7 +21,9 @@ from .agent import Agent
 from .approvals import ApprovalMode
 from .config import Config
 from .context import ContextManager
+from .implementation import EngineeringWorkflow
 from .provider import ProviderManager
+from .review_workflow import ReviewWorkflow
 from .routing import TOKEN_FACTORY_ROLES, CatalogUnavailable, ModelSelectionError
 from .tools.commands import SandboxUnavailableError
 from .workspace import Workspace
@@ -36,6 +38,8 @@ class Session:
     pending_approval: dict | None = None
     approval_future: asyncio.Future | None = None
     busy: bool = False
+    review: ReviewWorkflow | None = None
+    engineering: EngineeringWorkflow | None = None
 
 
 sessions: dict[str, Session] = {}
@@ -56,6 +60,10 @@ def close_session(session: Session) -> None:
 
 async def dispose_session(session: Session) -> None:
     try:
+        if session.review:
+            await session.review.cancel()
+        if session.engineering:
+            await session.engineering.close()
         close = getattr(session.agent, "close", None)
         if close:
             await close()
@@ -94,6 +102,30 @@ class ChatResponse(BaseModel):
     response: str
     message_count: int
     routing: list[dict] = Field(default_factory=list)
+
+
+class ReviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    prompt: str = Field(min_length=1, max_length=4000)
+    inference_confirmed: bool = Field(default=False, strict=True)
+
+
+class CandidateRequest(ReviewRequest):
+    files: list[str] = Field(min_length=1, max_length=128)
+    writable: list[str] = Field(default_factory=list, max_length=128)
+
+
+class CandidateCheckRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    command: list[str] = Field(min_length=1, max_length=64)
+    timeout: int = Field(default=30, ge=1, le=60, strict=True)
+    confirmed: bool = Field(default=False, strict=True)
+
+
+class CandidateStageRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    candidate_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    confirmed: bool = Field(default=False, strict=True)
 
 
 async def selectable_models():
@@ -288,6 +320,151 @@ async def get_session(session_id: str):
         "message_count": session.message_count,
         "conversation_id": session.agent.context.get_current_session_id() if session.agent else None,
     }
+
+
+@app.post("/sessions/{session_id}/review")
+async def start_review(session_id: str, req: ReviewRequest):
+    session = sessions.get(session_id)
+    if not session or not session.agent:
+        raise HTTPException(404, "Session not found")
+    if session.busy:
+        raise HTTPException(409, "A request is already running for this session")
+    if not req.inference_confirmed:
+        raise HTTPException(400, "Confirm up to eight model requests before starting two read-only workers")
+    review = ReviewWorkflow(session.agent, req.prompt)
+    session.review = review
+    session.busy = True
+
+    async def execute():
+        try:
+            await review.run()
+        finally:
+            session.busy = False
+
+    review.task = asyncio.create_task(execute())
+    return review.snapshot()
+
+
+@app.get("/sessions/{session_id}/review")
+async def review_status(session_id: str):
+    session = sessions.get(session_id)
+    if not session or not session.agent:
+        raise HTTPException(404, "Session not found")
+    return session.review.snapshot() if session.review else {"status": "idle", "workers": []}
+
+
+@app.post("/sessions/{session_id}/review/cancel")
+async def cancel_review(session_id: str):
+    session = sessions.get(session_id)
+    if not session or not session.agent:
+        raise HTTPException(404, "Session not found")
+    if session.review:
+        active = session.review.task and not session.review.task.done()
+        await session.review.cancel()
+        if active:
+            session.busy = False
+    return session.review.snapshot() if session.review else {"status": "idle", "workers": []}
+
+
+def candidate_session(session_id: str) -> Session:
+    session = sessions.get(session_id)
+    if not session or not session.agent:
+        raise HTTPException(404, "Session not found")
+    return session
+
+
+def launch_candidate(session: Session, workflow: EngineeringWorkflow, operation):
+    session.busy = True
+
+    async def execute():
+        try:
+            await operation()
+        finally:
+            session.busy = False
+
+    workflow.task = asyncio.create_task(execute())
+
+
+@app.post("/sessions/{session_id}/candidate")
+async def start_candidate(session_id: str, req: CandidateRequest):
+    session = candidate_session(session_id)
+    if session.busy:
+        raise HTTPException(409, "A request is already running for this session")
+    if not req.inference_confirmed:
+        raise HTTPException(400, "Confirm up to six model steps before starting the isolated implementer")
+    try:
+        workflow = EngineeringWorkflow(session.agent, req.files, req.writable, req.prompt)
+    except (ValueError, OSError):
+        raise HTTPException(422, "Select existing regular UTF-8 source files within the path and size budget") from None
+    session.busy = True
+    try:
+        if session.engineering:
+            await session.engineering.close()
+        session.engineering = workflow
+        launch_candidate(session, workflow, workflow.run)
+    except BaseException:
+        session.busy = False
+        await workflow.close()
+        raise
+    return workflow.snapshot()
+
+
+@app.get("/sessions/{session_id}/candidate")
+async def candidate_status(session_id: str):
+    session = candidate_session(session_id)
+    return session.engineering.snapshot() if session.engineering else {"status": "idle"}
+
+
+@app.post("/sessions/{session_id}/candidate/cancel")
+async def cancel_candidate(session_id: str):
+    session = candidate_session(session_id)
+    if session.engineering:
+        active = session.engineering.task and not session.engineering.task.done()
+        await session.engineering.cancel()
+        if active:
+            session.busy = False
+    return session.engineering.snapshot() if session.engineering else {"status": "idle"}
+
+
+@app.get("/sessions/{session_id}/candidate/patch")
+async def candidate_patch(session_id: str):
+    session = candidate_session(session_id)
+    if session.busy:
+        raise HTTPException(409, "Wait for the current operation before reviewing the candidate patch")
+    if not session.engineering:
+        raise HTTPException(404, "No candidate")
+    return {"patch": session.engineering.candidate.patch(), **session.engineering.candidate.describe()}
+
+
+@app.post("/sessions/{session_id}/candidate/check")
+async def check_candidate(session_id: str, req: CandidateCheckRequest):
+    session = candidate_session(session_id)
+    if session.busy:
+        raise HTTPException(409, "A request is already running for this session")
+    if not req.confirmed:
+        raise HTTPException(400, "Confirm the exact verification argument vector")
+    workflow = session.engineering
+    if not workflow or workflow.status not in {"ready", "verified", "check_failed"}:
+        raise HTTPException(409, "Finish the isolated implementation before running checks")
+    workflow.status = "checking"
+    launch_candidate(session, workflow, lambda: workflow.check(req.command, req.timeout))
+    return workflow.snapshot()
+
+
+@app.post("/sessions/{session_id}/candidate/stage")
+async def stage_candidate(session_id: str, req: CandidateStageRequest):
+    session = candidate_session(session_id)
+    if session.busy:
+        raise HTTPException(409, "A request is already running for this session")
+    if not req.confirmed:
+        raise HTTPException(400, "Confirm the reviewed patch before staging")
+    if not session.engineering:
+        raise HTTPException(404, "No candidate")
+    try:
+        staged = session.engineering.stage(req.candidate_sha256)
+        return {**session.engineering.snapshot(), **staged}
+    except (ValueError, OSError, TimeoutError):
+        raise HTTPException(409, "Candidate is stale, unverified, conflicting or not targeting an isolated worktree") from None
 
 
 @app.get("/conversations")

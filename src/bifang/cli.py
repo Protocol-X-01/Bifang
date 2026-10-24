@@ -48,8 +48,7 @@ async def amain(a):
         finally:
             await pm.close()
         for m in models:
-            if "nvidia" in m.lower() or "nemotron" in m.lower() or "gpt" in m.lower() or "claude" in m.lower():
-                print(m)
+            print(m)
         return
 
     if a.cmd == "doctor":

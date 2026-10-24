@@ -23,7 +23,7 @@ from .routing import TaskClassifier, TaskType
 from .tools import list_files, read_file, run_command, schemas, search
 from .tools.builtin import get_builtin_tool, get_builtin_tools
 from .tools.tasks import TaskPlan
-from .tracing import NoOpTracer, PhoenixTracer, create_phoenix_tracer
+from .tracing import NoOpTracer, Tracer, create_tracer
 from .workspace import Workspace
 
 SYSTEM = """You are Bifang, an evidence-driven coding agent inside an isolated development box. Inspect before editing. Use typed tools. Keep changes minimal. Run relevant tests. Never claim commands, tests, or benchmarks succeeded without tool evidence. Stop when the task is complete and summarize changed files, verification, and remaining risks."""
@@ -61,9 +61,10 @@ class Agent:
         self.tasks = TaskPlan()
 
         # Tracing
-        self.tracer: NoOpTracer | PhoenixTracer = NoOpTracer()
+        self.tracer: Tracer = NoOpTracer()
         if cfg.enable_tracing:
-            self.tracer = create_phoenix_tracer(
+            self.tracer = create_tracer(
+                backend=cfg.tracing_backend,
                 service_name="bifang-agent",
                 endpoint=cfg.tracing_endpoint,
             )

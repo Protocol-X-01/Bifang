@@ -41,6 +41,8 @@ class PhoenixTracer(Tracer):
         service_name: str = "bifang",
         endpoint: str | None = None,
         headers: dict[str, str] | None = None,
+        phoenix_environment: bool = True,
+        resource_attributes: dict[str, str] | None = None,
     ):
         super().__init__(service_name)
         self.endpoint = collector_endpoint(
@@ -50,7 +52,7 @@ class PhoenixTracer(Tracer):
             or "http://localhost:6006/v1/traces"
         )
         self.headers = dict(headers or {})
-        api_key = os.getenv("PHOENIX_API_KEY")
+        api_key = os.getenv("PHOENIX_API_KEY") if phoenix_environment else None
         if api_key:
             self.headers.setdefault("authorization", f"Bearer {api_key}")
         self._spans: list[Span] = []
@@ -58,6 +60,9 @@ class PhoenixTracer(Tracer):
         self._provider = None
         self._otel_tracer = None
         self._closed = False
+        self.resource_attributes = resource_attributes if resource_attributes is not None else {
+            "openinference.project.name": os.getenv("PHOENIX_PROJECT_NAME", "bifang"),
+        }
         self._init_otel()
 
     def _init_otel(self) -> None:
@@ -71,7 +76,7 @@ class PhoenixTracer(Tracer):
 
         provider = TracerProvider(resource=Resource({
             "service.name": self.service_name,
-            "openinference.project.name": os.getenv("PHOENIX_PROJECT_NAME", "bifang"),
+            **self.resource_attributes,
         }))
         exporter = OTLPSpanExporter(endpoint=self.endpoint, headers=self.headers, timeout=5)
         provider.add_span_processor(BatchSpanProcessor(exporter))

@@ -46,6 +46,7 @@ class Config:
     # Tracing
     enable_tracing: bool = False
     tracing_endpoint: str | None = None
+    tracing_backend: str = "phoenix"
 
     # MCP
     mcp_servers: list[dict[str, Any]] = field(default_factory=list)
@@ -137,6 +138,7 @@ class Config:
             conversation_cache_path=os.getenv("BIFANG_CONVERSATION_CACHE_PATH") or None,
             enable_tracing=os.getenv("BIFANG_ENABLE_TRACING", "0") != "0",
             tracing_endpoint=os.getenv("BIFANG_TRACING_ENDPOINT"),
+            tracing_backend=os.getenv("BIFANG_TRACING_BACKEND", "phoenix"),
             mcp_servers=_parse_mcp_servers(os.getenv("BIFANG_MCP_SERVERS", "")),
         )
 
