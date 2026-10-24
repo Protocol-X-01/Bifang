@@ -12,7 +12,7 @@
 
 <p align="center"><a href="#see-the-coding-loop">See the demo</a> · <a href="#quickstart">Run Bifang</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
-**Linux preview:** [Download the Ubuntu 24.04-tested preview](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.2).
+**Linux preview:** [Download the Ubuntu 24.04-tested Preview 3](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.3).
 Unsigned prerelease; bring your own provider key. Use **Open by path…** to
 select a project without relying on a native file chooser.
 
@@ -61,8 +61,8 @@ controls using an exact-action allowlist.
 | Verified milestones on October 24 | Evidence |
 | --- | --- |
 | Live Token Factory coding task | Only `receipts.py` changed; all five checks passed after apply. |
-| Local development regression suite | 295 backend tests pass; the public preview predates this source candidate. |
-| Frozen-source native rebuild | 328 source files verified; rebuilt package passes synthetic desktop, sandbox API and authenticated Phoenix checks. |
+| Preview 3 regression suite | 295 backend tests pass for the frozen release candidate. |
+| Frozen-source native rebuild | 336 build-input files verified; rebuilt package passes synthetic desktop, sandbox API and authenticated Phoenix checks. |
 | Hosted judge relay | Judge-only HTTPS access, model catalog, Ultra completion and Nano streaming verified; no provider key distributed. |
 | Native desktop through relay | Five Ultra calls, sandbox enabled, approved edit/test actions, patch apply and five unchanged checks. |
 | Linux desktop loop | Release-profile Debian package; native UI approvals, diff and apply verified. |
