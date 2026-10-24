@@ -2,19 +2,21 @@ from __future__ import annotations
 
 import asyncio
 import hmac
+import json
 import logging
 import os
 import secrets
 import uuid
+from collections import deque
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from starlette.responses import JSONResponse
 
 from .agent import Agent
@@ -26,6 +28,16 @@ from .provider import ProviderManager
 from .review_workflow import ReviewWorkflow
 from .routing import TOKEN_FACTORY_ROLES, CatalogUnavailable, ModelSelectionError
 from .tools.commands import SandboxUnavailableError
+from .vision import (
+    MAX_REQUEST_BYTES,
+    VisionAttachments,
+    VisionError,
+    VisionRequest,
+    VisionUnavailable,
+    discover_vision_models,
+    inspect_images,
+    prepare_image,
+)
 from .workspace import Workspace
 
 
@@ -40,6 +52,9 @@ class Session:
     busy: bool = False
     review: ReviewWorkflow | None = None
     engineering: EngineeringWorkflow | None = None
+    vision_task: asyncio.Task | None = None
+    vision_request_id: str | None = None
+    vision_cancelled: deque[str] = field(default_factory=lambda: deque(maxlen=64))
 
 
 sessions: dict[str, Session] = {}
@@ -60,6 +75,9 @@ def close_session(session: Session) -> None:
 
 async def dispose_session(session: Session) -> None:
     try:
+        if session.vision_task and not session.vision_task.done():
+            session.vision_task.cancel()
+            await asyncio.gather(session.vision_task, return_exceptions=True)
         if session.review:
             await session.review.cancel()
         if session.engineering:
@@ -210,6 +228,104 @@ async def authenticate_remote_requests(request: Request, call_next):
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "bifang"}
+
+
+@app.get("/vision/models")
+async def vision_models(provider: Literal["nebius", "nvidia"] | None = None):
+    try:
+        config = Config.load()
+        available = [name for name in ("nebius", "nvidia") if name in config.providers]
+        selected = provider or (config.default_provider if config.default_provider in available else next(iter(available), None))
+        async with asyncio.timeout(25):
+            models = await discover_vision_models(config, provider=selected) if selected else []
+        return {"provider": selected, "providers": available, "models": models}
+    except (httpx.HTTPError, ValueError, VisionUnavailable, TimeoutError):
+        raise HTTPException(503, "Visual model capabilities unavailable; refresh before sharing images") from None
+
+
+async def visual_request_body(request: Request):
+    raw = bytearray()
+    async for chunk in request.stream():
+        if len(raw) + len(chunk) > MAX_REQUEST_BYTES:
+            raise HTTPException(413, "Visual request exceeds the six-megabyte limit")
+        raw.extend(chunk)
+    try:
+        return json.loads(raw)
+    except ValueError:
+        raise HTTPException(422, "Invalid visual-review JSON") from None
+
+
+@app.post("/vision/prepare")
+async def prepare_visual_attachments(request: Request):
+    raw = await visual_request_body(request)
+    try:
+        attachments = VisionAttachments.model_validate(raw)
+        prepared = [await asyncio.to_thread(prepare_image, image.data_url) for image in attachments.images]
+        return {"images": [{**metadata, "data_url": data_url} for data_url, metadata in prepared]}
+    except (ValidationError, VisionError):
+        raise HTTPException(422, "Use up to two still PNG, JPEG or WebP images, each below 2 MB and four million pixels") from None
+
+
+@app.post("/sessions/{session_id}/vision")
+async def session_vision(session_id: str, request: Request):
+    session = sessions.get(session_id)
+    if not session or not session.agent:
+        raise HTTPException(404, "Session not found")
+    if session.busy:
+        raise HTTPException(409, "A request is already running for this session")
+    raw = await visual_request_body(request)
+    try:
+        selected = VisionRequest.model_validate(raw)
+    except (ValueError, ValidationError):
+        raise HTTPException(422, "Invalid visual-review request; use bounded inline images and an exact model") from None
+    if not selected.sharing_confirmed:
+        raise HTTPException(400, "Confirm image sharing with the selected provider")
+    if selected.request_id in session.vision_cancelled:
+        raise HTTPException(409, "Visual review cancelled before inference")
+    if session.busy:
+        raise HTTPException(409, "A request is already running for this session")
+    session.busy = True
+    session.vision_request_id = selected.request_id
+    task = asyncio.create_task(inspect_images(session.agent.cfg, selected))
+    session.vision_task = task
+    try:
+        result = await task
+        session.agent.audit.add("vision_review", receipt=result["receipt"], images=result["images"])
+        return result
+    except VisionError:
+        raise HTTPException(400, "Choose valid bounded images and a currently listed vision model") from None
+    except (httpx.HTTPError, VisionUnavailable):
+        raise HTTPException(502, "Visual provider unavailable; no model substitution or tools were used") from None
+    except TimeoutError:
+        raise HTTPException(504, "Visual review timed out; no automatic retry was made") from None
+    except asyncio.CancelledError:
+        raise HTTPException(409, "Visual review cancelled") from None
+    finally:
+        if session.vision_task is task:
+            session.vision_task = None
+            session.vision_request_id = None
+            session.busy = False
+
+
+@app.post("/sessions/{session_id}/vision/cancel")
+async def cancel_session_vision(session_id: str, request_id: str | None = Query(default=None, pattern=r"^[0-9a-f]{32}$")):
+    session = sessions.get(session_id)
+    if not session or not session.agent:
+        raise HTTPException(404, "Session not found")
+    if request_id:
+        session.vision_cancelled.append(request_id)
+        if session.vision_request_id != request_id:
+            return {"cancelled": True, "pending": True}
+    task = session.vision_task
+    if not task or task.done():
+        return {"cancelled": False}
+    task.cancel()
+    await asyncio.gather(task, return_exceptions=True)
+    if session.vision_task is task:
+        session.vision_task = None
+        session.vision_request_id = None
+        session.busy = False
+    return {"cancelled": True}
 
 
 @app.post("/sessions", response_model=SessionResponse)

@@ -2,6 +2,19 @@
 
 ## Linux desktop test build
 
+The vision preview uses desktop SemVer `0.2.1-preview.5` and Python
+PEP 440 `0.2.1.dev5`; check GitHub Releases for publication status. A distinct package version
+must sort after the previous preview's Debian version `0.2.0`; check the actual
+generated package with `dpkg-deb -f` and `dpkg --compare-versions` before release.
+The retained local candidate normalizes the generated Debian control version
+to `0.2.1~preview.5`, verifies unchanged payload-file hashes, and checks that it
+sorts above `0.2.0` but below future stable `0.2.1`. Preserve the original bundler
+checksum separately from the normalized installer checksum. Its
+[native receipt](evidence/ubuntu-vision-native.json) binds only that installer.
+Keep npm, Cargo and Tauri versions aligned, and Python metadata and `uv.lock`
+aligned. Never overwrite a retained installer or transfer its native evidence
+to the newer build.
+
 The desktop release bundles the React frontend and Python API sidecar into a
 Tauri Debian package:
 

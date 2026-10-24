@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { FolderOpen, Play, Square, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSessionStore, useWorkspaceStore } from '../stores/bifangStore';
+import { version } from '../../package.json';
 
 interface SidebarProps {
   serverStatus: 'starting' | 'running' | 'stopped';
@@ -158,7 +159,7 @@ export function Sidebar({ serverStatus, onStartServer, onStopServer }: SidebarPr
         {/* Version */}
         <div className={`p-4 border-t border-surface-800 ${collapsed ? 'px-2' : ''}`}>
           {!collapsed && (
-            <p className="text-xs text-surface-500 text-center">v0.2.0</p>
+            <p className="text-xs text-surface-500 text-center">v{version}</p>
           )}
         </div>
       </div>

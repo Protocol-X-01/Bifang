@@ -21,6 +21,7 @@ class Config:
     providers: dict[str, ProviderConfig] = field(default_factory=dict)
     routing_mode: str = "pinned"
     routing_models: dict[str, str] = field(default_factory=dict)
+    vision_models: dict[str, list[str]] = field(default_factory=dict)
 
     # Agent settings
     mode: str = "assist"
@@ -118,6 +119,7 @@ class Config:
             default_provider=default_provider,
             providers=providers,
             routing_mode=os.getenv("BIFANG_ROUTING_MODE", "pinned"),
+            vision_models=_parse_vision_models(os.getenv("BIFANG_VISION_MODELS", "")),
             routing_models={role: os.environ[name] for role, name in {
                 "fast": "BIFANG_FAST_MODEL", "balanced": "BIFANG_BALANCED_MODEL",
                 "reasoning": "BIFANG_REASONING_MODEL"}.items() if os.getenv(name)},
@@ -173,6 +175,22 @@ def _parse_mcp_servers(value: str) -> list[dict[str, Any]]:
         return json.loads(value)
     except Exception:
         return []
+
+
+def _parse_vision_models(value: str) -> dict[str, list[str]]:
+    import json
+    if not value:
+        return {}
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError:
+        raise ValueError("BIFANG_VISION_MODELS must be a provider-to-model-list JSON object") from None
+    if (not isinstance(parsed, dict) or set(parsed) - {"nebius", "nvidia"}
+            or any(not isinstance(models, list) or len(models) > 64
+                   or any(not isinstance(model, str) or not model.strip() or len(model) > 256 for model in models)
+                   for models in parsed.values())):
+        raise ValueError("BIFANG_VISION_MODELS must contain exact Nebius/NVIDIA model identifiers")
+    return parsed
 
 
 def state_home() -> Path:

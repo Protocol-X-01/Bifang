@@ -10,6 +10,7 @@ import { ModelPicker } from './ModelPicker';
 import { ApprovalPicker } from './ApprovalPicker';
 import { ReviewPanel } from './ReviewPanel';
 import { CandidatePanel } from './CandidatePanel';
+import { VisionPanel } from './VisionPanel';
 import { approvalRequest, type ApprovalMode } from '../api/approvals';
 
 export function ChatPanel() {
@@ -26,7 +27,7 @@ export function ChatPanel() {
   const [pendingApproval, setPendingApproval] = useState<{ action: string; resolve: (approved: boolean) => void } | null>(null);
   const approvalDialog = useRef<HTMLDialogElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { sessionId, setSessionId, messages, addMessage, clearMessages, setBusy, replaceConversation } = useSessionStore();
+  const { sessionId, setSessionId, messages, addMessage, clearMessages, setBusy, replaceConversation, busy: sessionBusy } = useSessionStore();
   const workspacePath = useWorkspaceStore((state) => state.workspacePath);
   const setActiveWorkspace = useWorkspaceStore((state) => state.setActiveWorkspace);
   const previousWorkspace = useRef(workspacePath);
@@ -84,6 +85,20 @@ export function ChatPanel() {
     return () => { active = false; };
   }, [sessionId, setSessionId, clearMessages, setActiveWorkspace, workspacePath]);
 
+  const ensureSession = async (): Promise<string> => {
+    if (!workspacePath) throw new Error('Choose a workspace before starting a chat.');
+    const existing = useSessionStore.getState().sessionId;
+    if (existing) return existing;
+    const created = await fetch('http://127.0.0.1:8000/sessions', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workspace: workspacePath, max_steps: 12 }),
+    });
+    if (!created.ok) throw new Error('Could not create a workspace session.');
+    const session = await created.json();
+    setSessionId(session.session_id); setActiveWorkspace(session.workspace);
+    return session.session_id;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || useSessionStore.getState().busy) return;
@@ -96,20 +111,7 @@ export function ChatPanel() {
     addMessage({ role: 'user', content: userMessage });
 
     try {
-      if (!workspacePath) throw new Error('Choose a workspace before starting a chat.');
-      let activeSessionId = sessionId;
-      if (!activeSessionId) {
-        const created = await fetch('http://127.0.0.1:8000/sessions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ workspace: workspacePath, max_steps: 12 }),
-        });
-        if (!created.ok) throw new Error((await created.text()) || 'Could not create a session.');
-        const session = await created.json();
-        activeSessionId = session.session_id;
-        setSessionId(activeSessionId);
-        setActiveWorkspace(session.workspace);
-      }
+      const activeSessionId = await ensureSession();
 
       let chatFinished = false;
       const chatRequest = fetch(`http://127.0.0.1:8000/sessions/${activeSessionId}/chat`, {
@@ -284,9 +286,16 @@ export function ChatPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface-950">
+    <div className="flex min-h-0 flex-col h-full bg-surface-950">
+      <div className="max-h-[40%] shrink-0 overflow-y-auto">
       <ReviewPanel />
       <CandidatePanel />
+      <VisionPanel ensureSession={ensureSession} onUse={(text) => {
+        const combined = input.trim() ? `${input}\n\n${text}` : text;
+        if (combined.length > 20000) window.alert('The combined draft exceeds 20,000 characters. Shorten the current draft before adding observations.');
+        else setInput(combined);
+      }} />
+      </div>
       {historyOpen && workspacePath && <ConversationHistory key={workspacePath} workspace={workspacePath}
         busy={isResuming} onResume={handleResume} onClose={() => setHistoryOpen(false)} />}
       <dialog ref={approvalDialog} onCancel={(event) => { event.preventDefault(); resolveApproval(false); }} aria-labelledby="approval-title" className="m-auto w-full max-w-xl rounded-2xl border border-border bg-card p-6 text-card-foreground shadow-xl backdrop:bg-black/70">
@@ -307,17 +316,17 @@ export function ChatPanel() {
         </div>
         <div className="flex items-center gap-2">
           <button type="button" className="flex items-center gap-2 rounded-lg p-2 text-sm text-surface-300 hover:bg-surface-800 disabled:opacity-50"
-            aria-label="Saved conversations" onClick={() => setHistoryOpen(true)} disabled={!workspacePath || isLoading || isResetting || isResuming}>
+            aria-label="Saved conversations" onClick={() => setHistoryOpen(true)} disabled={!workspacePath || sessionBusy || isLoading || isResetting || isResuming}>
             <History className="h-4 w-4" />History
           </button>
-          <button className="p-2 rounded-lg hover:bg-surface-800 disabled:opacity-50" title="New chat" aria-label="New chat" onClick={handleNewChat} disabled={isLoading || isResetting || isResuming}>
+          <button className="p-2 rounded-lg hover:bg-surface-800 disabled:opacity-50" title="New chat" aria-label="New chat" onClick={handleNewChat} disabled={sessionBusy || isLoading || isResetting || isResuming}>
             <MessageSquare className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <ModelPicker selection={modelSelection} busy={isLoading || isResetting || isResuming} onChange={setModelSelection} />
-      <ApprovalPicker mode={approvalMode} busy={isLoading || isResetting || isResuming} onChange={setApprovalMode}
+      <ModelPicker selection={modelSelection} busy={sessionBusy || isLoading || isResetting || isResuming} onChange={setModelSelection} />
+      <ApprovalPicker mode={approvalMode} busy={sessionBusy || isLoading || isResetting || isResuming} onChange={setApprovalMode}
         onPause={isLoading && sessionId ? handlePauseApprovals : undefined} pausing={isPausing} />
       {historyRestored && <p role="status" className="border-b border-surface-800 bg-surface-900 px-4 py-3 text-xs text-surface-300">History restored. Review current files before continuing; no commands or approvals were replayed.</p>}
       {cacheWarning && <p role="alert" className="border-b border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-200">The browser chat cache could not be saved. Saved conversations are stored separately on the local server; protect that data with backups.</p>}
@@ -357,7 +366,7 @@ export function ChatPanel() {
             />
             <button
               type="submit"
-              disabled={!input.trim() || isLoading || isResetting || isResuming}
+              disabled={!input.trim() || sessionBusy || isLoading || isResetting || isResuming}
               className="absolute right-2 bottom-2 p-2 rounded-lg bg-bifang-500 text-white hover:bg-bifang-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? (

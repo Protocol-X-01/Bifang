@@ -12,7 +12,7 @@ Token Factory path and reproducible coding workflow remain the foundation.
 | Terminal | Existing Textual app; brand/responsive-layout improvements | Full keyboard/approval/edit/verification flow, small-terminal and screen-reader review |
 | Text models | Existing configurable providers/router; CLI no longer hides non-NVIDIA catalog IDs | Live catalog and measured task-based model comparisons |
 | Embeddings | Existing embedding API, validation and retrieval path | Live selected model/dimension/space compatibility and measured retrieval quality |
-| Vision | No verified image-input coding workflow | Real image attachments, capability checks, consent/size/type controls and live image understanding |
+| Vision | Attachments, capabilities/consent, cancellation and image-free handoff; live Nemotron card and three coding cases; fresh-Ubuntu native image/coding runs passed | Broader visual-debugging evaluations; see [Vision](VISION.md) |
 | iOS | Requested; not implemented or built | Shared authenticated API client, keychain auth, consent, tests, signed native build and device proof |
 | Android | Requested; not implemented or built | Same API contract, keystore auth, tests, signed native build and device proof |
 

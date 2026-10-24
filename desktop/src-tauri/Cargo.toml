@@ -2,7 +2,7 @@
 
 [package]
 name = "bifang-desktop"
-version = "0.2.0"
+version = "0.2.1-preview.5"
 description = "Bifang Desktop - AI Coding Agent"
 authors = ["Bifang Team"]
 license = "Apache-2.0"

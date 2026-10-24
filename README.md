@@ -12,11 +12,23 @@
 
 <p align="center"><a href="#see-the-coding-loop">See the demo</a> · <a href="#quickstart">Run Bifang</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
-**Linux preview:** [Download the Ubuntu 24.04-tested Preview 4](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.0-preview.4).
+**Linux preview:** [Download the Ubuntu 24.04-tested Preview 5](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.1-preview.5).
 Unsigned prerelease; bring your own provider key. Use **Open by path…** to
 select a project without relying on a native file chooser.
 
 Bifang is a desktop coding IDE and terminal agent built around a practical, reviewable engineering loop. It can map a repository, propose focused edits, run approved commands and tests, and show the resulting diff before you keep or discard the work. Git repositories use a disposable worktree by default, leaving the original checkout untouched until you explicitly export or apply a patch.
+
+<details>
+<summary><strong>Bring a screenshot into the coding conversation</strong></summary>
+
+Choose an image-capable model, confirm image sharing, inspect the visual receipt
+and decide which observations belong in your chat draft.
+
+![Preview 5 native visual review with synthetic inference and explicit chat handoff.](docs/assets/bifang-vision-native.png)
+
+[Visual context guide and evidence](docs/VISION.md)
+
+</details>
 
 | Understand | Change | Verify |
 | --- | --- | --- |
@@ -77,6 +89,9 @@ controls using an exact-action allowlist.
 
 | Verified milestones on October 24 | Evidence and scope |
 | --- | --- |
+| Preview 5 visual context | Image attachments, explicit sharing, cancellation and labelled chat handoff; fresh-Ubuntu native package walkthrough. |
+| Preview 5 coding regression | Same new installer: write denial, failing/passing independent checks, reviewed staging and separate Apply; seven synthetic calls. |
+| Preview 5 frozen source | 374 backend tests; 373-file build-input archive. Three live Nemotron visual-debugging smoke cases used 3,010 reported tokens. |
 | Preview 4 frozen-source suite | All 348 backend tests pass from the retained 363-file build-input archive. |
 | Preview 4 native engineering | Exact installer on fresh Ubuntu: denied write → failed check; approved write → passing check → reviewed staging → separate Apply. Seven synthetic model calls, zero hosted calls. |
 | Optional integrations | Live Tavily public search; LangSmith synthetic parent/child trace read-back. Phoenix remains available. |
@@ -161,8 +176,10 @@ loop. Visible model receipts, explicit action approvals and reviewable diffs
 help the engineer follow the work from the first failing check to the final
 patch. An OpenAI-compatible NIM endpoint is also available as a provider option.
 
-The working desktop and terminal are the foundation. Vision, durable hosted
-orchestration, and iOS/Android clients remain active product requirements;
+The working desktop and terminal are the foundation. Preview 5 adds
+[visual review](docs/VISION.md): explicit image sharing, a model receipt and
+user-controlled handoff into coding chat.
+Durable hosted orchestration and iOS/Android clients remain product requirements;
 [product expansion](docs/PRODUCT_EXPANSION.md) tracks their acceptance gates.
 
 ## Configure
