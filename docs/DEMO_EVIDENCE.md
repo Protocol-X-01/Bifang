@@ -48,7 +48,7 @@ The screenshots contain synthetic code, not private project files or keys.
 ## Boundaries
 
 No eight-H200 deployment, serving-path KV-cache quantization, GPU speedup,
-unchanged long-context recall, production Phoenix collector, or Lobster Trap
+unchanged long-context recall (those optimizations would suit the serverless cloud instead of the token factory), production Phoenix collector, or Lobster Trap
 integration is established. The public demo URL and video remain submission
 work. See [readiness](HACKATHON_READINESS.md) and
 [release limitations](RELEASING.md).
