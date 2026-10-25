@@ -1,0 +1,35 @@
+{
+  "observed_date_utc": "2026-10-25",
+  "scope": "Local Linux debug desktop, actual WebKit WebDriver interaction, public trusted HTTPS and real gVisor execution",
+  "application_sha256": "bba7be2ef876722fa10d14e7d597564509fbf08c7f0fd6c180df9a1ccf4d2e3c",
+  "public_api_image_id": "sha256:6beb992ec6b17242a0eba1bf2430fc716da80c6647bf2d366533131d20d52f0a",
+  "total_new_model_jobs_across_attempts": 1,
+  "generation": {
+    "provider": "nebius",
+    "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "usage": { "prompt_tokens": 280, "completion_tokens": 118, "total_tokens": 398 }
+  },
+  "candidate_sha256": "9b2665b1cde2b9bbb8c4053e78b278c7f48269b99801ad2e651e31cbd6b23c10",
+  "check_command": ["python", "-B", "-m", "unittest", "discover", "-v"],
+  "check_exit_code": 0,
+  "check_timed_out": false,
+  "ui_decisions": ["writes", "check", "review", "stage", "apply"],
+  "disconnect_reconnect_preserved_pending_approval": true,
+  "hosted_snapshot_unchanged_before_apply": true,
+  "original_tests_preserved": true,
+  "hosted_snapshot_apply_verified": true,
+  "non_https_origin_rejected": true,
+  "token_input_cleared": true,
+  "token_absent_from_web_storage_and_disposable_profile": true,
+  "limitations": [
+    "First attempt stopped after write approval because the harness queried the recent-job list before it rendered",
+    "A separately recorded harness repair resumed the same pending job; no second proposal was requested",
+    "Automated operator fixture approved only an AST-equivalent benign boundary fix; not a human usability study",
+    "Apply changed the hosted snapshot, not a desktop checkout",
+    "This exact debug binary is not the published preview-5 installer",
+    "Patch/receipt digests are checked for agreement; independent client reconstruction remains a separate gate",
+    "Secret-storage scan covers this disposable run, not forensic memory erasure or all environments",
+    "No iOS or Android build/device proof"
+  ]
+}

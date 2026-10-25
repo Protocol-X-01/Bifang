@@ -1,6 +1,40 @@
-# Hackathon readiness — 2026-10-24
+# Hackathon readiness — 2026-10-25
 
 ## Current delivery checkpoint
+
+The published [Preview 5](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.1-preview.5)
+adds the bounded vision path, with separate exact-installer
+[native engineering](evidence/ubuntu-preview5-engineering.json) and
+[vision](evidence/ubuntu-vision-native.json) evidence. Newer local deployment
+work does not change that released binary.
+
+The local [Preview 6 candidate](evidence/preview6-candidate.json) now packages
+Remote forge and the source picker with independent candidate reconstruction.
+Its exact Debian installer passed separate fresh-Ubuntu coding and vision runs;
+the packaged binary also completed all five real hosted coding decisions with
+one 672-token Nano proposal. It retains 455 frozen source inputs and passes
+522 backend, 28 client and 6 native tests. Publication is not yet recorded.
+
+The deployed AWS service now supports owner-scoped review and coding over trusted
+public-IP HTTPS. The [public promotion](evidence/aws-public-coding.json) preserves
+the previous review receipt and adds isolated proposal/check/approval/hosted Apply.
+The newer local desktop Remote forge completed one real Nano task through native
+UI decisions, reconnect, actual gVisor execution and hosted snapshot Apply
+([client evidence](evidence/native-remote-coding.json)); it used 398 reported tokens.
+The newer file picker and independently reconstructed candidate/diff path also
+passed native interaction with one additional 569-token task
+([candidate evidence](evidence/native-candidate-verification.json)).
+The source backend suite passes 522 tests, desktop/shared-client contracts 28 and
+native desktop Rust 6. The new [companion source](../companion/README.md) reuses
+the same remote workflow and transport. Its frontend and Linux shell build,
+shared Rust tests (2) and a phone-width native inspection pass; these are not
+Android/iOS build or device evidence.
+These newer client changes are not in the published preview-5 installer.
+Native iOS/Android clients, packaging this newer desktop and judging-period
+operations remain product gates. Final video
+publication and Devpost submission remain owner decisions.
+
+## Preview 4 checkpoint
 
 Preview 4 packages bounded read-only team review, an isolated selected-file
 implementer, independently executed checks, reviewed staging, Tavily search,

@@ -6,6 +6,7 @@ use tauri::{command, generate_context, generate_handler, AppHandle, Manager, Sta
 use tauri_plugin_shell::{process::CommandChild, ShellExt};
 
 mod commands;
+mod remote;
 
 // App state for bifang server
 struct BifangServerState {
@@ -98,12 +99,16 @@ fn main() {
         .manage(BifangServerState {
             process: Mutex::new(None),
         })
+        .manage(remote::RemoteState::default())
         .invoke_handler(generate_handler![
             commands::get_file_tree,
             commands::resolve_workspace_path,
             start_bifang_server,
             stop_bifang_server,
             get_server_status,
+            remote::remote_connect,
+            remote::remote_disconnect,
+            remote::remote_operation,
         ])
         .setup(|app| {
             let state = app.state::<BifangServerState>();

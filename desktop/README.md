@@ -15,10 +15,10 @@ do not need to install Python or the CLI separately to run the desktop app.
 
 ## Install and run
 
-An unsigned [Linux prerelease](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.1-preview.5)
+An unsigned [Linux prerelease](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.1-preview.6)
 is available for testing on Ubuntu 24.04. Download the `.deb`, checksums, and
 third-party notice archive together. Verify the checksum and install with
-`sudo apt install './Bifang-vision_0.2.1.preview.5_amd64.deb'`.
+`sudo apt install './Bifang-forge_0.2.1.preview.6_amd64.deb'`.
 Configure your provider below, then launch Bifang from the application menu.
 Choose a project with the native folder button or **Open by path…**. The path
 dialog accepts existing absolute directories and validates them without
@@ -34,6 +34,12 @@ Ubuntu walkthrough through the separate original Apply confirmation. See the
 Preview 5 adds [visual review](../docs/VISION.md). Its new installer separately
 passes both native image review and the coding/check/stage/Apply regression;
 see the [Preview 5 coding receipt](../docs/evidence/ubuntu-preview5-engineering.json).
+
+Preview 6 adds the native remote forge: selectively share files, independently
+verify candidate hashes, reconnect to durable tasks, and review hosted checks
+and Apply decisions. Its exact package passes fresh Ubuntu coding and vision
+checks plus a separate real Token Factory remote workflow. See the
+[Preview 6 evidence](../docs/evidence/preview6-candidate.json).
 
 Before running agent commands on Ubuntu 24.04, follow the
 [Bubblewrap prerequisite and scoped AppArmor setup](../docs/UBUNTU_SANDBOX.md).

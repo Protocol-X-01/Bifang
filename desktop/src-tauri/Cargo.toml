@@ -2,7 +2,7 @@
 
 [package]
 name = "bifang-desktop"
-version = "0.2.1-preview.5"
+version = "0.2.1-preview.6"
 description = "Bifang Desktop - AI Coding Agent"
 authors = ["Bifang Team"]
 license = "Apache-2.0"
@@ -21,3 +21,4 @@ serde_json = "1"
 anyhow = "1"
 tracing = "0.1"
 tracing-subscriber = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

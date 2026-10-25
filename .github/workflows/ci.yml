@@ -33,13 +33,19 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: desktop/package-lock.json
+          cache-dependency-path: |
+            desktop/package-lock.json
+            companion/package-lock.json
       - run: npm ci
         working-directory: desktop
       - run: npm run build
         working-directory: desktop
       - run: npm test
         working-directory: desktop
+      - run: npm ci
+        working-directory: companion
+      - run: npm run build
+        working-directory: companion
 
   desktop-native:
     runs-on: ubuntu-24.04

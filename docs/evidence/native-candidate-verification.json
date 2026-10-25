@@ -1,0 +1,53 @@
+{
+  "observed_date_utc": "2026-10-25",
+  "scope": "Newer Linux debug client: individual source-file import, independent candidate hashes, local replacement diff and resumed actual hosted Apply",
+  "application_sha256": "7724935ec96cfbd69042f7da1b7a705b3c293d5a186d93504104a9d382a89790",
+  "api_image_id": "sha256:6beb992ec6b17242a0eba1bf2430fc716da80c6647bf2d366533131d20d52f0a",
+  "new_model_jobs_across_all_attempts": 1,
+  "generation": {
+    "provider": "nebius",
+    "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "usage": { "prompt_tokens": 280, "completion_tokens": 289, "total_tokens": 569 }
+  },
+  "candidate_sha256": "9b2665b1cde2b9bbb8c4053e78b278c7f48269b99801ad2e651e31cbd6b23c10",
+  "initial_attempt": {
+    "actual_native_multi_file_input": true,
+    "imported_files_read_only_by_default": true,
+    "only_bounds_source_explicitly_made_writable": true,
+    "independent_baseline_and_candidate_hash_banner_observed_in_dom": true,
+    "writes_and_check_decisions_clicked": true,
+    "observation_failure": "Harness sampled awaiting_check_approval immediately after dispatching check approval; actual job then passed its check"
+  },
+  "second_attempt": {
+    "same_verified_job_resumed": true,
+    "review_stage_apply_decisions_clicked": true,
+    "observation_failure": "Stale WebDriver element while inspecting snapshot after Apply; no model replay"
+  },
+  "third_attempt": {
+    "read_only_native_reconnect": true,
+    "already_applied_candidate_digest_verified": true,
+    "hosted_snapshot_inspected": true,
+    "original_tests_preserved": true,
+    "new_inference_requests": 0,
+    "new_approval_decisions": 0
+  },
+  "independent_check": { "command": ["python", "-B", "-m", "unittest", "discover", "-v"], "exit_code": 0, "timed_out": false },
+  "contract_tests": {
+    "desktop_suite_passed": 26,
+    "python_digest_golden_vectors": 6,
+    "git_applied_byte_exact_patch_cases": 7,
+    "tampered_baseline_candidate_and_unapproved_paths_rejected": true,
+    "import_preserves_bom_and_crlf": true,
+    "invalid_utf8_binary_secret_paths_duplicates_and_growth_rejected": true
+  },
+  "limitations": [
+    "Evidence spans three native sessions, not one uninterrupted walkthrough",
+    "Automated operator approved only an AST-equivalent harmless boundary fix; not a human usability study",
+    "Independent hashes prove source/proposal consistency, not remote execution attestation or program correctness",
+    "Locally generated patches replace complete changed files rather than minimizing diff hunks",
+    "Already-applied historical service diffs are labelled and never enable approval controls",
+    "Hosted snapshot Apply does not modify a desktop checkout",
+    "New debug client is not the published preview-5 installer; mobile builds remain outstanding"
+  ]
+}

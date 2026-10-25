@@ -1,6 +1,6 @@
 {
   "name": "bifang-desktop",
-  "version": "0.2.1-preview.5",
+  "version": "0.2.1-preview.6",
   "description": "Bifang Desktop - AI Coding Agent",
   "type": "module",
   "engines": {

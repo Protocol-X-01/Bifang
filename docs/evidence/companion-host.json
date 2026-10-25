@@ -1,0 +1,35 @@
+{
+  "observed_date_utc": "2026-10-25",
+  "scope": "Linux native companion shell at phone-sized width; not Android or iOS",
+  "application_sha256": "da2b538c0c945b545bfdd20712f4192cf1315ea07d19e8ccb8bc3bb175f1f7ce",
+  "frontend_production_build_passed": true,
+  "linux_debug_shell_build_passed": true,
+  "shared_transport_rust_tests_passed": 2,
+  "desktop_and_shared_client_tests_passed": 28,
+  "same_remote_ui_and_transport_as_desktop": true,
+  "no_local_agent_sidecar_or_shell_commands_registered": true,
+  "native_webkit_observations": {
+    "viewport_width_px": 390,
+    "document_scroll_width_px": 390,
+    "button_minimum_height_px": 44,
+    "input_font_px": 16,
+    "trusted_public_https_connection": true,
+    "non_https_rejected": true,
+    "disconnect_reconnect_preserved_existing_job": true,
+    "existing_applied_candidate_digest_verified": true,
+    "hosted_snapshot_inspected": true,
+    "token_absent_from_web_storage_and_disposable_profile": true
+  },
+  "new_model_requests": 0,
+  "new_approval_decisions": 0,
+  "android_build_proven": false,
+  "ios_build_proven": false,
+  "mobile_device_proof": false,
+  "limitations": [
+    "Uses an existing completed fixture job; does not repeat generation or approval decisions",
+    "Linux WebKit at phone width is not Android WebView or iOS WKWebView",
+    "No signed APK, AAB, IPA or mobile device/emulator walkthrough yet",
+    "Session-only access; optional keychain/keystore persistence is not implemented",
+    "Android SDK platform/NDK and iOS Mac/Xcode prerequisites remain unresolved"
+  ]
+}

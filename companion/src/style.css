@@ -1,0 +1,26 @@
+@import "../../desktop/src/index.css";
+@source "../../desktop/src/components/RemoteWorkspace.tsx";
+@source "../../desktop/src/components/RemoteSourcePicker.tsx";
+
+.companion-header {
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+.companion-footer {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+.companion section[aria-label="Remote coding workspace"] {
+  padding: 1rem max(1rem, env(safe-area-inset-right)) 1rem max(1rem, env(safe-area-inset-left));
+  overscroll-behavior: contain;
+}
+
+.companion input,
+.companion textarea,
+.companion select {
+  font-size: 16px;
+}
+
+.companion button {
+  min-height: 44px;
+}

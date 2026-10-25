@@ -35,6 +35,14 @@ Tracing is opt-in; merely finding an API key does not enable data transmission.
 
 ### Hosting and Engine
 
+Working-source update after Preview 5: a separate [durable remote review
+service](REMOTE_JOBS.md) now has owner-scoped authentication, idempotent jobs,
+lease fencing, cancellation and crash/restart tests. It is a local foundation,
+not a LangSmith deployment or a replacement for the full coding workflow.
+The current key can read authorized project metadata but receives 403 for
+workspace listing and deployment free-count metadata. This does not establish
+the account's plan, balance or deployment entitlement. No plan or terms changed.
+
 [LangSmith Deployment](https://docs.langchain.com/langsmith/deployment) can run
 agents built with different frameworks. It is not a generic replacement for
 the desktop sidecar or the existing Vercel relay. Its

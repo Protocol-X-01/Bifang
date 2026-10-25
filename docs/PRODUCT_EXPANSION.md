@@ -8,17 +8,33 @@ Token Factory path and reproducible coding workflow remain the foundation.
 |---|---|---|
 | Web access | Tavily adapter, live public search and authenticated usage check | Bounded extraction/research tools |
 | Observability | Optional LangSmith adapter, synthetic parent/child trace read-back; Phoenix retained | Full agent/provider usage validation and intended production workspace setup |
-| Hosted orchestration | LangSmith deployment fit researched | Entitlement/cost check, durable jobs, auth, isolated execution, deployment and restart/cancel proof |
+| Hosted orchestration | AWS review and coding API, trusted HTTPS, durable candidate-bound approvals, real gVisor checks and hosted snapshot Apply; native Remote forge walkthrough | New desktop packaging, mobile clients and operating-period monitoring |
 | Terminal | Existing Textual app; brand/responsive-layout improvements | Full keyboard/approval/edit/verification flow, small-terminal and screen-reader review |
 | Text models | Existing configurable providers/router; CLI no longer hides non-NVIDIA catalog IDs | Live catalog and measured task-based model comparisons |
 | Embeddings | Existing embedding API, validation and retrieval path | Live selected model/dimension/space compatibility and measured retrieval quality |
 | Vision | Attachments, capabilities/consent, cancellation and image-free handoff; live Nemotron card and three coding cases; fresh-Ubuntu native image/coding runs passed | Broader visual-debugging evaluations; see [Vision](VISION.md) |
-| iOS | Requested; not implemented or built | Shared authenticated API client, keychain auth, consent, tests, signed native build and device proof |
-| Android | Requested; not implemented or built | Same API contract, keystore auth, tests, signed native build and device proof |
+| iOS | [Companion source](../companion/README.md) shares remote UI, integrity checks and native session-only transport; no iOS build | Mac/Xcode toolchain, optional keychain persistence, signed native build and device proof |
+| Android | Same companion source; Linux shell built and phone-width inspection passed, not an Android build | SDK platform/NDK and licence setup, optional keystore persistence, signed native build and device proof |
 
 Image generation scaffolding is not image understanding. A model's name or
 presence in `/models` does not establish vision, tool-use or embedding support.
 Keep model capabilities explicit and verify the exact endpoint/model pair.
+
+The [remote coding component](REMOTE_CODING.md) now provides durable
+candidate-bound decisions, revision-checked hosted snapshot Apply, a
+tool-free proposal worker and opt-in authenticated coding routes. Its synthetic
+HTTP/state/worker tests are separate from its deployed model/execution proofs. The
+[gVisor executor and persistent broker](REMOTE_CODING.md#actual-isolated-execution)
+now pass actual AWS isolation, cancellation and forced-restart probes. A private
+deployed coding workflow also passes a real Token Factory proposal, preserved
+approval after restart, independent check and separate hosted Apply. The exact
+image was promoted publicly with previous receipts preserved. A local native
+desktop walkthrough now exercises real HTTPS and all five UI decisions, including
+reconnect before check approval. New desktop packaging and mobile clients remain
+delivery gates. The newer source picker imports individual UTF-8 files read-only
+by default; independent candidate hashes and locally generated replacement diffs
+now gate decisions. Cross-language vectors, actual Git application and a native
+live task provide separate [evidence](evidence/native-candidate-verification.json).
 
 ## Our visual direction: Ember Atelier
 
@@ -55,7 +71,8 @@ are included in Preview 4's retained source and packaged runtime.
    was separately exercised through the source-component browser.
 2. Validate Tavily and LangSmith live with bounded public/synthetic inputs.
    Keep provider credentials server-side and logs metadata-only by default.
-3. Add a durable remote orchestrator suitable for LangSmith Deployment. Bind
+3. Add a durable remote orchestrator on the selected [AWS host](AWS_HOSTING.md),
+   keeping LangSmith tracing independent of managed deployment. Bind
    jobs, workspaces, tools, artifacts and approvals to authenticated users;
    retries must not repeat unapproved writes or Apply.
 4. Add explicit model-capability discovery/configuration and a bounded vision

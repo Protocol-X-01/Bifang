@@ -1,0 +1,39 @@
+[
+  {
+    "files": {},
+    "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  {
+    "files": {
+      "plain.py": "return 1\n"
+    },
+    "sha256": "ed47214f94e32829b30eaa9ed12ec3ebee2204a6166a5d6da4ad6dfaae70e490"
+  },
+  {
+    "files": {
+      "\u03a9.py": "# Caf\u00e9 \u2603\r\nprint(\"\ud83c\udf42\")"
+    },
+    "sha256": "f5cf7d9a484209d9f93c2eb96e704536a41b02d2b16784ad8fbac7288cb73366"
+  },
+  {
+    "files": {
+      "\ud800\udc00.py": "astral",
+      "\ue000.py": "bmp",
+      "a.py": "\ufeffBOM\u007f\t\n\r"
+    },
+    "sha256": "5426dff11370023baee6e049c09c46b854b3c9d908fbe6e961f7b3726dc3182f"
+  },
+  {
+    "files": {
+      "quote\".py": "backslash\\ and \b\f\u2028\u2029"
+    },
+    "sha256": "3e25adc6739b2d8df14a9c8876ad7f714b6571e3705608119ebce53f0d282133"
+  },
+  {
+    "files": {
+      "__proto__": "constructor",
+      "constructor": "source"
+    },
+    "sha256": "fd1b3241252ba9d96211b567e8d782caf46870a1576b4c8d173095bd80e77204"
+  }
+]

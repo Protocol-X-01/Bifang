@@ -12,7 +12,7 @@
 
 <p align="center"><a href="#see-the-coding-loop">See the demo</a> · <a href="#quickstart">Run Bifang</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
-**Linux preview:** [Download the Ubuntu 24.04-tested Preview 5](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.1-preview.5).
+**Linux preview:** [Download the Ubuntu 24.04-tested Preview 6](https://github.com/Protocol-X-01/bifang/releases/tag/v0.2.1-preview.6).
 Unsigned prerelease; bring your own provider key. Use **Open by path…** to
 select a project without relying on a native file chooser.
 
@@ -179,8 +179,13 @@ patch. An OpenAI-compatible NIM endpoint is also available as a provider option.
 The working desktop and terminal are the foundation. Preview 5 adds
 [visual review](docs/VISION.md): explicit image sharing, a model receipt and
 user-controlled handoff into coding chat.
-Durable hosted orchestration and iOS/Android clients remain product requirements;
-[product expansion](docs/PRODUCT_EXPANSION.md) tracks their acceptance gates.
+Newer source adds [Remote forge](docs/REMOTE_CODING.md): selected-source tasks,
+independently reconstructed candidate hashes, isolated checks and separate hosted
+snapshot Apply. A [mobile-oriented companion](companion/README.md) shares this
+workflow without a local agent sidecar. Its source and Linux shell are tested;
+Android/iOS builds and device checks remain acceptance gates. These newer clients
+are not in the Preview 5 installer; [product expansion](docs/PRODUCT_EXPANSION.md)
+tracks delivery status.
 
 ## Configure
 
