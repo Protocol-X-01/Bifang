@@ -1,6 +1,40 @@
 # Vercel relay preview
 
-## Current verified deployment — 2026-10-24
+## Git deployment repair — 2026-10-29
+
+The Git-connected project was building the repository root, producing
+`FASTAPI_ENTRYPOINT_NOT_FOUND`. The relay entrypoint is
+`deploy/vercel-judge-relay/app.py`, not the desktop server.
+
+The project now selects `deploy/vercel-judge-relay` as its Root Directory,
+enables source files outside that directory, and uses this Install Command:
+
+```sh
+mkdir -p bifang && cp ../../src/bifang/__init__.py ../../src/bifang/judge_relay.py ../../src/bifang/model_ids.py bifang/ && uv sync --frozen
+```
+
+Only the three relay modules are copied into the deployment package. Its own
+Python version and dependency lock remain separate from the desktop runtime.
+The generated standalone bundle remains an alternative; it already contains
+these modules and should use the default install command rather than the
+Git-checkout-specific command above.
+
+A new Git-sourced preview at
+https://bifang-judge-relay-pzjqa546u-protocol-x.vercel.app reached READY.
+HTTPS checks returned health 200, missing/wrong bearer tokens 401 and the
+authenticated three-model catalog 200. This repair performed no inference
+requests and did not promote the preview to production or change AWS.
+
+The owner subsequently approved production using the existing server-side
+secrets. Production is now available at https://bifang-judge-relay.vercel.app .
+The production deployment reached READY; HTTPS checks verified health 200,
+missing/wrong tokens 401, and the authenticated three-model catalog 200.
+One bounded Nemotron Nano completion returned nonempty content (100 reported
+tokens). The provider and judge keys remain sensitive server-side variables;
+the same judge bearer token is required. AWS was unchanged. This deployment
+repair is separate from the GitHub Actions account/billing lock.
+
+## Earlier verified preview — 2026-10-24
 
 The creator approved a relay-only preview and server-side Token Factory key
 transfer. `protocol-x/bifang-judge-relay` is on the active Hobby plan; no paid

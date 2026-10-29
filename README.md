@@ -2,33 +2,35 @@
   <img src="docs/assets/bifang-hero.svg" width="1280" alt="Bifang — Build. Run. Verify. A Nemotron coding workspace with disposable worktrees, approvals and diffs." />
 </p>
 
-<p align="center"><strong>Give the agent a failing test. Keep control of the change.</strong><br>Open-source desktop and terminal tools for agentic engineering.</p>
+<p align="center"><strong>Give the agent a failing test. Keep control of the change.</strong><br>A coding workspace for your desktop, terminal and Android device.</p>
 
 <p align="center">
   <a href="https://github.com/Protocol-X-01/Bifang/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-E63946?style=flat-square" alt="Apache 2.0 license" /></a>
   <img src="https://img.shields.io/badge/Python-3.11-0F172A?style=flat-square" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/Track-01%20Agentic%20Engineering-FF8A3D?style=flat-square" alt="Track 1: Agentic Engineering" />
-  <img src="https://img.shields.io/badge/CI-passing-22C55E?style=flat-square&logo=githubactions" alt="CI Status" />
-  <img src="https://img.shields.io/badge/desktop--platforms-passing-22C55E?style=flat-square&logo=githubactions" alt="Desktop Platforms" />
+  <a href="https://github.com/Protocol-X-01/Bifang/actions/workflows/ci.yml"><img src="https://github.com/Protocol-X-01/Bifang/actions/workflows/ci.yml/badge.svg" alt="CI workflow status" /></a>
+  <a href="https://github.com/Protocol-X-01/Bifang/actions/workflows/desktop-platforms.yml"><img src="https://github.com/Protocol-X-01/Bifang/actions/workflows/desktop-platforms.yml/badge.svg" alt="Desktop package workflow status" /></a>
 </p>
 
-<p align="center"><a href="#see-the-coding-loop">See the demo</a> · <a href="#quickstart">Run Bifang</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
+<p align="center"><a href="#one-workspace-three-ways-in">Explore Bifang</a> · <a href="#see-the-coding-loop">Coding walkthrough</a> · <a href="#quickstart">Get started</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
 **Linux preview:** [Download the Ubuntu 24.04-tested Preview 6](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.1-preview.6).
+
+**Refreshed Linux binaries:** [Debian, AppImage and experimental RPM development candidates](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.1-dev.11-refresh.20261029), with checksums, exact build source and notices.
 Unsigned prerelease; bring your own provider key. Use **Open by path…** to select a project without relying on a native file chooser.
 
 Bifang is a desktop coding IDE and terminal agent built around a practical, reviewable engineering loop. It maps a repository, proposes focused edits, runs approved commands and tests, and shows the resulting diff before you keep or discard the work. Git repositories use a disposable worktree by default, leaving the original checkout untouched until you explicitly export or apply a patch.
 
-<details>
-<summary><strong>Bring a screenshot into the coding conversation</strong></summary>
+## One workspace, three ways in
 
-Choose an image-capable model, confirm image sharing, inspect the visual receipt and decide which observations belong in your chat draft.
+| Desktop IDE | Terminal | Android Companion |
+| --- | --- | --- |
+| Explore a project, discuss a change, inspect its diff and run checks from one workbench. | Work from the command line or the Rust TUI, with Bifang's ember-and-slate identity. | Pair with your desktop, use remote coding and open a terminal on your device. |
+| [Desktop guide](desktop/README.md) | [CLI guide](docs/TERMINAL.md) · [Rust TUI](tui/) | [Companion guide](companion/README.md) · [Pairing](docs/MOBILE_PAIRING.md) |
 
-![Preview 6 visual review with synthetic inference and explicit chat handoff.](docs/assets/bifang-vision-native.png)
-
-[Visual context guide and evidence](docs/VISION.md)
-
-</details>
+**Context that helps you code.** Bring screenshots into a conversation with an
+image-capable model, discover indexed tools through [The Toolbox](docs/THE_TOOLBOX.md),
+and keep useful project knowledge in [local memory](docs/MEMORY_RETRIEVAL.md).
 
 | Understand | Change | Verify |
 | --- | --- | --- |
@@ -56,44 +58,34 @@ The check receipt records the exact command, snapshot hash and exit status. Stag
 
 Optional [Tavily web search and LangSmith tracing](docs/ENGINEERING_WORKFLOW.md#web-and-observability) complement the coding loop. The Ember terminal adapts to smaller windows with keyboard-accessible inspectors.
 
-> Independent open-source project for the Nebius x NVIDIA Global AI Hackathon. Not an official NVIDIA or Nebius product.
+Built for **Track 1 · Coding and Agentic Engineering** at the Nebius × NVIDIA Global AI Hackathon.
 
 ## See the coding loop
 
 The [receipt-parser demo](docs/DEMO.md) starts with two broken CSV cases. Nemotron Ultra fixes the parser through Bifang's tools, leaving the original checks intact. The release-profile desktop app completed the live task, approval dialogs, diff review, and patch application. All five original checks passed in the source checkout afterward.
 
-![Bifang desktop after a real Nemotron coding task: formatted chat, repository files, reviewed diff and successful apply.](docs/assets/bifang-desktop.png)
-
 <details>
-<summary><strong>Review an action before it runs</strong></summary>
+<summary><strong>Earlier desktop screenshots · coding, approvals and visual review</strong></summary>
 
-![Bifang's in-app approval dialog with the exact proposed action, Deny and Allow once controls.](docs/assets/bifang-approval.png)
+These captures document the earlier desktop interface. The current source uses
+the refreshed ember-and-slate design across the apps.
+
+![Earlier Bifang desktop after a real Nemotron coding task: repository files, reviewed diff and successful apply.](docs/assets/bifang-desktop.png)
+
+![Earlier Bifang approval dialog with the proposed action, Deny and Allow once controls.](docs/assets/bifang-approval.png)
 
 Approvals are scoped to one action. The demo harness clicked these actual controls using an exact-action allowlist.
 
+![Preview 6 visual review using synthetic inference and explicit chat handoff.](docs/assets/bifang-vision-native.png)
+
+[Visual context guide](docs/VISION.md) · [Recorded demo evidence](docs/DEMO_EVIDENCE.md)
+
 </details>
 
-| Verified milestones on October 29 | Evidence and scope |
-| --- | --- |
-| Preview 6 visual context | Image attachments, explicit sharing, cancellation and labelled chat handoff; fresh-Ubuntu native package walkthrough. |
-| Preview 6 coding regression | Same new installer: write denial, failing/passing independent checks, reviewed staging and separate Apply; seven synthetic calls. |
-| Preview 6 frozen source | 850 backend tests; 664-file build-input archive. Three live Nemotron visual-debugging smoke cases used 3,010 reported tokens. |
-| Preview 5 frozen-source suite | All 348 backend tests pass from the retained 363-file build-input archive. |
-| Preview 5 native engineering | Exact installer on fresh Ubuntu: denied write → failed check; approved write → passing check → reviewed staging → separate Apply. Seven synthetic model calls, zero hosted calls. |
-| Optional integrations | Live Tavily public search; LangSmith synthetic parent/child trace read-back. Phoenix remains available. |
-| Live Token Factory coding task | Only `receipts.py` changed; all five checks passed after apply. |
-| Earlier Preview 3 suite | 295 backend tests pass for that frozen release candidate. |
-| Earlier frozen-source native rebuild | 336 build-input files verified; that package passes synthetic desktop, sandbox API and authenticated Phoenix checks. |
-| Hosted judge relay | Judge-only HTTPS access, model catalog, Ultra completion and Nano streaming verified; no provider key distributed. |
-| Native desktop through relay | Five Ultra calls, sandbox enabled, approved edit/test actions, patch apply and five unchanged checks. |
-| Linux desktop loop | Release-profile Debian package; native UI approvals, diff and apply verified. |
-| Independent installation | Fresh Ubuntu 24.04 VM: actual workspace dialog → live task → apply → five passing checks. |
-| Container runtime | Built and tested in the VM: non-root, authenticated API, confined workspace paths. |
-| NVIDIA-compatible endpoint | Configured hosted NVIDIA API returned a Nemotron Ultra completion. |
-| **TUI (ratatui)** | Terminal UI with same design system (ember gradient, Deep Slate, JetBrains Mono). |
-| **Mobile Companion** | Android app with terminal, remote coding, device pairing. |
-
-The original recorded rehearsal used synthetic code, a preselected test workspace, and automated approvals restricted to the demo's edit and test actions. See [demo evidence](docs/DEMO_EVIDENCE.md) and [remaining release gates](docs/HACKATHON_READINESS.md). Clean-machine installation is now verified on [Ubuntu 24.04](docs/INSTALLATION_EVIDENCE.md); successful native folder selection remains unverified. The newer preview also passes workspace selection through its in-app path dialog, including rejection of relative, missing, and non-directory paths.
+The [coding walkthrough](docs/DEMO.md) shows the task and checks used for the
+recorded loop. [Build status](docs/HACKATHON_READINESS.md) keeps package versions,
+test results and delivery evidence together, including
+[fresh Ubuntu installation](docs/INSTALLATION_EVIDENCE.md).
 
 <p align="center"><img src="docs/assets/bifang-workflow.svg" alt="Bifang's coding loop: inspect, reason, review, verify and decide." /></p>
 
@@ -147,7 +139,14 @@ The Bifang bird identity represents watchfulness and controlled fire: the agent 
 
 NVIDIA Nemotron models on Nebius Token Factory power the iterative edit/test loop. Visible model receipts, explicit action approvals and reviewable diffs help the engineer follow the work from the first failing check to the final patch. An OpenAI-compatible NIM endpoint is also available as a provider option.
 
-The working desktop and terminal are the foundation. Preview 6 adds [visual review](docs/VISION.md): explicit image sharing, a model receipt and user-controlled handoff into coding chat. Newer source adds [Remote forge](docs/REMOTE_CODING.md): selected-source tasks, independently reconstructed candidate hashes, isolated checks and separate hosted snapshot Apply. A [mobile-oriented companion](companion/README.md) shares this workflow without a local agent sidecar. Its source and Linux shell are tested; Android/iOS builds and device checks remain acceptance gates. These newer clients are not in the Preview 6 installer; [product expansion](docs/PRODUCT_EXPANSION.md) tracks delivery status.
+The desktop brings together [visual review](docs/VISION.md), explicit image
+sharing, model receipts and a handoff into coding chat. [Remote forge](docs/REMOTE_CODING.md)
+adds selected-source tasks, isolated checks, reviewed patches and a separate Apply.
+The [Android Companion](companion/README.md) has been built and installed on a
+Xiaomi 12T running Android 15, with desktop-approved pairing and a device terminal.
+The [Rust TUI](tui/) brings the refreshed design into the terminal. The published
+Preview 6 installer and newer development clients have separate delivery records
+in [product expansion](docs/PRODUCT_EXPANSION.md).
 
 ## Configure
 
