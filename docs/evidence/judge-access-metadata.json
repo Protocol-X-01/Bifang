@@ -1,0 +1,23 @@
+{
+  "observed_at_utc": "2026-10-24T04:52:16.314653+00:00",
+  "status": "seven_metadata_checks_passed",
+  "relay_deployment_id": "dpl_BZSK81yoiicDEc3rnfmN5d3No9o9",
+  "operator_module_sha256": "3a8d85bf40942646957e785f39dcf07c2c1b87bb034e2a8701333d768d9f7a4b",
+  "private_report_sha256": "547febb209ccc684346fe4a9c95b4c3b4fd8e509a76c1b307f9a01fb776757db",
+  "metadata_get_requests": 7,
+  "completion_requests_sent": 0,
+  "health_status": 200,
+  "missing_and_wrong_judge_token_status": 401,
+  "catalog_status": 200,
+  "enabled_models": 3,
+  "agent_source_and_environment_paths_status": 404,
+  "redirects_followed": false,
+  "root_backend_tests_passed": 263,
+  "live_waf_enabled_observed": false,
+  "waf_draft_changes_observed": 1,
+  "waf_draft_action": "rate_limit_with_exceeded_action_log",
+  "waf_enforcement_verified": false,
+  "distributed_quota_verified": false,
+  "judging_period_availability_verified": false,
+  "scope": "Point-in-time access and source tests; no inference, balance, uptime or capacity guarantee. Native inference has separate receipts."
+}

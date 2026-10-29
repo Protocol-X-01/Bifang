@@ -1,0 +1,15 @@
+{
+  "image": "bifang:validation",
+  "image_id": "sha256:e54feff4afa851787347660aaaddfe0c9019bc36410755c34904a514cf1cceef",
+  "runtime": {
+    "uid": 10001,
+    "workspace_writable": true,
+    "code_writable": false
+  },
+  "missing_startup_key_rejected": true,
+  "health": 200,
+  "missing_and_wrong_request_keys": 401,
+  "absolute_and_escaping_workspaces": "denied",
+  "authenticated_session_lifecycle": "passed",
+  "provider_inference_tested": false
+}

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Bifang</title>
+  <defs>
+    <linearGradient id="ember" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E63946"/>
+      <stop offset="100%" stop-color="#FF8A3D"/>
+    </linearGradient>
+    <linearGradient id="ember-reverse" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E63946"/>
+      <stop offset="100%" stop-color="#FF8A3D"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Deep slate rounded square background -->
+  <rect width="512" height="512" rx="112" fill="#0F172A"/>
+  <!-- Subtle grid pattern -->
+  <g fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <path d="M0 64h512M0 128h512M0 192h512M0 256h512M0 320h512M0 384h512M0 448h512"/>
+    <path d="M64 0v512M128 0v512M192 0v512M256 0v512M320 0v512M384 0v512M448 0v512"/>
+  </g>
+  <!-- Bifang bird symbol - geometric crane rising -->
+  <g transform="translate(64, 48) scale(0.75)">
+    <!-- Wings forming code brackets / terminal panes -->
+    <path d="M140 170 Q100 140 80 110 Q60 80 70 50 Q80 20 120 30 Q160 40 170 80 Q180 120 160 150 Q140 180 110 170" fill="none" stroke="url(#ember)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+    <path d="M372 170 Q412 140 432 110 Q452 80 442 50 Q432 20 392 30 Q352 40 342 80 Q332 120 352 150 Q372 180 402 170" fill="none" stroke="url(#ember-reverse)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+    <!-- Body - central terminal pane -->
+    <path d="M200 120 L200 320 L312 320 L312 120 Z" fill="#0F172A" stroke="url(#ember)" stroke-width="4" rx="12"/>
+    <!-- Cursor/chevron negative space -->
+    <path d="M236 160 L256 180 L236 200" fill="none" stroke="#F7F7F7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M276 160 L256 180 L276 200" fill="none" stroke="#F7F7F7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Single supporting leg -->
+    <path d="M256 320 L256 380" stroke="url(#ember)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M240 380 L272 380" stroke="url(#ember)" stroke-width="6" stroke-linecap="round"/>
+    <!-- Head/beak -->
+    <ellipse cx="256" cy="80" rx="28" ry="20" fill="#0F172A" stroke="url(#ember)" stroke-width="4"/>
+    <path d="M270 80 Q290 75 295 80 Q290 85 270 80" fill="#FF8A3D"/>
+    <!-- Eye - precise, focused -->
+    <circle cx="248" cy="76" r="5" fill="#F7F7F7"/>
+    <circle cx="249" cy="75" r="2" fill="#0F172A"/>
+  </g>
+</svg>

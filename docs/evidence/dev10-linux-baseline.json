@@ -1,0 +1,50 @@
+{
+  "version": "0.2.1-dev.10",
+  "date": "2026-10-28",
+  "build_environment": "Retained isolated Ubuntu 22.04 VM, GLIBC 2.35, release profile",
+  "source_archive_sha256": "29e4299e9d5af78974dec978a4fb9951d95d46b0bcb575fc0158e83630ca5fcf",
+  "private_configuration_copied": false,
+  "provider_requests": 0,
+  "host_mounts": false,
+  "packages": [
+    {
+      "format": "deb",
+      "name": "Bifang_0.2.1-dev.10_amd64.deb",
+      "sha256": "e1f19e89c591553322c5ebad5331be37e2255157eb0af913b40eaa088e2fb76a",
+      "runtime_audit_elf_files": 2,
+      "maximum_allowed_glibc": "2.35",
+      "runtime_audit_passed": true,
+      "helper_checks_passed": 15,
+      "packaged_api_tests_passed": 2
+    },
+    {
+      "format": "rpm",
+      "name": "Bifang-0.2.1-0.dev.10.x86_64.rpm",
+      "sha256": "9ddf1e9114bf98829b64394a25b4aa4c29f6c23aa33840018678b8f565acaea6",
+      "runtime_audit_elf_files": 2,
+      "maximum_allowed_glibc": "2.35",
+      "runtime_audit_passed": true,
+      "helper_checks_passed": 15,
+      "packaged_api_tests_passed": 2,
+      "rpm_digest_check_passed": true
+    },
+    {
+      "format": "appimage",
+      "name": "Bifang_0.2.1-dev.10_amd64.AppImage",
+      "sha256": "accb429798422151e0147758f472cf56410288d6dd8ec9d8e515f5a54f2e33c5",
+      "runtime_audit_elf_files": 175,
+      "maximum_allowed_glibc": "2.35",
+      "runtime_audit_passed": true,
+      "helper_checks_passed": 15,
+      "packaged_api_tests_passed": 2
+    }
+  ],
+  "api_test_scope": "Independent authenticated backend instances and fresh-folder review/Apply with absent and stale patch approval rejection, original-folder protection and draft cleanup",
+  "artifact_transfer_checksums_passed": true,
+  "build_vm_stopped": true,
+  "native_gui_tested": false,
+  "fresh_distribution_installation_tested": false,
+  "fuse_appimage_launch_tested": false,
+  "public_release": false,
+  "remaining": "Validate installation and native interaction on intended distributions, preserve notices and Debian prerelease ordering, then publish matching reviewed source and artifacts"
+}

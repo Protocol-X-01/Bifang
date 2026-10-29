@@ -1,0 +1,36 @@
+{
+  "observed_date_utc": "2026-10-25",
+  "desktop_version": "0.2.1-preview.6",
+  "debian_version": "0.2.1~preview.6",
+  "package_sha256": "e22bcb6180c3d8f1fe8b7ec53c43198ee6aa05593d611a999c6b89ebd9ced24d",
+  "application_sha256": "e4816ba6f5b8cfc4152a9c369f58f1527f551566a288cb4eed8b8ea6b63a4237",
+  "sidecar_sha256": "46831d2bb7dbac716c1bbbad397bfc68098eb8eaaf6c52b79e3142255070423e",
+  "source_archive_sha256": "cebf86168c7835ade23fe0663dade6b12c8aa3c014f7f31d5ffc7ffd536e1691",
+  "source_manifest_sha256": "96a3ea10b5d83f5c36fbfdbcf04291045f40c8d54d727268b1d9715f9b1db2a7",
+  "frozen_source_files": 455,
+  "source_inputs_unchanged_after_build_and_tests": true,
+  "bundled_python_library": "libpython3.11.so.1.0",
+  "fresh_guest_system_python": "3.12.3",
+  "backend_tests_passed": 522,
+  "frontend_tests_passed": 28,
+  "native_tests_passed": 6,
+  "fresh_ubuntu_engineering_receipt": "ubuntu-preview6-engineering.json",
+  "fresh_ubuntu_vision_receipt": "ubuntu-preview6-vision.json",
+  "packaged_live_remote_receipt": "preview6-remote-client.json",
+  "linux_notice_components": 516,
+  "linux_notice_components_without_notice_files": 0,
+  "known_private_value_screen_matches": 0,
+  "published": false,
+  "remaining": [
+    "Reviewed source export and publication decision",
+    "Android/iOS toolchains, actual builds and device proof",
+    "Final video/public submission owner decisions"
+  ],
+  "harness_history": [
+    "Initial vision controller terminated143 before seed delivery; only its owned orphan VM and disposable state were cleaned",
+    "Next vision attempt exposed an outdated preview5 fixture expectation; cleanup passed",
+    "Version-parameterized final vision run passed on a fresh guest",
+    "Two remote helper attempts stopped before model submission; one repaired run completed with672tokens"
+  ],
+  "reproducibility": "Deterministic source export and locked build inputs, not a bit-identical binary rebuild claim"
+}

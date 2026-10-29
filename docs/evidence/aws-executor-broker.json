@@ -1,0 +1,16 @@
+{
+  "api_client_uid": 10001,
+  "server_peer_uid_verified": 0,
+  "same_bind_mount_after_restart": true,
+  "scope": "Actual persistent broker, unprivileged API identity and forced restart proof",
+  "executor_module_sha256": "46eff2a6c8b3b40c53db438aaa890a391a7f5daf777a1182de0449fbd99a70a7",
+  "execution_image": "sha256:b4403f3b7acf5e0700a5dd4e7ab01456d62b557a208a04f8a42d3470d93b5730",
+  "broker_main_pid_changed": true,
+  "running_check_cleaned_after_broker_sigkill": true,
+  "scratch_empty_after_crash": true,
+  "socket_parent_inode_preserved": true,
+  "no_docker_socket_in_api_client": true,
+  "provider_calls": 0,
+  "public_coding_enabled": false,
+  "date_utc": "2026-10-25"
+}

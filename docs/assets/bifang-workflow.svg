@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 390" role="img" aria-labelledby="title desc">
+  <title id="title">The Bifang coding loop</title>
+  <desc id="desc">Inspect a repository, ask a hosted model, review its patch, approve checks, and keep or discard the change.</desc>
+  <defs>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E63946" stop-opacity=".24"/><stop offset="1" stop-color="#FF8A3D" stop-opacity=".04"/></linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#E63946"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient>
+    <filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.5"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#020617" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1200" height="390" rx="24" fill="#0F172A"/>
+  <path d="M0 300C210 230 330 390 560 310s350-150 640-40v120H0Z" fill="url(#glow)"/>
+  <text x="54" y="57" fill="#F7F7F7" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="700" letter-spacing="2.5">THE BIFANG LOOP</text>
+  <text x="54" y="85" fill="#94A3B8" font-family="Inter,Segoe UI,sans-serif" font-size="14">Agent speed, engineer judgment.</text>
+  <path d="M170 192H1030" stroke="#334155" stroke-width="3" stroke-dasharray="5 9"/>
+  <path d="M170 192H1030" stroke="url(#line)" stroke-width="2" opacity=".8"/>
+  <g filter="url(#shadow)" font-family="Inter,Segoe UI,sans-serif">
+    <g transform="translate(52 126)"><rect width="190" height="134" rx="16" fill="#172337" stroke="#334155"/><circle cx="27" cy="28" r="14" fill="#E63946"/><text x="27" y="33" text-anchor="middle" fill="white" font-size="12" font-weight="700">01</text><text x="20" y="69" fill="#F8FAFC" font-size="16" font-weight="700">Inspect</text><text x="20" y="94" fill="#94A3B8" font-size="12">Map files &amp; context</text><text x="20" y="115" fill="#64748B" font-size="11">Your workspace</text></g>
+    <g transform="translate(291 126)"><rect width="190" height="134" rx="16" fill="#172337" stroke="#334155"/><circle cx="27" cy="28" r="14" fill="#E63946"/><text x="27" y="33" text-anchor="middle" fill="white" font-size="12" font-weight="700">02</text><text x="20" y="69" fill="#F8FAFC" font-size="16" font-weight="700">Reason</text><text x="20" y="94" fill="#94A3B8" font-size="12">Nemotron via Token Factory</text><text x="20" y="115" fill="#64748B" font-size="11">NIM endpoint supported</text></g>
+    <g transform="translate(530 126)"><rect width="190" height="134" rx="16" fill="#172337" stroke="#334155"/><circle cx="27" cy="28" r="14" fill="#FF8A3D"/><text x="27" y="33" text-anchor="middle" fill="#0F172A" font-size="12" font-weight="700">03</text><text x="20" y="69" fill="#F8FAFC" font-size="16" font-weight="700">Review</text><text x="20" y="94" fill="#94A3B8" font-size="12">Inspect the proposed diff</text><text x="20" y="115" fill="#64748B" font-size="11">You choose what applies</text></g>
+    <g transform="translate(769 126)"><rect width="190" height="134" rx="16" fill="#172337" stroke="#334155"/><circle cx="27" cy="28" r="14" fill="#FF8A3D"/><text x="27" y="33" text-anchor="middle" fill="#0F172A" font-size="12" font-weight="700">04</text><text x="20" y="69" fill="#F8FAFC" font-size="16" font-weight="700">Verify</text><text x="20" y="94" fill="#94A3B8" font-size="12">Approve commands &amp; tests</text><text x="20" y="115" fill="#64748B" font-size="11">Results stay visible</text></g>
+    <g transform="translate(1008 126)"><rect width="140" height="134" rx="16" fill="#172337" stroke="#334155"/><circle cx="27" cy="28" r="14" fill="#22C55E"/><path d="m21 28 4 4 8-9" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="20" y="69" fill="#F8FAFC" font-size="16" font-weight="700">Decide</text><text x="20" y="94" fill="#94A3B8" font-size="12">Keep or discard</text><text x="20" y="115" fill="#64748B" font-size="11">Human stays in control</text></g>
+  </g>
+  <text x="54" y="333" fill="#64748B" font-family="Inter,Segoe UI,sans-serif" font-size="12">DISPOSABLE GIT WORKTREE BY DEFAULT</text>
+  <text x="1146" y="333" text-anchor="end" fill="#64748B" font-family="Inter,Segoe UI,sans-serif" font-size="12">OPEN SOURCE · TRACK 01</text>
+</svg>

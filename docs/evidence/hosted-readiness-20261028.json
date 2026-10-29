@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-10-28T09:11:45Z",
+  "tls_default_trust_verified": true,
+  "certificate_expires": "2026-10-31T14:02:09Z",
+  "health_status": 200,
+  "worker_enabled": true,
+  "coding_enabled": true,
+  "cache_control": "no-store",
+  "judge_authenticated_routes": ["/v1/schema", "/v1/coding/schema", "/v1/models/nebius"],
+  "judge_route_status": 200,
+  "missing_and_wrong_token_status": 401,
+  "plain_http_api_status": 404,
+  "synthetic_judge_review": {
+    "status": "succeeded",
+    "provider": "nebius",
+    "requested_and_reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "total_tokens": 298,
+    "tools_enabled": false,
+    "verification": "unverified_model_analysis",
+    "correct_comparison_present": true,
+    "analysis_sha256": "80d909cb793303822d59d1c5b65e3b833cb54d85c8432744e7d439975833df8a"
+  },
+  "service_configuration_changed": false,
+  "renewal_timer_refresh": "Unverified: local AWS CLI login expired; owner sign-in requested",
+  "funding_through_judging_verified": false,
+  "full_paired_coding_workflow_verified_this_check": false
+}

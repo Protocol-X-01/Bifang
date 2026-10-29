@@ -1,0 +1,69 @@
+name: desktop-platforms
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-packages:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            target: x86_64-pc-windows-msvc
+            bundles: nsis,msi
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            bundles: dmg
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            bundles: dmg
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      BIFANG_NO_DOTENV: '1'
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify native target
+        shell: bash
+        run: test "$(rustc --print host-tuple)" = '${{ matrix.target }}'
+      - run: npm ci
+        working-directory: desktop
+      - run: npm ci
+        working-directory: companion
+      - name: Build main IDE and its native Python sidecar
+        run: npm run tauri:build -- --bundles ${{ matrix.bundles }} --ci -- --locked
+        working-directory: desktop
+      - name: Verify native sidecar authentication and independent instances
+        shell: bash
+        run: |
+          suffix=''
+          if [ '${{ runner.os }}' = 'Windows' ]; then suffix='.exe'; fi
+          export BIFANG_TEST_SIDECAR="$GITHUB_WORKSPACE/desktop/src-tauri/binaries/bifang-server-${{ matrix.target }}$suffix"
+          uv run --locked --python 3.11 --extra dev pytest tests/test_sidecar_build.py tests/test_desktop_bootstrap.py -q --junitxml=platform-sidecar-tests.xml
+      - name: Build Companion
+        run: npm run tauri -- build --bundles ${{ matrix.bundles }} --ci -- --locked
+        working-directory: companion
+      - name: Require both installers and collect checksums
+        run: uv run --no-project --python 3.11 python scripts/collect-platform-packages.py --target ${{ matrix.target }} --output platform-packages.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bifang-${{ matrix.target }}
+          path: |
+            desktop/src-tauri/target/release/bundle/nsis/*.exe
+            desktop/src-tauri/target/release/bundle/msi/*.msi
+            desktop/src-tauri/target/release/bundle/dmg/*.dmg
+            companion/src-tauri/target/release/bundle/nsis/*.exe
+            companion/src-tauri/target/release/bundle/msi/*.msi
+            companion/src-tauri/target/release/bundle/dmg/*.dmg
+            platform-packages.json
+            platform-sidecar-tests.xml
+          if-no-files-found: error

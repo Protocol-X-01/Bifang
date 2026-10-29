@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "application_sha256": "7b92143d0269749793cd28943f5254b27e85e15624fbf7650e195c44208aa221",
+  "interface": "native Tauri WebDriver",
+  "model_requests": 0,
+  "history_fixture": "preseeded synthetic SQLite completed turns",
+  "history_picker_verified": true,
+  "restored_messages_verified": true,
+  "historical_markup_not_executed": true,
+  "http_503_fault_injection_preserved_current_session": true,
+  "failed_candidate_session_cleaned_up": true,
+  "server_process_restart_resume_verified": true,
+  "historical_commands_not_replayed": true,
+  "source_unchanged": true,
+  "model_fixture_requests": 3,
+  "provider_fixture": "local synthetic OpenAI-compatible HTTP service, not hosted inference",
+  "native_auto_explicit_configured_selection_verified": true,
+  "native_requested_reported_receipts_verified": true,
+  "native_busy_model_change_disabled": true,
+  "native_catalog_failure_recovery_verified": true
+}

@@ -1,0 +1,47 @@
+{
+  "scope": "Private loopback API, one real Token Factory proposal and actual gVisor check through persistent broker",
+  "new_model_jobs_requested": 1,
+  "generation": {
+    "provider": "nebius",
+    "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "verification": "unverified_model_proposal",
+    "usage": {
+      "completion_tokens": 272,
+      "prompt_tokens": 303,
+      "total_tokens": 575
+    }
+  },
+  "check_receipt": {
+    "candidate_sha256": "9b2665b1cde2b9bbb8c4053e78b278c7f48269b99801ad2e651e31cbd6b23c10",
+    "command": [
+      "python",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-v"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "output_sha256": "851838d66fd29f38bd2c4513729fe3303cf3d209dc7adcf4f8e228b4f7be095a",
+    "passed": true
+  },
+  "candidate_sha256": "9b2665b1cde2b9bbb8c4053e78b278c7f48269b99801ad2e651e31cbd6b23c10",
+  "test_source_sha256": "1b9096c1f659af88680864cb7125a073600e1b9377792e1ee93407e8c3f70092",
+  "fixture_proposal_ast_reviewed_before_automated_decisions": true,
+  "decision_method": "Explicitly scoped automated operator fixture, not a human UI walkthrough",
+  "owner_isolation_passed": true,
+  "idempotency_passed": true,
+  "early_apply_rejected": true,
+  "hosted_project_unchanged_until_separate_apply": true,
+  "independent_tests_unchanged": true,
+  "actual_api_restart_preserved_pending_approval": true,
+  "hosted_apply_completed": true,
+  "desktop_checkout_modified": false,
+  "public_coding_enabled": false,
+  "date_utc": "2026-10-25",
+  "api_image_id": "sha256:6beb992ec6b17242a0eba1bf2430fc716da80c6647bf2d366533131d20d52f0a",
+  "api_source_archive_sha256": "c3c08f9fc63057f750c170cf5a6ae1eca6ab3c632c21173d6f3118f03d5b2933",
+  "api_build_input_count": 97
+}

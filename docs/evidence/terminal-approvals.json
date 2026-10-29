@@ -1,0 +1,29 @@
+{
+  "observed_date_utc": "2026-10-25",
+  "scope": "Post-Preview6 local Textual headless keyboard approval and cancellation tests; real Agent tools with synthetic model responses",
+  "published": false,
+  "tui_source_sha256": "6997cb87451fc135b6bbb4c540cff5bda7dbb80e7fb91f8638f320349f5f09cb",
+  "approval_tests_sha256": "6b821da87dcbf1435aee6926e56683493f1bef73add115d85a5822ff5ddd1935",
+  "targeted_approval_tests_passed": 8,
+  "broader_terminal_tests_passed": 14,
+  "backend_regression_tests_passed": 530,
+  "regression_scope": "Same final TUI implementation; final eight-test rerun additionally asserts valid context and a next turn after pending-approval cancellation",
+  "verified": [
+    "Manual approval runs in a responsive UI worker rather than blocking console input",
+    "Initial focus and Enter deny; explicit Approve writes actual disposable file",
+    "Escape denies and Ctrl+X cancels pending approval without writing",
+    "Prompt markup remains literal",
+    "Cancellation closes provider stream and permits another request",
+    "Cancelled pending tool calls are removed from active conversation before another turn",
+    "Shutdown restores approval callback and does not authorize unanswered write",
+    "Approval dialog fits tested 80x24 terminal"
+  ],
+  "hosted_model_requests": 0,
+  "deployment_changes": false,
+  "remaining": [
+    "Executed independent check with candidate-bound evidence in terminal inspector",
+    "Terminal reviewed stage and separate original-checkout Apply",
+    "Real-terminal and screen-reader walkthrough",
+    "Packaging and any separate publication decision for these newer changes"
+  ]
+}

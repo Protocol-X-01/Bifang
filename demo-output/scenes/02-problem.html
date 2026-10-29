@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Bifang — Problem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1920px; height: 1080px;
+      background: #0F172A;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #F7F7F7;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    body::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(242, 139, 130, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .container { position: relative; z-index: 1; text-align: center; max-width: 900px; padding: 0 48px; }
+    .problem-badge {
+      display: inline-block; padding: 8px 24px;
+      background: rgba(242, 139, 130, 0.15); border: 1px solid rgba(242, 139, 130, 0.3);
+      border-radius: 9999px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #F28B82; margin-bottom: 32px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 64px; font-weight: 700; line-height: 1.15;
+      letter-spacing: -0.02em; color: #F7F7F7;
+      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+      opacity: 0;
+    }
+    .problem-text {
+      font-size: 22px; line-height: 1.6; color: #B8C3D6;
+      margin-top: 24px; max-width: 800px; margin-left: auto; margin-right: auto;
+      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s forwards;
+      opacity: 0;
+    }
+    .problem-text strong { color: #F28B82; }
+    .icon { margin-bottom: 24px; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="problem-badge">The Problem</span>
+    <svg class="icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F28B82" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <h1>Most AI coders are black boxes.</h1>
+    <p class="problem-text">You get a diff. <strong>Hope it works.</strong> Pray it passes tests. No receipts. No visibility. Just blind trust.</p>
+  </div>
+</body>
+</html>

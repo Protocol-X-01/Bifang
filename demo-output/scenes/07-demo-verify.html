@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Bifang — Demo: Verify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1920px; height: 1080px;
+      background: #0F172A;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #F7F7F7;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    body::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, rgba(34, 197, 94, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .container { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 1600px; padding: 0 32px; margin-bottom: 16px;
+      animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 9999px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: #22C55E;
+    }
+    .screenshot-frame {
+      width: 1600px; max-width: 100%;
+      background: #0A0F1C; border: 1px solid #2D3A50;
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7), 0 16px 32px rgba(0, 0, 0, 0.5);
+      animation: scaleInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+      opacity: 0; transform: scale(0.95) translateY(20px);
+    }
+    .frame-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: #151D30; border-bottom: 1px solid #2D3A50;
+    }
+    .frame-title { font-size: 13px; font-weight: 500; color: #9AA9BF; letter-spacing: 0.02em; }
+    .frame-dots { display: flex; gap: 6px; }
+    .frame-dots span { width: 10px; height: 10px; border-radius: 50%; background: #2D3A50; }
+    .frame-dots span:first-child { background: #E63946; }
+    .frame-dots span:nth-child(2) { background: #FF8A3D; }
+    .frame-dots span:nth-child(3) { background: #22C55E; }
+    .screenshot { display: block; width: 100%; height: auto; }
+    .overlay {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 24px; background: rgba(15, 29, 56, 0.95);
+      border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 9999px;
+      backdrop-filter: blur(16px); font-size: 14px; color: #86EFAC;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+      opacity: 0;
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleInUp {
+      from { opacity: 0; transform: scale(0.95) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar">
+      <span class="badge" style="background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);color:#22C55E;">Demo</span>
+      <span style="font-size:12px;color:#9AA9BF;">Tests pass. Ready to Apply.</span>
+    </div>
+    <div class="screenshot-frame">
+      <div class="frame-header">
+        <span class="frame-title">Bifang — DiffViewer</span>
+        <div class="frame-dots"><span></span><span></span><span></span></div>
+      </div>
+      <img class="screenshot" src="../frames/bifang-desktop-verified.png" alt="Bifang diff viewer tests passing" />
+      <div class="overlay">Tests pass. Ready to Apply.</div>
+    </div>
+  </div>
+</body>
+</html>

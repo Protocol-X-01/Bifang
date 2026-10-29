@@ -1,0 +1,45 @@
+[package]
+name = "bifang-tui"
+version = "0.2.1-dev.11"
+description = "Bifang TUI - Evidence-driven coding workspace for the terminal"
+authors = ["Bifang Team"]
+license = "Apache-2.0"
+edition = "2021"
+
+[lib]
+name = "bifang_tui"
+path = "src/lib.rs"
+
+[dependencies]
+ratatui = { version = "0.28", features = ["crossterm"] }
+crossterm = { version = "0.28", features = ["use-dev-tty"] }
+tokio = { version = "1", features = ["full", "macros", "rt-multi-thread"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+url = "2"
+portable-pty = "0.9"
+tokio-stream = "0.1"
+futures = "0.3"
+thiserror = "1"
+dirs = "5"
+home = "0.5"
+urlencoding = "2"
+
+[dev-dependencies]
+ratatui = { version = "0.28" }
+
+[[bin]]
+name = "bifang-tui"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

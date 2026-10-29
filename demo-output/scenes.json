@@ -1,0 +1,120 @@
+{
+  "title": "Bifang — Build. Run. Verify.",
+  "duration": 45,
+  "aspectRatio": "16:9",
+  "resolution": "1920x1080",
+  "scenes": [
+    {
+      "id": "hook",
+      "duration": 4,
+      "type": "title",
+      "narration": "Bifang. The coding agent that shows its work.",
+      "visual": {
+        "type": "title",
+        "title": "Bifang",
+        "subtitle": "Build. Run. Verify.",
+        "badge": "Agentic Engineering"
+      }
+    },
+    {
+      "id": "problem",
+      "duration": 5,
+      "type": "problem",
+      "narration": "Most AI coders are black boxes. You get a diff. Hope it works. Pray it passes tests.",
+      "visual": {
+        "type": "problem",
+        "text": "Black box AI = blind trust",
+        "icon": "warning"
+      }
+    },
+    {
+      "id": "solution",
+      "duration": 6,
+      "type": "solution",
+      "narration": "Bifang is different. Every action. Every model call. Every test result. Visible. Reviewable. Yours to approve.",
+      "visual": {
+        "type": "solution",
+        "text": "Every action. Reviewable. Yours to approve.",
+        "badge": "Evidence-driven"
+      }
+    },
+    {
+      "id": "demo_1_inspect",
+      "duration": 5,
+      "type": "demo",
+      "narration": "Open a project. Bifang maps the repository. You ask for a fix. It reads the code before proposing anything.",
+      "visual": {
+        "type": "screenshot",
+        "image": "bifang-desktop-initial.png",
+        "focus": "FileExplorer",
+        "overlay": "Inspecting workspace..."
+      }
+    },
+    {
+      "id": "demo_2_propose",
+      "duration": 5,
+      "type": "demo",
+      "narration": "The agent proposes a focused patch. You see the exact changes before anything runs. No surprises.",
+      "visual": {
+        "type": "screenshot",
+        "image": "bifang-desktop-verified.png",
+        "focus": "DiffViewer",
+        "overlay": "Proposed changes visible"
+      }
+    },
+    {
+      "id": "demo_3_approve",
+      "duration": 5,
+      "type": "demo",
+      "narration": "You approve. Bifang runs the tests in an isolated sandbox. Independent check receipt. You see the evidence.",
+      "visual": {
+        "type": "screenshot",
+        "image": "bifang-approval.png",
+        "focus": "ApprovalPicker",
+        "overlay": "Your approval. Independent check receipt."
+      }
+    },
+    {
+      "id": "demo_4_verify",
+      "duration": 5,
+      "type": "demo",
+      "narration": "Tests pass. The diff is clean. You Apply. Original repo untouched until you say so. Build. Run. Verify.",
+      "visual": {
+        "type": "screenshot",
+        "image": "bifang-desktop-verified.png",
+        "focus": "DiffViewer",
+        "overlay": "Tests pass. Ready to Apply."
+      }
+    },
+    {
+      "id": "features",
+      "duration": 5,
+      "type": "features",
+      "narration": "Disposable worktrees. Three approval modes. Independent checks. Model receipts. Visual debugging. Remote forge. Mobile companion. All evidence-driven.",
+      "visual": {
+        "type": "features",
+        "items": [
+          "Disposable Git worktrees",
+          "Three approval modes",
+          "Independent check receipts",
+          "Model routing receipts",
+          "Visual debugging",
+          "Remote forge",
+          "Mobile companion"
+        ]
+      }
+    },
+    {
+      "id": "cta",
+      "duration": 5,
+      "type": "cta",
+      "narration": "Open source. Apache 2.0. Built for the Nebius x NVIDIA Hackathon. Try Bifang today. Build. Run. Verify.",
+      "visual": {
+        "type": "cta",
+        "title": "Build. Run. Verify.",
+        "subtitle": "github.com/Protocol-X-01/bifang",
+        "badge": "Apache 2.0 • Nebius x NVIDIA Hackathon"
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "scope": "Actual gVisor checks on the isolated AWS host, original synthetic source only",
+  "executor_module_sha256": "c3412194af33f57c89e65b62d625a4e97b531968058eb49a7983d6a7b3d99459",
+  "execution_image": "sha256:b4403f3b7acf5e0700a5dd4e7ab01456d62b557a208a04f8a42d3470d93b5730",
+  "runtime_binary_sha256": "5b4016fa43a9d35835253925cb6d05d3e42fdb9eb8bcd426c8b25444090e93e6",
+  "runtime": "bifang-runsc",
+  "failing_baseline": {
+    "candidate_sha256": "47ae704115914665c19005c401bf640376a08a7b2655c5097ce093a92d7bb1dd",
+    "command": [
+      "python",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-v"
+    ],
+    "exit_code": 1,
+    "timed_out": false,
+    "output_sha256": "c3879da5ddb6c9735c575dd66dde7651bcb77eb4a6641332e99e932e3635fa7b"
+  },
+  "passing_candidate": {
+    "candidate_sha256": "bee4fc5d0fe6923c5ba333ec7199ad63530fad39041314b216956c888dc04b28",
+    "command": [
+      "python",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-v"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "output_sha256": "8bdb2809ac191c5e04c6334b62ca2e6fa6299f0020a9e7784b151dbcde633cd0"
+  },
+  "independent_tests_sha256": "d2f3b257eb30ce3406d7ef2881f8fb00cc9d591476c7637ec942ae341d4822c2",
+  "selected_uid_environment_mount_write_and_network_boundaries_passed": true,
+  "timeout_destroyed_container": true,
+  "output_flood_rejected": true,
+  "missing_runtime_failed_closed": true,
+  "actual_unix_transport": true,
+  "disconnect_cancel_destroyed_running_container": true,
+  "private_scratch_empty": true,
+  "provider_calls": 0,
+  "public_coding_enabled": false,
+  "date_utc": "2026-10-25",
+  "pinned_gvisor_release": "release-20261019.0",
+  "gvisor_archive_sha512": "7cbc2aeeee809dcccfb40e612504a1b76f2c119790cee59e482f7b35428cccc4f71705e7e322442d07d1f7d29b5d9e72e31319fc3088d6dcbec9fc7c1f0d8881",
+  "runtime_verification": "Operator-owned binary checksum and Docker runtime/container metadata, not in-container dmesg",
+  "limitations": [
+    "Selected synthetic boundaries and one Python standard-library fixture; not an exhaustive escape analysis or immunity claim.",
+    "The public coding API is still disabled; this does not prove a model-generated hosted coding job.",
+    "Broker proof uses a temporary local Unix socket; persistent service/API mounting and non-root API-client identity proof remain."
+  ]
+}

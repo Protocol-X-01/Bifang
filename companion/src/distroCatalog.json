@@ -1,0 +1,354 @@
+{
+  "version": "4.34.2",
+  "commit": "deb3abd32f233605b51baf6726ba70ad9ca57c57",
+  "environments": [
+    {
+      "id": "adelie",
+      "name": "Adélie Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/adelie.sh",
+      "profile_sha256": "89ae77f2eb5662b3395a9e24d89aafa0f960602b3924c5969248fcb9018f8bd2",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/adelie-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "455427ce0c20f2b5ad6801adc8baaee24e482ffea8b0b868ac07d5d5fb6f88f7"
+        },
+        "arm": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/adelie-armv7-pd-v4.29.0.tar.xz",
+          "sha256": "81fb4846a5c3737e73e4ad79a391b21516238f4f1cd46acabeca0846908791b0"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/adelie-x86_64-pd-v4.29.0.tar.xz",
+          "sha256": "8b7f36a1c9c899f223c9bc7a84c05104f88224326ea273212f8ffe3bf8002df5"
+        }
+      }
+    },
+    {
+      "id": "almalinux",
+      "name": "AlmaLinux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/almalinux.sh",
+      "profile_sha256": "290def2225825c0e57e834f1d3647995db080995026d47dc03021e7fd6d79989",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/almalinux-aarch64-pd-v4.31.0.tar.xz",
+          "sha256": "c01b1e2a19c4ff4cc927f625cac0c8814241fcae0d630250246b1891eff41ef5"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/almalinux-x86_64-pd-v4.31.0.tar.xz",
+          "sha256": "60580889a052a2d1ccef4d478830a88b716b81bc934fc3ae27478dc9e13a3a55"
+        }
+      }
+    },
+    {
+      "id": "alpine",
+      "name": "Alpine Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/alpine.sh",
+      "profile_sha256": "29aa56ac4f03e2e46d5a71949b32b049a1dc36e974aae47fc54993a604a0d8a9",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/alpine-aarch64-pd-v4.30.1.tar.xz",
+          "sha256": "bb23e51cd5b5ae56bf946a34992876902de1bb2ecc0f639d59c702c6371adc62"
+        },
+        "arm": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/alpine-arm-pd-v4.30.1.tar.xz",
+          "sha256": "ca1039d26481b63a412cd39d699c7f559c40ed5c532573c720e00218b5af0fd4"
+        },
+        "i686": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/alpine-i686-pd-v4.30.1.tar.xz",
+          "sha256": "11ae8bbd14f789b260eb5b0c89d267e427d57e9adb1e1f71458a911c4891ecae"
+        },
+        "riscv64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/alpine-riscv64-pd-v4.30.1.tar.xz",
+          "sha256": "d3afaf844848d06f575d443303a0f703c0d8d9dc397373689ea299791641c4ab"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/alpine-x86_64-pd-v4.30.1.tar.xz",
+          "sha256": "0890920f83becc1c3529ca53fc71d7516a01d3de4139fbe936c8c60c6c32f8d1"
+        }
+      }
+    },
+    {
+      "id": "archlinux",
+      "name": "Arch Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/archlinux.sh",
+      "profile_sha256": "fe6de21dc78bd37ace839b49fab62ea999fb9cffd79b1efc9e0a2f1c34481869",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/archlinux-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "08d74365213e647c558e561b0a2a7afb6fa3dfe345a1994c62ccac5af1a1cdc6"
+        },
+        "arm": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/archlinux-arm-pd-v4.29.0.tar.xz",
+          "sha256": "df17fd1058a103ed64811900498c9432abd303eee3eb27cbacab041a14011fba"
+        },
+        "i686": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/archlinux-i686-pd-v4.29.0.tar.xz",
+          "sha256": "5fc6240f81c88bb69391c189dd2d0f4f5d9dc9503b400baee3bef060a49ee37c"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/archlinux-x86_64-pd-v4.29.0.tar.xz",
+          "sha256": "8249202836643a4a4f922004c34faa2c3f7d9fec0464ee23b087ad325f1610d9"
+        }
+      }
+    },
+    {
+      "id": "artix",
+      "name": "Artix Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/artix.sh",
+      "profile_sha256": "0fe415b001bddc41599071eb022f4abdb21c56242804343b7263de17ca23c37f",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/artix-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "c6ef7e1cbf8dd88755b8b2c681a7830c7a79476dd47d7a43d2a7fe537c1d5b28"
+        }
+      }
+    },
+    {
+      "id": "chimera",
+      "name": "Chimera Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/chimera.sh",
+      "profile_sha256": "e29d42fd8479ad8a5bb61cddcd50e1f0b20dcef3032c42e226b4026f1987320d",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/chimera-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "cd27f3d8521a510fcb73f3cfa8759a09422a7bc33c30a8cd1659233e318dbb47"
+        },
+        "riscv64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/chimera-riscv64-pd-v4.29.0.tar.xz",
+          "sha256": "3790528f050b760041fc653be85b6b29045e702624979a103c9ddd0482a74e96"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/chimera-x86_64-pd-v4.29.0.tar.xz",
+          "sha256": "3efe628d5c57d4d35ac848d7631f9567277e32f59c3f0e4a790d428b323c1a37"
+        }
+      }
+    },
+    {
+      "id": "debian",
+      "name": "Debian (trixie)",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/debian.sh",
+      "profile_sha256": "8a6a44f0585b8a7fea6991b3e6b6f68f7cd40c7393869d42739ae073aeb50e65",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/debian-trixie-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "3834a11cbc6496935760bdc20cca7e2c25724d0cd8f5e4926da8fd5ca1857918"
+        },
+        "arm": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/debian-trixie-arm-pd-v4.29.0.tar.xz",
+          "sha256": "99bcba87d8d1c66c0de06259ac0a270eb0a20f8b4af39beb0705d28846d78b90"
+        },
+        "i686": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/debian-trixie-i686-pd-v4.29.0.tar.xz",
+          "sha256": "a388a0531301b033ef5509ab6a50cc886f7f90e7ec9cac02569b45af1900229a"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/debian-trixie-x86_64-pd-v4.29.0.tar.xz",
+          "sha256": "4b8f33b80a10d734ff935e5934588572f860c0c38a68bf91db59af0580370716"
+        }
+      }
+    },
+    {
+      "id": "deepin",
+      "name": "Deepin",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/deepin.sh",
+      "profile_sha256": "4a16345bda9ffde38d0affc366eb15a5a937a73ecec07b16588589d8aef41f6a",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/deepin-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "3ed17c2fa45c8fd00468378e1f140af5ce6b6f633f986b2d1ae0e81d68eefb64"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/deepin-x86_64-pd-v4.29.0.tar.xz",
+          "sha256": "b859e83eaf6a54b14579e8e06231056f75c73fec7332e20a1596dc3122048b3e"
+        }
+      }
+    },
+    {
+      "id": "fedora",
+      "name": "Fedora",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/fedora.sh",
+      "profile_sha256": "582609c3ed1948bd234bdf51103680315f419b638236c87bb0a623a6e6e646ef",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/fedora-aarch64-pd-v4.31.0.tar.xz",
+          "sha256": "e3c0aca71572ed343a29c6f41c6150583bf840f903047bb97b1ec45cefe95865"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/fedora-x86_64-pd-v4.31.0.tar.xz",
+          "sha256": "f8d43b3b82be1131a1a61e7bb2bfe7170a232e643855ee4fe3ac07b4c110ab97"
+        }
+      }
+    },
+    {
+      "id": "manjaro",
+      "name": "Manjaro",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/manjaro.sh",
+      "profile_sha256": "f3511c93fd9815c6f34f4c156b0f3f5eb412f6ac67f08e05dd9afda2bfc1b408",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/manjaro-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "2847ef8817cfddc124b0af7b5cbe31474df8b4b317c6b3dfabf1b8a19d270e70"
+        }
+      }
+    },
+    {
+      "id": "opensuse",
+      "name": "OpenSUSE",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/opensuse.sh",
+      "profile_sha256": "2ff3fcee82633a38ca1b18585d04d6c5ea2165c2cf14c1f82264814ba1e330a6",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/opensuse-aarch64-pd-v4.31.0.tar.xz",
+          "sha256": "8f5accdfb6404dc3caa0487505366a19c2a0cb742839353f862b583c8033128a"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/opensuse-x86_64-pd-v4.31.0.tar.xz",
+          "sha256": "cc7008ce71993f4f5505a204769c7e6aca19f60da945c762b0639b7c9a00cdd5"
+        }
+      }
+    },
+    {
+      "id": "oracle",
+      "name": "Oracle Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/oracle.sh",
+      "profile_sha256": "e8727a798cace7abc9c2fdeeef40142e595a2d72a77b33423420fad75cd3a6f9",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/oraclelinux-aarch64-pd-v4.31.0.tar.xz",
+          "sha256": "e94abaf53b99c925be669770fe980d4dffe4cc6bc60d24bfec26a751b704be13"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/oraclelinux-x86_64-pd-v4.31.0.tar.xz",
+          "sha256": "abefe27cfe519196de827af3bcbf44f5e10087b4e6b056226d51b188311cdd79"
+        }
+      }
+    },
+    {
+      "id": "pardus",
+      "name": "Pardus",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/pardus.sh",
+      "profile_sha256": "2fe300e69642e3d5698a2724ef6caf150b14f5dfc6126c17a21a790d1d90565a",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.33.2/pardus-aarch64-pd-v4.33.2.tar.xz",
+          "sha256": "77969ecd9c08c43e98cb09b2661b04042bd83155966698928d0bc423fc0fd118"
+        },
+        "i686": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.33.2/pardus-i686-pd-v4.33.2.tar.xz",
+          "sha256": "4acb4163121ece6534bc04d4e4fdcae299064caea6e0fd7ade1f6d47f880b9a6"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.33.2/pardus-x86_64-pd-v4.33.2.tar.xz",
+          "sha256": "d214fa2a640419a3edafc2747bebcc1cd08ab77686fc0ba328f97f46ee9fec24"
+        }
+      }
+    },
+    {
+      "id": "rockylinux",
+      "name": "Rocky Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/rockylinux.sh",
+      "profile_sha256": "915eb8411ca90d856cc697156718da615940b661105411e92e7dc147015318d6",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/rocky-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "dc8389b3a1d3b8c8cc2448b49f8214463d4ec8b62eae15200d90a603485d43c1"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/rocky-x86_64-pd-v4.29.0.tar.xz",
+          "sha256": "85ff3e809544c8f4c619ccf2fde19f9d8e3b6405041a87c99d60317b402ae0dc"
+        }
+      }
+    },
+    {
+      "id": "termux",
+      "name": "Termux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/termux.sh",
+      "profile_sha256": "ade32a59f08f8807ad1db2f7de1ca897dde800e79a90841b6db2fe03de510889",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/termux-packages/releases/download/bootstrap-2025.11.23-r1%2Bapt.android-7/bootstrap-aarch64.zip",
+          "sha256": "bec3e2b674b6efee7ff0e2a12824eb376e3fe182cc424d3357dad72c7cdd20d5"
+        },
+        "arm": {
+          "url": "https://github.com/termux/termux-packages/releases/download/bootstrap-2025.11.23-r1%2Bapt.android-7/bootstrap-arm.zip",
+          "sha256": "8c0487ed2e9a5a43af8347646b93641ed64939c532136cd2bc8df57eed5430b0"
+        },
+        "i686": {
+          "url": "https://github.com/termux/termux-packages/releases/download/bootstrap-2025.11.23-r1%2Bapt.android-7/bootstrap-i686.zip",
+          "sha256": "043df622bc3ce19583a18d1ec89f78ed990d0a0297d24e631141817e6a17a31c"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/termux-packages/releases/download/bootstrap-2025.11.23-r1%2Bapt.android-7/bootstrap-x86_64.zip",
+          "sha256": "8b36eafb6bf25ae32dd1646ddd5fe5b614510b68509df4eecf5a3e66409fc7f6"
+        }
+      }
+    },
+    {
+      "id": "trisquel",
+      "name": "Trisquel GNU/Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/trisquel.sh",
+      "profile_sha256": "e28c3779146303cd520eaffd21438ac3a333a123ac5d66708a8327c5e604e550",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/trisquel-aarch64-pd-v4.31.0.tar.xz",
+          "sha256": "7a6bc54c0a66f16d2ad8ff58730bbd689766b99eb114f56ff260939490ae5446"
+        },
+        "arm": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/trisquel-arm-pd-v4.31.0.tar.xz",
+          "sha256": "0da21cc6c06aa53f89495d71151da69e1c5bb92af974b7dda8de4b1b7df28863"
+        },
+        "i686": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/trisquel-i686-pd-v4.31.0.tar.xz",
+          "sha256": "cf45df57beb015178d588463bf2c6a686952930a9a3f4583fc9bcc2e54e1412b"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.31.0/trisquel-x86_64-pd-v4.31.0.tar.xz",
+          "sha256": "834fe6ba50a448e9bbab1556002e66b81e7712ffa44b961678fb6de10136de17"
+        }
+      }
+    },
+    {
+      "id": "ubuntu",
+      "name": "Ubuntu (25.10)",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/ubuntu.sh",
+      "profile_sha256": "cd913a161e2bdee60af913b018cdb792077d5194564443f9d224dce75bf26fa5",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/ubuntu-questing-aarch64-pd-v4.30.1.tar.xz",
+          "sha256": "5ab35b90cd9a9f180656261ba400a135c4c01c2da4b74522118342f985c2d328"
+        },
+        "arm": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/ubuntu-questing-arm-pd-v4.30.1.tar.xz",
+          "sha256": "b074efe535b565f426219f20b35af0c4a7b3d0bc18ebd4fa11ccbd7370315b53"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.30.1/ubuntu-questing-x86_64-pd-v4.30.1.tar.xz",
+          "sha256": "74f7c8492a2f3e720d5aa89de6572cbb90b14c4b21dee87ab33416b6fb1088c3"
+        }
+      }
+    },
+    {
+      "id": "void",
+      "name": "Void Linux",
+      "profile_url": "https://raw.githubusercontent.com/termux/proot-distro/deb3abd32f233605b51baf6726ba70ad9ca57c57/distro-plugins/void.sh",
+      "profile_sha256": "16a020d394eb29b31e74d21d1f301dcbf001f98ed0596ed0f130ea7f94e518b0",
+      "architectures": {
+        "aarch64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/void-aarch64-pd-v4.29.0.tar.xz",
+          "sha256": "7a7c449b3efe504749e40f556d13812010bccc930a820a56973a0f5fc2f16997"
+        },
+        "arm": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/void-arm-pd-v4.29.0.tar.xz",
+          "sha256": "5cb87c0ca8ee91047f3634789314920be6d914ce4f196157cb3949706ce18d03"
+        },
+        "i686": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/void-i686-pd-v4.29.0.tar.xz",
+          "sha256": "0ad014426c1e0dc7a0cfe8175157b28b2a8cb75b83d7f44b7bbc35420125a269"
+        },
+        "x86_64": {
+          "url": "https://github.com/termux/proot-distro/releases/download/v4.29.0/void-x86_64-pd-v4.29.0.tar.xz",
+          "sha256": "2853b9433b9051aa2512e7376a71736196fb3241eb90ba11110c6e867854c666"
+        }
+      }
+    }
+  ]
+}

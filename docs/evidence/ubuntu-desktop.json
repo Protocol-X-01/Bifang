@@ -1,0 +1,34 @@
+{
+  "provider": "nebius",
+  "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+  "application_sha256": "3abcf6be5927650d7a9af619036dd02b40ce1b83807a728a9f19b400343cc592",
+  "interface": "native Tauri WebDriver",
+  "workspace_selection": "in-app path dialog",
+  "invalid_workspace_paths_rejected": [
+    "relative",
+    "file",
+    "nonexistent"
+  ],
+  "approval_mode": "automated exact-action allowlist",
+  "approvals": [
+    {
+      "action": "Run command?\npython3 -m unittest -v check_receipts",
+      "approved": true
+    },
+    {
+      "action": "Allow Bifang to write receipts.py?",
+      "approved": true
+    },
+    {
+      "action": "Run command?\npython3 -m unittest -v check_receipts",
+      "approved": true
+    }
+  ],
+  "changed_files": [
+    "receipts.py"
+  ],
+  "checks_unchanged": true,
+  "baseline_returncode": 1,
+  "final_returncode": 0,
+  "continuous_screen_recording": false
+}

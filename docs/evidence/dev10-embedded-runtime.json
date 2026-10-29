@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-28",
+  "package_sha256": "e1f19e89c591553322c5ebad5331be37e2255157eb0af913b40eaa088e2fb76a",
+  "sidecar_sha256": "039afcb8a84f878e2662b2e577de60f994c487064228532cdbe60dc554541bf2",
+  "embedded_elf_files": 33,
+  "maximum_allowed_glibc": "2.35",
+  "passed": true,
+  "violations": [],
+  "scope": "Static PyInstaller binary/data-member extraction and ELF runtime audit; not dependency resolution or component licence verification",
+  "appimage_sha256": "accb429798422151e0147758f472cf56410288d6dd8ec9d8e515f5a54f2e33c5",
+  "appimage_permissions": {
+    "AppRun": "0755",
+    "AppRun.wrapped": "0755",
+    "usr/bin/bifang-desktop": "0775",
+    "usr/bin/bifang-server": "0755"
+  },
+  "linux_ci_check_added": true,
+  "remote_ci_run_verified": false,
+  "focused_local_tests_passed": 21,
+  "installed_or_published": false
+}

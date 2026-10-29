@@ -1,0 +1,21 @@
+{
+  "scope": "Native functional instrumentation on the owner-offered Xiaomi 12T running Android 15",
+  "application_apk_sha256": "95ead0fd9535ce1156710e358f24ea7e8d55559a2aa3525893da0b70f45d592a",
+  "test_class": "com.bifang.companion.DeviceHardwareInstrumentedTest",
+  "test_count": 2,
+  "passed": true,
+  "cpu": {
+    "available_threads": 8,
+    "workers_started": 8,
+    "reference_results_matched": true
+  },
+  "gpu": {
+    "renderer": "Mali-G610 MC6",
+    "api": "OpenGL ES 3.2 v1.r32p1-01eac0.54329dee8f160f288c574caaf67bbe3f",
+    "values_checked": 256,
+    "reference_results_matched": true
+  },
+  "model_inference_benchmarked": false,
+  "proot_guest_gpu_access_tested": false,
+  "serial_recorded": false
+}

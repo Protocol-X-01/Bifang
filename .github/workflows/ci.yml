@@ -1,0 +1,132 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: uv sync --locked --extra dev --extra observability
+      - run: uv run python -m compileall -q src
+      - name: Lint maintained safety-critical modules
+        run: >-
+          uv run ruff check src/bifang/workspace.py src/bifang/tracing
+          tests/test_workspace.py tests/test_config_env.py tests/test_ngc.py
+          tests/test_phoenix_tracing.py tests/test_server_auth.py
+          src/bifang/judge_relay.py src/bifang/judge_access.py
+          src/bifang/model_ids.py src/bifang/vercel_bundle.py
+          src/bifang/approvals.py tests/test_approvals.py
+          tests/test_judge_relay.py tests/test_judge_access.py
+          tests/test_vercel_bundle.py tests/test_desktop_rehearsal.py
+          scripts/rehearse-desktop.py scripts/check-judge-access.py
+          scripts/smoke-lobstertrap.py
+          scripts/smoke-desktop-approvals.py
+      - run: uv run pytest -q
+
+  desktop:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            desktop/package-lock.json
+            companion/package-lock.json
+      - run: npm ci
+        working-directory: desktop
+      - run: npm run build
+        working-directory: desktop
+      - run: npm test
+        working-directory: desktop
+      - run: npm ci
+        working-directory: companion
+      - run: npm run build
+        working-directory: companion
+      - run: npm test
+        working-directory: companion
+
+  desktop-native:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential curl wget file libssl-dev libxdo-dev \
+            libayatana-appindicator3-dev librsvg2-dev libwebkit2gtk-4.1-dev \
+            libfuse2 patchelf rpm cpio bubblewrap
+      - name: Expose selected Node to sandboxed setup checks
+        run: |
+          node_prefix=$(dirname "$(dirname "$(node -p 'process.execPath')")")
+          test -f "$node_prefix/lib/node_modules/npm/bin/npm-cli.js"
+          sudo install -d /usr/local/lib/bifang-node
+          sudo cp -a "$node_prefix"/. /usr/local/lib/bifang-node/
+          sudo ln -sfn /usr/local/lib/bifang-node/bin/node /usr/bin/node
+          sudo ln -sfn /usr/local/lib/bifang-node/bin/npm /usr/bin/npm
+      - run: npm ci
+        working-directory: desktop
+      - run: npm run tauri:build -- --no-bundle --ci
+        working-directory: desktop
+      - name: Bundle each Linux format with its own native marker
+        run: uv run --locked --no-dev python scripts/bundle-linux.py
+      - name: Check extracted Linux runtime baseline
+        run: |
+          mkdir -p /tmp/bifang-linux-audit/deb /tmp/bifang-linux-audit/rpm /tmp/bifang-linux-audit/rpmdb
+          dpkg-deb --extract desktop/src-tauri/target/release/bundle/deb/*.deb /tmp/bifang-linux-audit/deb
+          rpm --dbpath /tmp/bifang-linux-audit/rpmdb --initdb
+          rpm --dbpath /tmp/bifang-linux-audit/rpmdb --checksig desktop/src-tauri/target/release/bundle/rpm/*.rpm > /tmp/bifang-linux-audit/rpm-integrity.txt
+          rpm_package=$(realpath desktop/src-tauri/target/release/bundle/rpm/*.rpm)
+          rpm2archive -n "$rpm_package" > /tmp/bifang-linux-audit/rpm-payload.tar
+          if [ ! -s /tmp/bifang-linux-audit/rpm-payload.tar ]; then
+            mv "$rpm_package.tar" /tmp/bifang-linux-audit/rpm-payload.tar
+          fi
+          tar -xf /tmp/bifang-linux-audit/rpm-payload.tar -C /tmp/bifang-linux-audit/rpm
+          appimage=$(realpath desktop/src-tauri/target/release/bundle/appimage/*.AppImage)
+          (cd /tmp/bifang-linux-audit && "$appimage" --appimage-extract > appimage-extraction.log)
+          for format in deb rpm squashfs-root; do
+            .build-server-venv/bin/python scripts/check-sidecar-runtime.py "/tmp/bifang-linux-audit/$format/usr/bin/bifang-server" \
+              --max-glibc 2.35 --output "/tmp/bifang-linux-audit/$format-embedded-runtime.json"
+            uv run --locked --no-dev python scripts/check-linux-runtime.py "/tmp/bifang-linux-audit/$format" \
+              --max-glibc 2.35 --output "/tmp/bifang-linux-audit/$format-runtime.json"
+            uv run --locked --no-dev python scripts/check-workbench-helper.py "/tmp/bifang-linux-audit/$format/usr/bin/bifang-server" \
+              --metrics --setup --languages --output "/tmp/bifang-linux-audit/$format-helper.json"
+            uv run --locked --no-dev python scripts/check-sidecar-health.py "/tmp/bifang-linux-audit/$format/usr/bin/bifang-server" \
+              --output "/tmp/bifang-linux-audit/$format-api-health.json"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bifang-linux-packages
+          path: |
+            desktop/src-tauri/target/release/bundle/deb/*.deb
+            desktop/src-tauri/target/release/bundle/appimage/*.AppImage
+            desktop/src-tauri/target/release/bundle/rpm/*.rpm
+            /tmp/bifang-linux-audit/*-runtime.json
+            /tmp/bifang-linux-audit/*-helper.json
+            /tmp/bifang-linux-audit/*-api-health.json
+            /tmp/bifang-linux-audit/rpm-integrity.txt
+          if-no-files-found: error
+
+  build:
+    needs: test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Build Docker image
+        run: docker build -t bifang-coding-agent:${{ github.sha }} .
+      - name: Verify container permissions and authenticated API lifecycle
+        run: uv run --locked --no-dev python scripts/smoke-container.py --image bifang-coding-agent:${{ github.sha }}
+

@@ -1,0 +1,95 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Isolated Bifang remote-service host. No public application ingress until HTTPS is configured.",
+  "Parameters": {
+    "AvailabilityZone": {"Type": "AWS::EC2::AvailabilityZone::Name"},
+    "ImageId": {"Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>", "Default": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"},
+    "InstanceType": {"Type": "String", "Default": "t3.small", "AllowedValues": ["t3.small"]},
+    "EnableHttpsIngress": {"Type": "String", "Default": "false", "AllowedValues": ["false", "true"]}
+  },
+  "Conditions": {"HttpsIngressEnabled": {"Fn::Equals": [{"Ref": "EnableHttpsIngress"}, "true"]}},
+  "Resources": {
+    "Network": {"Type": "AWS::EC2::VPC", "Properties": {
+      "CidrBlock": "10.78.0.0/24", "EnableDnsSupport": true, "EnableDnsHostnames": true,
+      "Tags": [{"Key": "Project", "Value": "Bifang"}, {"Key": "Name", "Value": "bifang-remote"}]
+    }},
+    "InternetGateway": {"Type": "AWS::EC2::InternetGateway", "Properties": {"Tags": [{"Key": "Project", "Value": "Bifang"}]}},
+    "GatewayAttachment": {"Type": "AWS::EC2::VPCGatewayAttachment", "Properties": {"VpcId": {"Ref": "Network"}, "InternetGatewayId": {"Ref": "InternetGateway"}}},
+    "Subnet": {"Type": "AWS::EC2::Subnet", "Properties": {
+      "VpcId": {"Ref": "Network"}, "CidrBlock": "10.78.0.0/26", "AvailabilityZone": {"Ref": "AvailabilityZone"},
+      "MapPublicIpOnLaunch": true, "Tags": [{"Key": "Project", "Value": "Bifang"}]
+    }},
+    "Routes": {"Type": "AWS::EC2::RouteTable", "Properties": {"VpcId": {"Ref": "Network"}, "Tags": [{"Key": "Project", "Value": "Bifang"}]}},
+    "SubnetRoutes": {"Type": "AWS::EC2::SubnetRouteTableAssociation", "Properties": {"SubnetId": {"Ref": "Subnet"}, "RouteTableId": {"Ref": "Routes"}}},
+    "InternetRoute": {"Type": "AWS::EC2::Route", "DependsOn": "GatewayAttachment", "Properties": {
+      "RouteTableId": {"Ref": "Routes"}, "DestinationCidrBlock": "0.0.0.0/0", "GatewayId": {"Ref": "InternetGateway"}
+    }},
+    "HostSecurityGroup": {"Type": "AWS::EC2::SecurityGroup", "Properties": {
+      "GroupDescription": "Bifang isolated host: no inbound ports during preparation", "VpcId": {"Ref": "Network"},
+      "SecurityGroupEgress": [
+        {"IpProtocol": "tcp", "FromPort": 443, "ToPort": 443, "CidrIp": "0.0.0.0/0"},
+        {"IpProtocol": "tcp", "FromPort": 80, "ToPort": 80, "CidrIp": "0.0.0.0/0"}
+      ], "Tags": [{"Key": "Project", "Value": "Bifang"}]
+    }},
+    "Artifacts": {"Type": "AWS::S3::Bucket", "DeletionPolicy": "Retain", "UpdateReplacePolicy": "Retain", "Properties": {
+      "BucketEncryption": {"ServerSideEncryptionConfiguration": [{"ServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]},
+      "PublicAccessBlockConfiguration": {"BlockPublicAcls": true, "BlockPublicPolicy": true, "IgnorePublicAcls": true, "RestrictPublicBuckets": true},
+      "OwnershipControls": {"Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}]},
+      "VersioningConfiguration": {"Status": "Enabled"}, "Tags": [{"Key": "Project", "Value": "Bifang"}]
+    }},
+    "ArtifactTlsPolicy": {"Type": "AWS::S3::BucketPolicy", "Properties": {
+      "Bucket": {"Ref": "Artifacts"}, "PolicyDocument": {"Version": "2012-10-17", "Statement": [{
+        "Effect": "Deny", "Principal": "*", "Action": "s3:*",
+        "Resource": [{"Fn::GetAtt": ["Artifacts", "Arn"]}, {"Fn::Sub": "${Artifacts.Arn}/*"}],
+        "Condition": {"Bool": {"aws:SecureTransport": "false"}}
+      }]}
+    }},
+    "HostRole": {"Type": "AWS::IAM::Role", "Properties": {
+      "AssumeRolePolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "ec2.amazonaws.com"}, "Action": "sts:AssumeRole"}]},
+      "Policies": [{"PolicyName": "BifangHostOnly", "PolicyDocument": {"Version": "2012-10-17", "Statement": [
+        {"Effect": "Allow", "Action": ["ssm:UpdateInstanceInformation", "ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel", "ec2messages:AcknowledgeMessage", "ec2messages:DeleteMessage", "ec2messages:FailMessage", "ec2messages:GetEndpoint", "ec2messages:GetMessages", "ec2messages:SendReply"], "Resource": "*"},
+        {"Effect": "Allow", "Action": "s3:GetObject", "Resource": {"Fn::Sub": "${Artifacts.Arn}/builds/*"}},
+        {"Effect": "Allow", "Action": "ssm:GetParameter", "Resource": {"Fn::Sub": "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/bifang/remote/*"}},
+        {"Effect": "Allow", "Action": "kms:Decrypt", "Resource": "*", "Condition": {
+          "StringEquals": {"kms:ViaService": {"Fn::Sub": "ssm.${AWS::Region}.amazonaws.com"}},
+          "StringLike": {"kms:EncryptionContext:PARAMETER_ARN": {"Fn::Sub": "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/bifang/remote/*"}}
+        }}
+      ]}}], "Tags": [{"Key": "Project", "Value": "Bifang"}]
+    }},
+    "HostProfile": {"Type": "AWS::IAM::InstanceProfile", "Properties": {"Roles": [{"Ref": "HostRole"}]}},
+    "StateVolume": {"Type": "AWS::EC2::Volume", "DeletionPolicy": "Retain", "UpdateReplacePolicy": "Retain", "Properties": {
+      "AvailabilityZone": {"Ref": "AvailabilityZone"}, "Encrypted": true, "Size": 20, "VolumeType": "gp3",
+      "Tags": [{"Key": "Project", "Value": "Bifang"}, {"Key": "Name", "Value": "bifang-remote-state"}]
+    }},
+    "Host": {"Type": "AWS::EC2::Instance", "DependsOn": "InternetRoute", "Properties": {
+      "ImageId": {"Ref": "ImageId"}, "InstanceType": {"Ref": "InstanceType"}, "SubnetId": {"Ref": "Subnet"},
+      "SecurityGroupIds": [{"Ref": "HostSecurityGroup"}], "IamInstanceProfile": {"Ref": "HostProfile"},
+      "CreditSpecification": {"CPUCredits": "standard"},
+      "MetadataOptions": {"HttpTokens": "required", "HttpPutResponseHopLimit": 1},
+      "BlockDeviceMappings": [{"DeviceName": "/dev/xvda", "Ebs": {"Encrypted": true, "VolumeSize": 16, "VolumeType": "gp3", "DeleteOnTermination": true}}],
+      "UserData": {"Fn::Base64": {"Fn::Sub": "#!/bin/bash\nset -euo pipefail\ndnf install -y docker\nsystemctl enable --now docker\nsystemctl enable --now amazon-ssm-agent\nvolume=$(printf '%s' '${StateVolume}' | tr -d '-')\ndevice=''\nfor attempt in $(seq 1 120); do\n  device=$(lsblk -ndo PATH,SERIAL | awk -v serial=\"$volume\" '$2==serial {print $1}')\n  test -z \"$device\" || break\n  sleep 5\ndone\ntest -b \"$device\"\nfilesystem=$(lsblk -ndo FSTYPE \"$device\")\nif test -z \"$filesystem\"; then mkfs.ext4 -L bifang-state \"$device\"; fi\nuuid=$(blkid -s UUID -o value \"$device\")\nmkdir -p /var/lib/bifang-state\nprintf 'UUID=%s /var/lib/bifang-state ext4 defaults,nofail 0 2\\n' \"$uuid\" >> /etc/fstab\nmount /var/lib/bifang-state\ninstall -d -m 0700 -o 10001 -g 10001 /var/lib/bifang-state/jobs\ntouch /var/tmp/bifang-bootstrap-ready\n"}},
+      "Tags": [{"Key": "Project", "Value": "Bifang"}, {"Key": "Name", "Value": "bifang-remote-host"}, {"Key": "Purpose", "Value": "hackathon-preparation"}]
+    }},
+    "StateAttachment": {"Type": "AWS::EC2::VolumeAttachment", "Properties": {"InstanceId": {"Ref": "Host"}, "VolumeId": {"Ref": "StateVolume"}, "Device": "/dev/sdf"}},
+    "StaticAddress": {"Type": "AWS::EC2::EIP", "DependsOn": "GatewayAttachment", "Properties": {
+      "Domain": "vpc", "Tags": [{"Key": "Project", "Value": "Bifang"}]
+    }},
+    "AddressAssociation": {"Type": "AWS::EC2::EIPAssociation", "Properties": {
+      "AllocationId": {"Fn::GetAtt": ["StaticAddress", "AllocationId"]}, "InstanceId": {"Ref": "Host"}
+    }},
+    "HttpsIngress": {"Type": "AWS::EC2::SecurityGroupIngress", "Condition": "HttpsIngressEnabled", "Properties": {
+      "GroupId": {"Ref": "HostSecurityGroup"}, "IpProtocol": "tcp", "FromPort": 443, "ToPort": 443, "CidrIp": "0.0.0.0/0"
+    }},
+    "AcmeIngress": {"Type": "AWS::EC2::SecurityGroupIngress", "Condition": "HttpsIngressEnabled", "Properties": {
+      "GroupId": {"Ref": "HostSecurityGroup"}, "IpProtocol": "tcp", "FromPort": 80, "ToPort": 80, "CidrIp": "0.0.0.0/0"
+    }}
+  },
+  "Outputs": {
+    "InstanceId": {"Value": {"Ref": "Host"}},
+    "StateVolumeId": {"Value": {"Ref": "StateVolume"}},
+    "ArtifactBucket": {"Value": {"Ref": "Artifacts"}},
+    "SecurityGroupId": {"Value": {"Ref": "HostSecurityGroup"}},
+    "PublicIpAddress": {"Value": {"Ref": "StaticAddress"}},
+    "PublicApplicationIngress": {"Value": {"Fn::If": ["HttpsIngressEnabled", "https-and-acme-only", "disabled-until-https-verification"]}}
+  }
+}

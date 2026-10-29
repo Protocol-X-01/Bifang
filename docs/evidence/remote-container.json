@@ -1,0 +1,42 @@
+{
+  "date_utc": "2026-10-24",
+  "scope": "Read-only review service in a disposable Ubuntu 24.04 Docker builder",
+  "image_id": "sha256:855f5bb2de511680fa17b6392d181b47096f93d6cfc01d77487a48d3757e286c",
+  "source_archive_sha256": "1b0adc8f844224c31f39b3fd0e3cf7d8fa1f47d4c9d99030851024d333f4359d",
+  "frozen_build_input_count": 92,
+  "base_images": {
+    "uv": "ghcr.io/astral-sh/uv:0.11.17@sha256:03bdc89bb9798628846e60c3a9ad19006c8c3c724ccd2985a33145c039a0577b",
+    "python": "python:3.11-slim@sha256:b7a9e5f6a93d6d4a31f129bbd4bdee69efccb6ded0fb230d78aafaf37af98377"
+  },
+  "runtime": {
+    "uid": 10001,
+    "read_only_application_filesystem": true,
+    "all_linux_capabilities_dropped": true,
+    "no_new_privileges": true,
+    "private_state_directory_mode": "0700",
+    "sqlite_version": "3.46.1"
+  },
+  "checks": {
+    "missing_token_registry_rejected_at_startup": true,
+    "missing_and_wrong_bearer_rejected": true,
+    "other_owner_read_cancel_delete_rejected": true,
+    "desktop_session_route_absent": true,
+    "missing_provider_credentials_failed_closed": true,
+    "failed_job_receipt_survived_container_restart": true,
+    "identical_retry_reused_receipt": true,
+    "changed_input_same_key_rejected": true,
+    "deletion_preserved_idempotency_tombstone": true,
+    "backup_cli_and_restored_owner_scoped_receipt": true
+  },
+  "local_regression_suite": {"passed": 411, "seconds": 12.58},
+  "provider_calls": 0,
+  "aws_deployed": false,
+  "cleanup": {"vm_terminal": true, "private_key_removed": true, "overlay_removed": true, "temporary_ports_closed": true},
+  "limitations": [
+    "This is container restart and local backup recovery, not AWS host replacement or availability proof.",
+    "The runtime fixture intentionally had no provider credentials; its durable receipt records a failed job, not successful inference.",
+    "The image was evaluated in a temporary VM and was not uploaded to a registry.",
+    "The Dockerfile uses base tags; the digests above identify this evaluation rather than every future build.",
+    "Full isolated remote editing, human approvals, independent execution, Apply and mobile clients remain separate work."
+  ]
+}

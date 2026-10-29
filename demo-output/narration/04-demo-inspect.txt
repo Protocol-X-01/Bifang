@@ -1,0 +1,1 @@
+Open a project. Bifang maps the repository. You ask for a fix. It reads the code before proposing anything.

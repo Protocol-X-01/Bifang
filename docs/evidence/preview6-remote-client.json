@@ -1,0 +1,49 @@
+{
+  "scope": "Native WebKit desktop interaction, real public HTTPS coding API and one actual Token Factory proposal with gVisor execution",
+  "application_sha256": "e4816ba6f5b8cfc4152a9c369f58f1527f551566a288cb4eed8b8ea6b63a4237",
+  "new_model_jobs": 1,
+  "individual_file_picker_used": true,
+  "imported_sources_read_only_by_default": true,
+  "independent_candidate_reconstruction_in_native_webkit": true,
+  "non_https_rejected": true,
+  "token_input_cleared": true,
+  "all_five_decisions_clicked": true,
+  "disconnect_reconnect_preserved_job": true,
+  "original_tests_preserved": true,
+  "hosted_snapshot_apply_verified": true,
+  "token_absent_from_web_storage_and_disposable_profile": true,
+  "generation": {
+    "provider": "nebius",
+    "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "verification": "unverified_model_proposal",
+    "usage": {
+      "completion_tokens": 392,
+      "prompt_tokens": 280,
+      "total_tokens": 672
+    }
+  },
+  "check_receipt": {
+    "candidate_sha256": "9b2665b1cde2b9bbb8c4053e78b278c7f48269b99801ad2e651e31cbd6b23c10",
+    "command": [
+      "python",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-v"
+    ],
+    "exit_code": 0,
+    "timed_out": false,
+    "output_sha256": "851838d66fd29f38bd2c4513729fe3303cf3d209dc7adcf4f8e228b4f7be095a",
+    "passed": true
+  },
+  "fixture_approval_scope": "Automated operator approved only AST-equivalent benign boundary fix; not a human approval walkthrough",
+  "desktop_version": "0.2.1-preview.6",
+  "package_sha256": "e22bcb6180c3d8f1fe8b7ec53c43198ee6aa05593d611a999c6b89ebd9ced24d",
+  "source_archive_sha256": "cebf86168c7835ade23fe0663dade6b12c8aa3c014f7f31d5ffc7ffd536e1691",
+  "run_environment": "Build host, extracted exact Debian-package binary; separate from fresh Ubuntu tests",
+  "prior_harness_failures": "Two attempts stopped before submission: busy field, then a closed source-details selector. Repaired run completed all five UI decisions in one session.",
+  "serving_evidence_reference": "aws-public-coding.json",
+  "published": false
+}

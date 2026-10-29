@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none">
+  <defs>
+    <linearGradient id="ember" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E63946"/>
+      <stop offset="100%" stop-color="#FF8A3D"/>
+    </linearGradient>
+  </defs>
+  <rect width="16" height="16" rx="3" fill="#0F172A"/>
+  <!-- Simplified bird at 16px -->
+  <path d="M5 11 Q4 8 5 6 Q6 4 8 5 Q10 6 11 9 Q12 12 10 13 Q8 14 6 13" fill="none" stroke="url(#ember)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="6" y="4" width="4" height="7" rx="1" fill="#0F172A" stroke="url(#ember)" stroke-width="0.8"/>
+  <path d="M7 6 L8 7.5 L7 9" fill="none" stroke="#F7F7F7" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9 6 L8 7.5 L9 9" fill="none" stroke="#F7F7F7" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8 11 L8 13" stroke="url(#ember)" stroke-width="1" stroke-linecap="round"/>
+  <path d="M7.5 13 L8.5 13" stroke="url(#ember)" stroke-width="1" stroke-linecap="round"/>
+</svg>

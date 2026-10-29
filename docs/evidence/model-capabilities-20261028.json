@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-28",
+  "scope": "Current local Bifang provider/vision modules, installed private provider configuration, synthetic inputs only",
+  "provider": "nebius",
+  "embedding": {
+    "model": "Qwen/Qwen3-Embedding-8B",
+    "request_path": "NebiusProvider.embed",
+    "dimensions": 4096,
+    "finite_nonzero": true,
+    "vector_sha256": "1d468a9fd68ff51c110fd9af02bda02ea50fc34ba055343574d12dc7baa09245",
+    "requests": 1,
+    "retrieval_quality_evaluated": false
+  },
+  "vision": {
+    "requested_and_reported_model": "nvidia/Nemotron-3.5-Super-VL",
+    "request_path": "discover_vision_models and inspect_images",
+    "capability_source": "https://tokenfactory.nebius.com/api/public/models_info",
+    "image_width": 160,
+    "image_height": 80,
+    "normalized_image_bytes": 270,
+    "metadata_removed": true,
+    "analysis_mentions_both_expected_colors": true,
+    "total_tokens": 462,
+    "tools_enabled": false,
+    "analysis_sha256": "f278d79eb4a3cd7fdfde270831b6cbd817eea0edb022c9ef7a6b9d90c2513339",
+    "verification": "unverified_visual_analysis",
+    "requests": 1
+  },
+  "native_ui_tested": false,
+  "phone_tested": false,
+  "private_source_shared": false,
+  "installed_application_modified": false
+}

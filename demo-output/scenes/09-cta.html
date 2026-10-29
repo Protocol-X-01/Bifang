@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Bifang — CTA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1920px; height: 1080px;
+      background: #0F172A;
+      font-family: 'Space Grotesk', Inter, system-ui, sans-serif;
+      color: #F7F7F7;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    body::before {
+      content: ''; position: absolute; inset: 0;
+      background: 
+        radial-gradient(ellipse at 30% 30%, rgba(230, 57, 70, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 70%, rgba(255, 138, 61, 0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .container { position: relative; z-index: 1; text-align: center; }
+    .badge {
+      display: inline-block; padding: 8px 24px;
+      background: linear-gradient(135deg, #E63946 0%, #FF8A3D 100%);
+      border-radius: 9999px; font-size: 14px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 32px;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 96px; font-weight: 800; line-height: 1.05;
+      letter-spacing: -0.03em; color: #F7F7F7;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+      opacity: 0;
+    }
+    .subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 28px; font-weight: 400; color: #B8C3D6;
+      margin-top: 16px; letter-spacing: 0.02em;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+      opacity: 0;
+    }
+    .url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px; font-weight: 500; color: #FF8A3D;
+      margin-top: 32px; letter-spacing: 0.02em;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+      opacity: 0;
+    }
+    .badge2 {
+      display: inline-block; margin-top: 40px; padding: 12px 32px;
+      background: linear-gradient(135deg, #E63946 0%, #FF8A3D 100%);
+      border-radius: 9999px; font-size: 14px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: #F7F7F7;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+      opacity: 0;
+    }
+    .ember-line {
+      width: 200px; height: 4px;
+      background: linear-gradient(135deg, #E63946 0%, #FF8A3D 100%);
+      border-radius: 2px; margin: 24px auto 0;
+      animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.0s forwards;
+      transform: scaleX(0); transform-origin: left;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes scaleIn {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="badge">Apache 2.0</span>
+    <h1>Build. Run. Verify.</h1>
+    <p class="subtitle">Open source. Built for the Nebius x NVIDIA Hackathon.</p>
+    <p class="url">github.com/Protocol-X-01/bifang</p>
+    <div class="ember-line"></div>
+    <span class="badge2">Try Bifang today</span>
+  </div>
+</body>
+</html>

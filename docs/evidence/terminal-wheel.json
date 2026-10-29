@@ -1,0 +1,66 @@
+{
+  "observed_date_utc": "2026-10-25",
+  "status": "installed_terminal_candidate_verified_locally",
+  "wheel_sha256": "da1d1ec2f84bc76fa1b940afc74e245a405c81bcd20c3e128bcb280deb9b0f22",
+  "source_archive_sha256": "66f9e19b7ccd024ee9bb10d125bb7f5568fa2581cd628b73aff9667bc4f632f9",
+  "package_files_byte_verified_against_frozen_source_and_install": 94,
+  "wheel_record_verified": true,
+  "dependency_check_passed": true,
+  "version": "0.2.1.dev7",
+  "published": false,
+  "wheel": "bifang_terminal-0.2.1.dev7-py3-none-any.whl",
+  "repeated_wheel_bytes_identical": true,
+  "reproducibility_scope": "Two local wheel builds from identical frozen source and cached build environment; not other toolchains or native binary reproducibility",
+  "frozen_source_files": 466,
+  "frozen_inputs_and_installed_package_bytes_unchanged_after_tests": true,
+  "tests_against_installed_wheel_passed": 537,
+  "test_environment": "Locked runtime wheel installation imported first; external existing pytest/dev/observability tooling; pytest source-path injection disabled",
+  "installed_test_log_sha256": "7c3e319ca0814cc1500cc30c8fb00890ecf505ebf0bd4fceaa63176852fa4799",
+  "quiet_version_command_verified": true,
+  "terminal": {
+    "status": "installed_pty_workflow_passed",
+    "scope": "Installed wheel in real PTY at80x24; synthetic HTTP inference, actual Bubblewrap and Git",
+    "synthetic_model_requests": 2,
+    "hosted_model_requests": 0,
+    "exit_code": 0,
+    "wheel_sha256": "da1d1ec2f84bc76fa1b940afc74e245a405c81bcd20c3e128bcb280deb9b0f22",
+    "published": false,
+    "decisions": "Automated keyboard Tab/Enter and terminal mouse events from decoded screen labels; not human usability proof",
+    "real_check_exit_codes": [
+      1,
+      0
+    ],
+    "original_unchanged_before_separate_apply": true,
+    "denied_source_sharing_no_inference": true,
+    "denied_stage_and_original_apply_preserved_files": true,
+    "immutable_test_sha256": "9ebaed3d731f984b6754522dc777e4e3951adf543995219620d9c39e62716fcd",
+    "original_changed_files": [
+      "bounds.py"
+    ]
+  },
+  "cleanup": {
+    "terminal_stopped": true,
+    "loopback_fixture_server_stopped": true,
+    "synthetic_model_requests": 2,
+    "hosted_model_requests": 0,
+    "elapsed_seconds": 25.52,
+    "disposable_home_source_and_worktree_removed": true,
+    "fixture_port_closed": true
+  },
+  "terminal_frame_sha256": {
+    "passed-check-frame.txt": "e6e76007fc5acecc5ed79d787d1b9256f6c7c3ec59efcc0b91226326814dd6a4",
+    "setup-frame.txt": "80e317ac8d74c8ee811229082521c6a4e3aa344dd1bfbf0342257264b563eada",
+    "last-frame.txt": "61132f51c44f1a756af3d01505c946a3a60b43db80f4f0adc97a7c073db33769",
+    "failed-check-frame.txt": "56437f81b033074a3ac68a083335a56bdaf388851ea86734bd528a128f00ad3c",
+    "initial-frame.txt": "9910db4ec225d92af597d0524ec1e729f67c49b0ca9e38ca15b0c905b93ef76b",
+    "applied-frame.txt": "61132f51c44f1a756af3d01505c946a3a60b43db80f4f0adc97a7c073db33769"
+  },
+  "aws_vercel_or_release_changes": false,
+  "remaining": [
+    "Screen-reader and human usability walkthrough",
+    "Publication decision for new source/wheel",
+    "Android/iOS actual builds and devices",
+    "Final submission decisions"
+  ],
+  "scope": "Installed Python3.11 development wheel and actual xterm-protocol PTY; synthetic loopback model HTTP, actual Bubblewrap checks and Git stage/Apply; no fresh guest or live-model proof"
+}

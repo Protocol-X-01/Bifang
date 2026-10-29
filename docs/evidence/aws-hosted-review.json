@@ -1,0 +1,65 @@
+{
+  "date_utc": "2026-10-25",
+  "scope": "Isolated single-host AWS read-only review service; synthetic public-HTTPS model request and actual recovery",
+  "image_id": "sha256:40baf758fa961c97483d324aa496e6e78cdbfae713e3f01bb33f4e3173af2680",
+  "source_archive_sha256": "1b0adc8f844224c31f39b3fd0e3cf7d8fa1f47d4c9d99030851024d333f4359d",
+  "region": "us-east-1",
+  "instance_type": "t3.small",
+  "encrypted_root_gib": 16,
+  "encrypted_state_gib": 20,
+  "public_inbound_tcp_ports": [80, 443],
+  "tls": {
+    "default_trust_verified": true,
+    "ip_certificate": true,
+    "certificate_sha256": "511abca579eddd4e52d090ffe0d50b949f313b88fc765533e87aa8bfd462b6f4",
+    "observed_certificate_expiry": "2026-10-31T14:02:09Z",
+    "staging_and_production_issuance": true,
+    "renewal_dry_run_passed": true,
+    "twice_daily_randomized_timer_enabled": true,
+    "actual_renewal_service_passed": true,
+    "certbot_internal_random_delay_disabled": true
+  },
+  "checks": {
+    "worker_health": 200,
+    "missing_and_wrong_client_token": 401,
+    "other_owner_read_cancel_delete": 404,
+    "plain_http_api_not_proxied": 404,
+    "desktop_filesystem_routes_absent": true,
+    "identical_retry_reused_existing_job": true,
+    "changed_request_same_key": 409,
+    "runtime_environment_file_removed": true,
+    "online_backup_integrity_passed": true,
+    "network_disabled_restore_preserved_receipt_owner_and_idempotency": true,
+    "actual_kernel_boot_identity_changed": true,
+    "trusted_https_and_live_receipt_preserved_after_reboot": true,
+    "renewal_timer_enabled_after_reboot": true
+  },
+  "live_review": {
+    "provider": "nebius",
+    "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "status": "succeeded",
+    "reported_prompt_tokens": 141,
+    "reported_completion_tokens": 194,
+    "reported_total_tokens": 335,
+    "analysis_sha256": "941c35096c69faef260d2797c940e1b498d40654c42b4c4b746f60c4f644ffb9",
+    "verification": "unverified_model_analysis",
+    "tools_enabled": false,
+    "source": "Original synthetic two-line bounds-check function",
+    "new_review_submissions": 1,
+    "provider_calls_during_recovery": 0
+  },
+  "local_regression_suite": {"passed": 430, "seconds": 13.21},
+  "remaining_gates": [
+    "Full isolated remote implementation, durable human approvals, independent checks and separate Apply",
+    "Native iOS and Android clients, signing and device walkthroughs",
+    "Ongoing certificate renewal, service monitoring, backup retention and judging-period availability",
+    "Final owner-approved public video and Devpost submission"
+  ],
+  "limitations": [
+    "Single-host reboot and restore are not high-availability or capacity evidence.",
+    "One read-only synthetic review does not establish general coding accuracy or prompt-injection immunity.",
+    "The image is distinct from the disposable-VM image and the public Preview 5 desktop binary.",
+    "No provider key, client token, account identifier, private endpoint handle or private source is included in this receipt."
+  ]
+}

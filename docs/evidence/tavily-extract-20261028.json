@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-28",
+  "provider": "tavily",
+  "tool": "web_extract",
+  "scope": "Current local source implementation and one live public documentation extraction",
+  "page_url": "https://docs.python.org/3/library/asyncio.html",
+  "requests": 1,
+  "selected_page_available": true,
+  "retained_characters": 5944,
+  "content_sha256": "7022bc5491f3e44160aee961df24c84614806c72f9a42925b93c0283145fb97e",
+  "truncated": false,
+  "trust": "untrusted_external_data",
+  "focused_tests_passed": 83,
+  "ruff_scoped_check_passed": true,
+  "native_package_updated": false,
+  "hosted_service_updated": false,
+  "private_source_shared": false
+}

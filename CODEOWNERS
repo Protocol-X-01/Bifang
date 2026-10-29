@@ -1,0 +1,36 @@
+# CODEOWNERS
+# These users will be automatically requested for review when changes are made to matching files.
+
+# Global owners
+* @Protocol-X-01
+
+# Python backend
+/src/bifang/ @Protocol-X-01
+
+# Desktop app (React + Rust)
+/desktop/src/ @Protocol-X-01
+/desktop/src-tauri/ @Protocol-X-01
+
+# Mobile companion
+/companion/ @Protocol-X-01
+
+# TUI
+/tui/ @Protocol-X-01
+
+# Tests
+/tests/ @Protocol-X-01
+/desktop/tests/ @Protocol-X-01
+/companion/tests/ @Protocol-X-01
+
+# Documentation
+/docs/ @Protocol-X-01
+
+# Configuration
+/.github/ @Protocol-X-01
+/pyproject.toml @Protocol-X-01
+/uv.lock @Protocol-X-01
+/Cargo.toml @Protocol-X-01
+/Cargo.lock @Protocol-X-01
+
+# Scripts
+/scripts/ @Protocol-X-01

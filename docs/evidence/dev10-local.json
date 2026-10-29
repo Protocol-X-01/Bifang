@@ -1,0 +1,50 @@
+{
+  "version": "0.2.1-dev.10",
+  "date": "2026-10-27",
+  "distribution": "Local per-user Linux installation; not a published release",
+  "package": {
+    "name": "Bifang_0.2.1-dev.10_amd64.deb",
+    "sha256": "2d33709107342ac88463b0185a97ea9a59011061508f29ee874b90658d2fd687",
+    "application_sha256": "045daa361153ea49d5772bfa4cf864504f1674f91ac77e5a2cd25939d1768280",
+    "sidecar_sha256": "bf135e24d0bccdd7fb5752ffb0a89212d9a783528269dcc9de484da89cd17be3"
+  },
+  "source_snapshot": {
+    "name": "bifang-dev10-source-20261027.tar.gz",
+    "sha256": "c7db903abe6a381a2180cca7a8fe4c2b0797282cd85728e0758a365eb157d24c",
+    "selected_files": 638,
+    "scope": "Selected source before subsequent readiness documentation; not bit-reproducibility proof"
+  },
+  "validation": {
+    "backend_passed": 818,
+    "backend_skipped": 0,
+    "real_bubblewrap_tests_enabled": true,
+    "frontend_passed": 81,
+    "packaged_api_passed": 2,
+    "independent_native_startups": 2,
+    "installed_binary_hashes_match_package": true,
+    "fresh_folder_review_apply_and_cleanup": true,
+    "missing_and_stale_patch_approval_rejected": true
+  },
+  "live_token_factory": {
+    "provider": "nebius",
+    "selected_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "catalogued_nemotron_models": 5,
+    "routing_receipts": 1,
+    "expected_reply": true,
+    "elapsed_seconds": 1.974,
+    "draft_unchanged": true,
+    "original_empty": true,
+    "draft_cleaned": true,
+    "scope": "One installed-backend connection-check request; not a coding benchmark or native UI test"
+  },
+  "remaining_gates": [
+    "Native dev10 interaction and fresh-machine acceptance",
+    "Reviewed source publication and matching public installer",
+    "Windows/macOS native packaging and acceptance; iOS build/device evidence",
+    "Latest Android runtime and complete paired hosted workflow acceptance",
+    "Judge access and capacity through the judging period",
+    "Final matching demo, links and owner-approved submission"
+  ],
+  "self_hosted_nim_verified": false,
+  "public_release_verified": false
+}

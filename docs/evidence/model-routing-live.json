@@ -1,0 +1,106 @@
+{
+  "timestamp": "2026-10-23T19:07:10.276969+00:00",
+  "results": [
+    {
+      "role": "fast",
+      "task_type": "doc_lookup",
+      "passed": false,
+      "request_count": 2,
+      "tool_count": 1,
+      "routing": [
+        {
+          "provider": "nebius",
+          "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+          "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+          "role": "fast",
+          "task_type": "doc_lookup",
+          "usage": {
+            "completion_tokens": 171,
+            "prompt_tokens": 408,
+            "total_tokens": 579
+          }
+        },
+        {
+          "provider": "nebius",
+          "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+          "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+          "role": "fast",
+          "task_type": "doc_lookup",
+          "usage": {
+            "completion_tokens": 208,
+            "prompt_tokens": 470,
+            "total_tokens": 678
+          }
+        }
+      ]
+    },
+    {
+      "role": "balanced",
+      "task_type": "code_review",
+      "passed": true,
+      "request_count": 2,
+      "tool_count": 1,
+      "routing": [
+        {
+          "provider": "nebius",
+          "requested_model": "nvidia/nemotron-3-super-120b-a12b",
+          "reported_model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "balanced",
+          "task_type": "code_review",
+          "usage": {
+            "completion_tokens": 47,
+            "prompt_tokens": 490,
+            "total_tokens": 537
+          }
+        },
+        {
+          "provider": "nebius",
+          "requested_model": "nvidia/nemotron-3-super-120b-a12b",
+          "reported_model": "nvidia/nemotron-3-super-120b-a12b",
+          "role": "balanced",
+          "task_type": "code_review",
+          "usage": {
+            "completion_tokens": 87,
+            "prompt_tokens": 552,
+            "total_tokens": 639
+          }
+        }
+      ]
+    },
+    {
+      "role": "reasoning",
+      "task_type": "architecture",
+      "passed": true,
+      "request_count": 2,
+      "tool_count": 1,
+      "routing": [
+        {
+          "provider": "nebius",
+          "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+          "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+          "role": "reasoning",
+          "task_type": "architecture",
+          "usage": {
+            "completion_tokens": 60,
+            "prompt_tokens": 443,
+            "total_tokens": 503
+          }
+        },
+        {
+          "provider": "nebius",
+          "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+          "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+          "role": "reasoning",
+          "task_type": "architecture",
+          "usage": {
+            "completion_tokens": 64,
+            "prompt_tokens": 505,
+            "total_tokens": 569
+          }
+        }
+      ]
+    }
+  ],
+  "passed": false,
+  "limitations": "Explicit task types; synthetic read-only fixture; not a routing quality, coding, cost or scale benchmark."
+}

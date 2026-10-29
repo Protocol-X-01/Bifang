@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>Bifang — Features</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1920px; height: 1080px;
+      background: #0F172A;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #F7F7F7;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .container { position: relative; z-index: 1; text-align: center; max-width: 1000px; padding: 0 48px; }
+    .badge {
+      display: inline-block; padding: 8px 24px;
+      background: linear-gradient(135deg, #E63946 0%, #FF8A3D 100%);
+      border-radius: 9999px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 32px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 64px; font-weight: 700; line-height: 1.15;
+      letter-spacing: -0.02em; color: #F7F7F7;
+      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+      opacity: 0;
+    }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      max-width: 1000px; margin: 48px auto 0;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      opacity: 0;
+    }
+    .feature-card {
+      background: #151D30; border: 1px solid #2D3A50;
+      border-radius: 16px; padding: 24px;
+      text-align: left; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.3);
+      border-color: #3D4A68;
+    }
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; font-size: 20px;
+    }
+    .feature-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px; font-weight: 700; color: #F7F7F7;
+      margin-bottom: 8px; letter-spacing: -0.01em;
+    }
+    .feature-card p {
+      font-size: 14px; line-height: 1.5; color: #9AA9BF;
+    }
+    .tag { 
+      display: inline-block; padding: 4px 10px; 
+      background: rgba(255, 138, 61, 0.15); border: 1px solid rgba(255, 138, 61, 0.3);
+      border-radius: 9999px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: #FF8A3D; margin-bottom: 12px;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="badge">All evidence-driven</span>
+    <h1>Every feature. Evidence-driven.</h1>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(230,57,70,0.15);color:#E63946;">🌿</div>
+        <h3>Disposable Git worktrees</h3>
+        <p>Original checkout untouched until you Apply.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(255,138,61,0.15);color:#FF8A3D;">⚡</div>
+        <h3>Three approval modes</h3>
+        <p>Manual · Auto source edits · Full tool approval.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(34,197,94,0.15);color:#22C55E;">📋</div>
+        <h3>Independent check receipts</h3>
+        <p>Every check bound to exact candidate SHA-256.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(230,57,70,0.15);color:#E63946;">🧠</div>
+        <h3>Model routing receipts</h3>
+        <p>Requested vs reported model. Token counts. Verified.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(59,130,246,0.15);color:#3B82F6;">👁️</div>
+        <h3>Visual debugging</h3>
+        <p>Explicit image sharing. Model receipt. Chat handoff.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(230,57,70,0.15);color:#E63946;">🌐</div>
+        <h3>Remote forge</h3>
+        <p>Selected source → proposal → check → hosted Apply.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(230,57,70,0.15);color:#E63946;">📱</div>
+        <h3>Mobile companion</h3>
+        <p>Terminal + remote coding from your phone.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(34,197,94,0.15);color:#22C55E;">✅</div>
+        <h3>Evidence-driven</h3>
+        <p>Every claim bound to artifact. No black boxes.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

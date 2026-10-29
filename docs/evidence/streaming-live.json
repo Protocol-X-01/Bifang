@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "answer_chars": 26,
+  "contains_marker": true,
+  "request_count": 2,
+  "tool_count": 1,
+  "routing": [
+    {
+      "provider": "nebius",
+      "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "role": "pinned",
+      "task_type": "chat",
+      "usage": {}
+    },
+    {
+      "provider": "nebius",
+      "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "role": "pinned",
+      "task_type": "chat",
+      "usage": {}
+    }
+  ],
+  "timestamp": "2026-10-23T20:10:23.837453+00:00",
+  "limitations": "Pinned Ultra; synthetic read-only fixture; source-only, not a native-package, quality, cost or scale benchmark."
+}

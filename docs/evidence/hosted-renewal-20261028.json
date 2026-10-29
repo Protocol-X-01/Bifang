@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-28",
+  "management_check_succeeded": true,
+  "timer_active": true,
+  "timer_enabled": true,
+  "last_trigger_utc": "2026-10-28T12:26:04Z",
+  "last_service_exit_utc": "2026-10-28T12:26:09Z",
+  "last_service_result": "success",
+  "last_service_exit_status": 0,
+  "next_scheduled_check_utc": "2026-10-29T00:06:37Z",
+  "external_tls_default_trust_verified": true,
+  "external_certificate_expires_utc": "2026-11-04T03:27:36Z",
+  "external_certificate_sha256": "a3f06e79744eea83cd98eddb8c73d91b9ba6083292a28b80a0b2b46b19f2ed5a",
+  "supersedes": "Earlier October 28 external certificate observation expiring October 31 and expired local management sign-in",
+  "service_configuration_changed": false,
+  "future_availability_through_judging_proven": false
+}

@@ -1,0 +1,18 @@
+{
+  "status": "previous_real_collector_receipt_reverified",
+  "receipt_sha256": "8b179a8c9a76cf5a25a1e91d90f85b4c68e90be4199f72ec2f0b434fdc899712",
+  "server_sha256": "000009d70dc63c00bad3dd9c27255b5c9a44cdcab6dcdd99bd757c0b60589d65",
+  "collector": "real Phoenix 20.25.0",
+  "otel_sdk_version": "1.45.1",
+  "synthetic_model_requests": 3,
+  "spans_retrieved": 6,
+  "parent_relationships_verified": true,
+  "synthetic_content_and_supplied_credentials_absent": true,
+  "missing_and_wrong_http_credentials_status": 401,
+  "grpc_missing_credentials_status": "UNAUTHENTICATED",
+  "rendered_ui_verified": false,
+  "automated_evaluations_verified": false,
+  "frozen_sse_verified": false,
+  "frozen_server_port_closed": true,
+  "scope": "Reverified retained recovery-sidecar receipt; not a new collector run or a production observability claim."
+}

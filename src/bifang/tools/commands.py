@@ -1,0 +1,95 @@
+from __future__ import annotations
+
+import asyncio
+import os
+import shutil
+from pathlib import Path
+
+from ..policy import Policy
+from ..sandbox_network import SandboxUnavailableError, attach_filter, offline_filter
+
+
+def bwrap_argv(root: Path, command: str) -> list[str]:
+    return [
+        "bwrap",
+        "--die-with-parent",
+        "--unshare-all",
+        "--new-session",
+        "--clearenv",
+        "--ro-bind",
+        "/usr",
+        "/usr",
+        "--ro-bind",
+        "/bin",
+        "/bin",
+        "--ro-bind-try",
+        "/lib",
+        "/lib",
+        "--ro-bind-try",
+        "/lib64",
+        "/lib64",
+        "--ro-bind-try",
+        "/etc",
+        "/etc",
+        "--proc",
+        "/proc",
+        "--dev",
+        "/dev",
+        "--tmpfs",
+        "/tmp",
+        "--bind",
+        str(root),
+        "/workspace",
+        "--chdir",
+        "/workspace",
+        "--setenv",
+        "PATH",
+        "/usr/local/bin:/usr/bin:/bin",
+        "--setenv",
+        "HOME",
+        "/tmp",
+        "--",
+        "/bin/sh",
+        "-lc",
+        command,
+    ]
+
+
+async def run_command(policy: Policy, command: str, timeout: int = 180, use_bwrap: bool = True) -> dict:
+    d = policy.command(command)
+    if not d.allowed:
+        raise PermissionError(d.reason)
+
+    env = {k: v for k, v in os.environ.items() if k in {"PATH", "LANG", "LC_ALL", "TERM", "USER"}}
+    if use_bwrap and not shutil.which("bwrap"):
+        raise SandboxUnavailableError(
+            "Bubblewrap was requested but is unavailable; refusing unsandboxed execution. "
+            "Install Bubblewrap in a supported isolated environment and restart Bifang. "
+            "Do not weaken kernel security controls. Explicit sandbox opt-out is only for trusted workloads.")
+    argv = bwrap_argv(policy.root, command) if use_bwrap else ["/bin/sh", "-lc", command]
+
+    with offline_filter(use_bwrap) as descriptor:
+        if descriptor is not None:
+            argv = attach_filter(argv, descriptor)
+        p = await asyncio.create_subprocess_exec(
+            *argv,
+            cwd=policy.root,
+            env=env,
+            pass_fds=(descriptor,) if descriptor is not None else (),
+            stdin=asyncio.subprocess.DEVNULL,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+
+    try:
+        out, err = await asyncio.wait_for(p.communicate(), timeout)
+    except TimeoutError:
+        p.kill()
+        await p.wait()
+        return {"returncode": -1, "stdout": "", "stderr": f"Timed out after {timeout}s"}
+
+    return {
+        "returncode": p.returncode,
+        "stdout": out.decode(errors="replace")[-100000:],
+        "stderr": err.decode(errors="replace")[-100000:],
+    }

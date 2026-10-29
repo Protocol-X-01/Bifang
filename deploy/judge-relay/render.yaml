@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: bifang-judge-relay
+    runtime: docker
+    dockerfilePath: ./deploy/judge-relay/Dockerfile
+    dockerContext: .
+    plan: free
+    region: frankfurt
+    autoDeployTrigger: 'off'
+    healthCheckPath: /health
+    envVars:
+      - key: NEBIUS_API_KEY
+        sync: false
+      - key: BIFANG_JUDGE_TOKEN
+        generateValue: true

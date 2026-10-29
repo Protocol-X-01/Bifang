@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-26",
+  "version": "0.2.1-dev.9",
+  "scope": "Conservative installed source/build dependency notices collected from the exact Ubuntu 22.04 release builder; not a complete binary SBOM or licence certification",
+  "notice_archive_sha256": "052911a110964b8a82074f4f4a888ee35d0bc5469618b58d8e62be9a920fd56e",
+  "packages": {
+    "Bifang_0.2.1-dev.9_amd64.deb": "644d8ced0e80a3766147067d9317a7d313fff82d13a3c9da8fbeceaed310a7cb",
+    "Bifang_0.2.1-dev.9_amd64.AppImage": "c83d9081b48be2511914142da2fa3bbb464a9c79d5c438903b790f0ca2b33c4c",
+    "Bifang-0.2.1-0.dev.9.x86_64.rpm": "f1a2aeaeb1ec36d3006c35a09e7e2a9876cf35f18d9a821422fc5e06bf55247e"
+  },
+  "components": 526,
+  "components_without_retained_notice_files": 0,
+  "by_ecosystem": {
+    "Python": 50,
+    "Runtime": 1,
+    "npm": 107,
+    "Cargo": 356,
+    "Supplementary distribution notice": 10,
+    "Supplementary license text": 2
+  },
+  "remaining_review": [
+    "Match every redistributed native library and AppImage launcher to its upstream source and notices",
+    "Review PyInstaller-embedded runtime contents rather than treating installed distributions as an exhaustive binary inventory",
+    "Confirm required source distribution or offers for redistributed third-party components"
+  ],
+  "vm_stopped": true,
+  "owned_ports_closed": true,
+  "private_configuration_used": false,
+  "hosted_model_requests": 0,
+  "published": false
+}

@@ -1,0 +1,80 @@
+{
+  "provider": "nebius",
+  "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+  "routing_receipts": [
+    {
+      "provider": "nebius",
+      "task_type": "chat",
+      "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "role": "pinned",
+      "usage": {
+        "prompt_tokens": 1918,
+        "completion_tokens": 161,
+        "total_tokens": 2079
+      },
+      "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b"
+    },
+    {
+      "provider": "nebius",
+      "task_type": "chat",
+      "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "role": "pinned",
+      "usage": {
+        "prompt_tokens": 2364,
+        "completion_tokens": 223,
+        "total_tokens": 2587
+      },
+      "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b"
+    },
+    {
+      "provider": "nebius",
+      "task_type": "chat",
+      "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "role": "pinned",
+      "usage": {
+        "prompt_tokens": 2508,
+        "completion_tokens": 48,
+        "total_tokens": 2556
+      },
+      "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b"
+    },
+    {
+      "provider": "nebius",
+      "task_type": "chat",
+      "requested_model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "role": "pinned",
+      "usage": {
+        "prompt_tokens": 2716,
+        "completion_tokens": 106,
+        "total_tokens": 2822
+      },
+      "reported_model": "nvidia/Nemotron-3-Ultra-550b-a55b"
+    }
+  ],
+  "application_sha256": "7b92143d0269749793cd28943f5254b27e85e15624fbf7650e195c44208aa221",
+  "interface": "native Tauri WebDriver",
+  "workspace_selection": "in-app path dialog",
+  "invalid_workspace_paths_rejected": [
+    "relative",
+    "file",
+    "nonexistent"
+  ],
+  "approval_mode": "automated exact-action allowlist",
+  "approvals": [
+    {
+      "action": "Allow Bifang to write receipts.py?",
+      "approved": true
+    },
+    {
+      "action": "Run command?\npython3 -m unittest -v check_receipts",
+      "approved": true
+    }
+  ],
+  "changed_files": [
+    "receipts.py"
+  ],
+  "checks_unchanged": true,
+  "baseline_returncode": 1,
+  "final_returncode": 0,
+  "continuous_screen_recording": false
+}

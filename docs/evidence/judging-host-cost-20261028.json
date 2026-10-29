@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-28T13:57:13Z",
+  "judging_end_utc": "2026-12-15T20:00:00Z",
+  "region": "us-east-1",
+  "observed_instance_type": "t3.small",
+  "observed_instance_running": true,
+  "observed_cpu_credit_mode": "standard",
+  "observed_gp3_volume_gib": 36,
+  "pricing_api_compute_hourly_usd": "0.0208000000",
+  "pricing_api_gp3_gib_month_usd": "0.0800000000",
+  "assumed_public_ipv4_count": 1,
+  "public_ipv4_hourly_usd": "0.005",
+  "storage_month_hours_assumption": 720,
+  "estimated_base_cost_through_judging_usd": "34.51",
+  "estimated_base_plus_50_percent_buffer_usd": "51.76",
+  "excluded": ["model inference", "network transfer", "object storage", "logs", "extra IOPS/throughput", "taxes", "other account workloads"],
+  "sources": ["AWS regional Pricing API queried October 28", "https://aws.amazon.com/vpc/pricing/"],
+  "credit_balance_published": false,
+  "credit_expiry_and_eligibility_verified": false,
+  "future_uptime_guaranteed": false,
+  "resources_changed": false
+}

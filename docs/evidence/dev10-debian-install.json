@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-28",
+  "application_build": "0.2.1-dev.10",
+  "candidate_debian_version": "0.2.1~preview.7",
+  "public_release": false,
+  "original_package_sha256": "e1f19e89c591553322c5ebad5331be37e2255157eb0af913b40eaa088e2fb76a",
+  "normalized_package_sha256": "55d12406e592aff8d96fb531f941e4eff66050313244f932f6cc6bda5bbc5fa6",
+  "normalization": {
+    "published_predecessor": "0.2.1~preview.6",
+    "future_stable": "0.2.1",
+    "upgrade_order_verified": true,
+    "payload_members_compared": 18,
+    "installed_contents_ownership_permissions_links_unchanged": true,
+    "other_control_files_unchanged": true
+  },
+  "fresh_installation": {
+    "distribution": "Ubuntu 24.04",
+    "base_image_sha256": "04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94",
+    "apt_installation_passed": true,
+    "elf_loaders_resolve": true,
+    "helper_checks_passed": 8,
+    "sidecar_api_health": true,
+    "desktop_sha256": "168da274346bfe087e158fabb934514b470bcf5c049e3a14242d22710d7ded72",
+    "sidecar_sha256": "039afcb8a84f878e2662b2e577de60f994c487064228532cdbe60dc554541bf2",
+    "global_userns_restriction": "1",
+    "native_window_tested": false,
+    "hosted_model_requests": 0,
+    "private_credentials_used": false
+  },
+  "cleanup": {
+    "vm_stopped": true,
+    "overlay_removed": true,
+    "ephemeral_private_key_removed": true,
+    "host_ports_closed": true
+  },
+  "remaining": "Native interaction, exact release notices, reviewed source/package publication and judging access"
+}

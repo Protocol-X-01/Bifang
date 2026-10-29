@@ -1,0 +1,89 @@
+{
+  "observed_date_utc": "2026-10-25",
+  "published": false,
+  "source_sha256": {
+    "src/bifang/tui.py": "f6d7de3900bc6ffdbbd03fcc83708b9032807ec530fe63adef2ae904a95822d1",
+    "src/bifang/terminal_engineering.py": "fda6be062d9729c645c80940c89a0d1e33235bed839d22f3756d52887ecd1791",
+    "src/bifang/workspace.py": "b9d7860a99ceb97599664f8108ddb4ba762aeb56c1c6fdfbf0be9f09d81c7df4",
+    "src/bifang/implementation.py": "7ab64b87bb7b4d2410e7385ae140e8b5f6c23a52d4731ae62116013dea58c51c",
+    "src/bifang/verification.py": "9c549145c9d850f9b9f017847d8521c7562e43bdcbea2cf28e56891a2b01dee1",
+    "tests/test_terminal_engineering.py": "7dcbfde4702272acb4febf15a904758354a2cb1a28f38b8ea5072d531c3ef23c",
+    "tests/test_terminal_approvals.py": "6b821da87dcbf1435aee6926e56683493f1bef73add115d85a5822ff5ddd1935"
+  },
+  "backend_tests_passed": 536,
+  "full_regression_log_sha256": "2e6f23338631a80eca0da06c45948f77b2a6e5527b2a792f3d007ea64622ad1d",
+  "scope": "Headless Textual 80x24 keyboard UI; synthetic model; actual host Bubblewrap checks",
+  "status": "passed",
+  "checks": [
+    {
+      "verification": "executed_check",
+      "candidate_sha256": "a78b3b217702785b5eaf9aeccff03e5a06c01063426efc158a89bfaa893061d8",
+      "command": [
+        "python3",
+        "-B",
+        "-c",
+        "raise SystemExit(1)"
+      ],
+      "returncode": 1,
+      "timed_out": false,
+      "candidate_unchanged": true,
+      "stdout": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "truncated": false,
+        "text": ""
+      },
+      "stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "truncated": false,
+        "text": ""
+      },
+      "passed": false,
+      "scope": "This exact command and selected-file snapshot only"
+    },
+    {
+      "verification": "executed_check",
+      "candidate_sha256": "a78b3b217702785b5eaf9aeccff03e5a06c01063426efc158a89bfaa893061d8",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-v"
+      ],
+      "returncode": 0,
+      "timed_out": false,
+      "candidate_unchanged": true,
+      "stdout": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "truncated": false,
+        "text": ""
+      },
+      "stderr": {
+        "sha256": "292ac2d3a684ce34f0a59fbabbaf4e4c96cbf1a5b39f7677218b87b7bb0cdffb",
+        "bytes": 153,
+        "truncated": false,
+        "text": "test_answer (test_bounds.BoundsTest.test_answer) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n"
+      },
+      "passed": true,
+      "scope": "This exact command and selected-file snapshot only"
+    }
+  ],
+  "original_unchanged_before_separate_apply": true,
+  "stale_candidate_and_staged_patch_rejected": true,
+  "mutation_during_apply_confirmation_rejected": true,
+  "original_apply_exact": true,
+  "tests_unchanged": true,
+  "candidate_storage_removed_on_exit": true,
+  "hosted_model_requests": 0,
+  "limitations": [
+    "Headless Textual keyboard proof on build host, not a real terminal, screen reader or fresh Ubuntu guest",
+    "Synthetic implementer responses; actual Bubblewrap checks and actual Git stage/Apply on disposable repositories",
+    "Check scope is the exact argument vector and selected-file snapshot, not general program correctness",
+    "New local source, not the unchanged Preview6 installer or public source commit",
+    "No provider requests, public deployment updates or final submission"
+  ]
+}

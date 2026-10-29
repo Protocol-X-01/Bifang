@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-28",
+  "sidecar_sha256": "039afcb8a84f878e2662b2e577de60f994c487064228532cdbe60dc554541bf2",
+  "evidence_archive_sha256": "08ccb7a4dc39eaf276051cbdfd547691a3a02bc0775d3632301fc578f9451314",
+  "native_members": 33,
+  "exact_build_input_matches": 33,
+  "python_distribution_members": {
+    "pillow": 24,
+    "charset-normalizer": 2,
+    "protobuf": 1,
+    "psutil": 1,
+    "pydantic_core": 1
+  },
+  "other_members": {
+    "libpython3.11.so.1.0": "Retained uv CPython 3.11.15 runtime",
+    "libgcc_s.so.1": "Ubuntu libgcc-s1:amd64",
+    "libstdc++.so.6": "Ubuntu libstdc++6:amd64",
+    "libz.so.1": "Ubuntu zlib1g:amd64"
+  },
+  "method": "Parse retained PyInstaller PKG table, compare embedded native-member SHA256 with original build-input file, then resolve wheel RECORD membership or distribution ownership",
+  "scope": "Exact native build-input correspondence; wheel membership does not enumerate every bundled upstream subcomponent or establish source-delivery compliance",
+  "vm_stopped": true,
+  "owned_ports_closed": true,
+  "provider_requests": 0,
+  "published": false
+}

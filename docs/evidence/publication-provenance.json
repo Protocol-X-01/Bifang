@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "prepared_date_utc": "2026-10-24",
+  "status": "verified_preview5_publication_preparation",
+  "desktop_version": "0.2.1-preview.5",
+  "debian_version": "0.2.1~preview.5",
+  "python_version": "0.2.1.dev5",
+  "build_input_archive_sha256": "854e00c1c8218aa42b05c7d1a569b0ed64b788956940d6b9ca8f1ddb851adf3c",
+  "build_input_manifest_sha256": "bcb3b31b80e0ed445f9aa0498ee38978237d256459e62cb8d9332a48c3a037f8",
+  "build_input_files": 373,
+  "package_sha256": "46ca99ef6450d46007ac8df072994f19e9698a40d4fa74a4a285db94b55c2589",
+  "application_sha256": "2061036ac34945870f32b24653354e031a0d1a20887cf7ec141e440c4a49e393",
+  "sidecar_sha256": "27db22eed9f2de797e2609983a3e4f0948bb21fa97fa170dba6158b430fa134c",
+  "notice_archive_sha256": "22fb9f21c729a295b6e039a106dcf4046fb90841b490f4baaeb6646513cdab97",
+  "native_verification_sha256": "a8bb391dd3e81907dade35ce8d5005a5e86368be86022d2ebe66a6807a3b0a35",
+  "publication_source_relationship": "Frozen runtime/build/test inputs unchanged; later README/docs/evidence only. Publication export must verify this boundary.",
+  "native_reproducibility": "Locked cached build, not bit-identical binary reproducibility",
+  "debian_normalization": "Tilde prerelease ordering; all generated payload-file hashes unchanged",
+  "video_relationship": "Accepted demonstration video retains its older package identity; native vision evidence is separate",
+  "publication_status_at_capture": "Not published; authoritative release metadata determines subsequent publication"
+}

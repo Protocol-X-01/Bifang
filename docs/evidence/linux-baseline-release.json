@@ -1,0 +1,41 @@
+{
+  "version": "0.2.1-dev.9",
+  "date": "2026-10-26",
+  "scope": "Local unsigned release builds on an isolated Ubuntu 22.04 builder; not fresh target installation, native-window, cross-platform or publication acceptance",
+  "architecture": "x86_64",
+  "glibc_ceiling": "2.35",
+  "packages": {
+    "Bifang_0.2.1-dev.9_amd64.deb": "644d8ced0e80a3766147067d9317a7d313fff82d13a3c9da8fbeceaed310a7cb",
+    "Bifang_0.2.1-dev.9_amd64.AppImage": "c83d9081b48be2511914142da2fa3bbb464a9c79d5c438903b790f0ca2b33c4c",
+    "Bifang-0.2.1-0.dev.9.x86_64.rpm": "f1a2aeaeb1ec36d3006c35a09e7e2a9876cf35f18d9a821422fc5e06bf55247e"
+  },
+  "per_format": {
+    "deb": {
+      "elf_files_audited": 2,
+      "helper_checks": 15,
+      "api_health": true,
+      "owned_api_port_closed": true,
+      "helper_sha256": "4e5488ba8217fe7df83c10246798ce27941c4f61cfebb3fe355c35a3e7c73295"
+    },
+    "rpm": {
+      "elf_files_audited": 2,
+      "helper_checks": 15,
+      "api_health": true,
+      "owned_api_port_closed": true,
+      "helper_sha256": "4e5488ba8217fe7df83c10246798ce27941c4f61cfebb3fe355c35a3e7c73295"
+    },
+    "appimage": {
+      "elf_files_audited": 175,
+      "helper_checks": 15,
+      "api_health": true,
+      "owned_api_port_closed": true,
+      "helper_sha256": "172fd70bd69e056755525939118bcec01489da6161b36301f2a4a5753417209d"
+    }
+  },
+  "rpm_default_digest_verification": true,
+  "rpm_declared_glibc_minimum": "2.35",
+  "private_configuration_used": false,
+  "hosted_model_requests": 0,
+  "vm_stopped": true,
+  "published": false
+}
