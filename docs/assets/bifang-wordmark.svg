@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Bifang Wordmark</title>
+  <defs>
+    <linearGradient id="ember" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E63946"/>
+      <stop offset="100%" stop-color="#FF8A3D"/>
+    </linearGradient>
+  </defs>
+  <text x="0" y="56" fill="url(#ember)" font-family="Space Grotesk, Inter, system-ui, sans-serif" font-size="56" font-weight="700" letter-spacing="7">BIFANG</text>
+</svg>
