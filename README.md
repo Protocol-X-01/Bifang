@@ -14,12 +14,62 @@
 
 <p align="center"><a href="#one-workspace-three-ways-in">Explore Bifang</a> · <a href="#see-the-coding-loop">Coding walkthrough</a> · <a href="#quickstart">Get started</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
-**Linux preview:** [Download the Ubuntu 24.04-tested Preview 6](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.1-preview.6).
+## Watch Bifang in Action
 
-**Refreshed Linux binaries:** [Debian, AppImage and experimental RPM development candidates](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.1-dev.11-refresh.20261029), with checksums, exact build source and notices.
-Unsigned prerelease; bring your own provider key. Use **Open by path…** to select a project without relying on a native file chooser.
+https://github.com/Protocol-X-01/Bifang/assets/assets/v0.2.1-dev.11-refresh.20261029/Bifang-narrated-demo.mp4
 
-Bifang is a desktop coding IDE and terminal agent built around a practical, reviewable engineering loop. It maps a repository, proposes focused edits, runs approved commands and tests, and shows the resulting diff before you keep or discard the work. Git repositories use a disposable worktree by default, leaving the original checkout untouched until you explicitly export or apply a patch.
+**From failing checks to reviewed patch:** Watch Nemotron Ultra fix a broken receipt parser through Bifang's tools. The agent proposes edits, you approve actions, run independent checks, review the diff, and control when to apply. All five original tests pass after the fix.
+
+<details>
+<summary><strong>📹 Video details and evidence</strong></summary>
+
+**Duration:** 2 minutes 50 seconds  
+**Task:** Fix CSV quoted-comma handling in receipt parser  
+**Model:** NVIDIA Nemotron Ultra on Nebius Token Factory  
+**Tokens:** 12,252 across 5 live inference calls  
+**Outcome:** All 5 original checks pass, parser fixed  
+
+**Evidence:** [`evidence/native-vercel-relay.json`](evidence/native-vercel-relay.json) · [`docs/DEMO_EVIDENCE.md`](docs/DEMO_EVIDENCE.md)
+
+</details>
+
+## Impact: Why Bifang Exists
+
+**Problem:** AI coding agents move fast, but their changes can break production. Engineers need visibility, control, and evidence—not just a finished solution.
+
+**Solution:** Bifang makes every agent action reviewable:
+- **Understand:** Map repositories, explore context, share screenshots
+- **Approve:** Review every edit, command, and tool invocation
+- **Verify:** Run checks in isolated worktrees, inspect diffs
+- **Control:** Apply or discard with one click
+
+**Built for:** Teams who need audit trails, engineers who review before merging, and projects where "just let the AI fix it" isn't enough.
+
+## Downloads
+
+**Latest Release (v0.2.1-dev.11):** [Debian, AppImage + Android APK](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.1-dev.11-refresh.20261029)
+
+| Platform | Format | Size | Status |
+|----------|--------|------|--------|
+| Linux | `.deb`, `.AppImage` | 34-108 MB | ✅ Tested on Ubuntu 22.04/24.04 |
+| Android | `.apk` (ARM64) | 152 MB | ✅ Tested on Xiaomi 12T (Android 15) |
+| Windows/macOS | Source | — | Build on demand (native required) |
+
+Install CLI globally on any Python 3.11 system:
+
+```bash
+pipx install git+https://github.com/Protocol-X-01/Bifang.git@v0.2.1-dev.11-refresh.20261029
+# or from source:
+git clone https://github.com/Protocol-X-01/Bifang.git
+cd Bifang && pipx install --python python3.11 .
+```
+
+**Quick start:**
+```bash
+export NEBIUS_API_KEY='your-key-here'
+bifang doctor && bifang sandbox-check
+cd your-project && bifang chat
+```
 
 ## One workspace, three ways in
 
