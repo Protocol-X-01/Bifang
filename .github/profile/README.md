@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Protocol-X-01/bifang/main/docs/assets/bifang-hero.svg" width="1280" alt="Bifang — Build. Run. Verify. A Nemotron coding workspace with disposable worktrees, approvals and diffs." />
+  <img src="https://raw.githubusercontent.com/Protocol-X-01/Bifang/main/docs/assets/bifang-hero.svg" width="1280" alt="Bifang — Build. Run. Verify. A Nemotron coding workspace with disposable worktrees, approvals and diffs." />
 </p>
 
 <p align="center">
@@ -8,16 +8,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Protocol-X-01/bifang/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-E63946?style=flat-square" alt="Apache 2.0 license" /></a>
+  <a href="https://github.com/Protocol-X-01/Bifang/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-E63946?style=flat-square" alt="Apache 2.0 license" /></a>
   <img src="https://img.shields.io/badge/Python-3.11-0F172A?style=flat-square" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/Track-01%20Agentic%20Engineering-FF8A3D?style=flat-square" alt="Track 1: Agentic Engineering" />
   <img src="https://img.shields.io/badge/Status-Active%20Development-FF8A3D?style=flat-square" alt="Active Development" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/Protocol-X-01/bifang/releases/latest"><img src="https://img.shields.io/github/v/release/Protocol-X-01/bifang?label=Latest%20Release&color=E63946&style=flat-square" alt="Latest Release" /></a>
-  <img src="https://img.shields.io/github/commit-activity/m/Protocol-X-01/bifang?color=FF8A3D&style=flat-square" alt="Commit Activity" />
-  <img src="https://img.shields.io/github/issues/Protocol-X-01/bifang?color=E63946&style=flat-square" alt="Open Issues" />
+  <a href="https://github.com/Protocol-X-01/Bifang/releases/latest"><img src="https://img.shields.io/github/v/release/Protocol-X-01/Bifang?label=Latest%20Release&color=E63946&style=flat-square" alt="Latest Release" /></a>
+  <img src="https://img.shields.io/github/commit-activity/m/Protocol-X-01/Bifang?color=FF8A3D&style=flat-square" alt="Commit Activity" />
+  <img src="https://img.shields.io/github/issues/Protocol-X-01/Bifang?color=E63946&style=flat-square" alt="Open Issues" />
 </p>
 
 ---
@@ -52,7 +52,7 @@ Open a project → Ask for a fix → See the patch → Approve → Tests run →
 ## 🎬 See It In Action
 
 <p align="center">
-  <a href="https://github.com/Protocol-X-01/bifang/releases/latest">
+  <a href="https://github.com/Protocol-X-01/Bifang/releases/latest">
     <img src="docs/assets/bifang-live-demo.mp4" width="800" alt="Bifang desktop demo" />
   </a>
 </p>
@@ -68,8 +68,8 @@ Open a project → Ask for a fix → See the patch → Approve → Tests run →
 sudo apt update && sudo apt install -y pipx git ripgrep bubblewrap
 pipx ensurepath
 
-git clone https://github.com/Protocol-X-01/bifang.git
-cd bifang
+git clone https://github.com/Protocol-X-01/Bifang.git
+cd Bifang
 pipx install --python python3.11 .
 
 # Configure your provider
@@ -129,7 +129,7 @@ npm run tauri:dev
 - **Disposable Git worktrees** by default — original checkout untouched
 - **Filesystem tools confined** to the Bifang workspace
 - **Typed model tools** validated before use
-- **Three approval levels** — Manual · Auto source edits · Full tool approval
+- **Three approval levels** — Manual · Auto · Full tool approval
 - **Destructive patterns blocked** in every mode
 - **Environment allowlist, timeout, and output cap**
 - **JSONL audit transcript** under `.bifang/sessions`
@@ -164,5 +164,5 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 <p align="center">
   <strong>Build. Run. Verify.</strong><br>
-  <a href="https://github.com/Protocol-X-01/bifang">github.com/Protocol-X-01/bifang</a>
+  <a href="https://github.com/Protocol-X-01/Bifang">github.com/Protocol-X-01/Bifang</a>
 </p>
