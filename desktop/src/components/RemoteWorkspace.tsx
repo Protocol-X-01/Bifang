@@ -39,7 +39,7 @@ export function RemoteWorkspace({ terminalBrief = '', onTerminalBriefUsed }: { t
 
   useEffect(() => {
     mounted.current = true;
-    return () => { mounted.current = false; void invoke('remote_disconnect').catch(() => {}); };
+    return () => { mounted.current = false; void invoke('remote_disconnect').catch((e) => console.error('[RemoteWorkspace] Disconnect failed:', e)); };
   }, []);
 
   const run = (task: () => Promise<void>) => {

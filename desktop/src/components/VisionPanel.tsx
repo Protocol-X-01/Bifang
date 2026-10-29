@@ -32,7 +32,8 @@ export function VisionPanel({ ensureSession, onUse }: { ensureSession: () => Pro
   const reset = () => {
     epoch.current += 1; preparation.current?.abort();
     cancelRequested.current = true;
-    if (activeSession.current) void localFetch(`/sessions/${activeSession.current}/vision/cancel?request_id=${activeRequest.current}`, { method: 'POST' }).catch(() => {});
+    if (activeSession.current) void localFetch(`/sessions/${activeSession.current}/vision/cancel?request_id=${activeRequest.current}`, { method: 'POST' })
+      .catch((e) => console.error('[VisionPanel] Failed to cancel vision:', e));
     activeSession.current = null;
     if (fileInput.current) fileInput.current.value = '';
     setImages([]); setResult(null); setError(''); setConfirming(false); setLoading(false); setRunning(false);
@@ -45,7 +46,8 @@ export function VisionPanel({ ensureSession, onUse }: { ensureSession: () => Pro
   useEffect(() => () => {
     epoch.current += 1; preparation.current?.abort();
     cancelRequested.current = true;
-    if (activeSession.current) void localFetch(`/sessions/${activeSession.current}/vision/cancel?request_id=${activeRequest.current}`, { method: 'POST' }).catch(() => {});
+    if (activeSession.current) void localFetch(`/sessions/${activeSession.current}/vision/cancel?request_id=${activeRequest.current}`, { method: 'POST' })
+      .catch((e) => console.error('[VisionPanel] Failed to cancel vision:', e));
   }, []);
   useEffect(() => { if (confirming) dialog.current?.showModal(); else dialog.current?.close(); }, [confirming]);
 

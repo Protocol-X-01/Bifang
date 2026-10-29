@@ -78,7 +78,8 @@ export function CandidatePanel() {
       active = false; controller.abort(); clearTimeout(timer);
       if (ownsBusy.current) {
         ownsBusy.current = false;
-        void localFetch(`/sessions/${sessionId}/candidate/cancel`, { method: 'POST' }).catch(() => {});
+        void localFetch(`/sessions/${sessionId}/candidate/cancel`, { method: 'POST' })
+          .catch((e) => console.error('[CandidatePanel] Failed to cancel candidate:', e));
       }
     };
   }, [sessionId]);

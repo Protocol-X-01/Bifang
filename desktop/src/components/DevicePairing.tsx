@@ -23,7 +23,8 @@ export function DevicePairing({ endpoint, disabled, onBusy, onConnected }: {
       if (current) {
         current.cancelled = true;
         current.wake?.();
-        if (current.attempt) void invoke('remote_pair_cancel', { attempt: current.attempt }).catch(() => {});
+        if (current.attempt) void invoke('remote_pair_cancel', { attempt: current.attempt })
+          .catch((e) => console.error('[DevicePairing] Failed to cancel pairing:', e));
       }
     };
   }, []);
@@ -144,7 +145,7 @@ export function PairedDevices() {
     mounted.current = true;
     void operation({ operation: 'auth_session' }).then(async value => {
       if ((value as { authentication?: string }).authentication === 'operator' && mounted.current) { setOperator(true); await refresh(); }
-    }).catch(() => {});
+    }).catch((e) => console.error('[DevicePairing] Pairing failed:', e));
     return () => { mounted.current = false; };
   }, []);
 
