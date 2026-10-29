@@ -102,7 +102,8 @@ cd your-project && bifang chat
 | **Input/Output Validation** | LangChain Guardrails | PII filtering, dangerous command blocklist | ✅ 48 tests |
 | **Human-in-Loop** | Approval Workflow | Review every action before execution | ✅ Desktop + CLI |
 | **Sandbox Isolation** | Bubblewrap | Network offline, filesystem read-only | ✅ Ubuntu 24.04 verified |
-| **Observability** | LangSmith + Phoenix | Audit trail, token tracking | ✅ Ready to enable |
+| **Tool Discovery** | Librarian MCP | 9,236 indexed tools across 14 sources | ✅ [Published](https://github.com/Protocol-X-01/librarian) |
+| **Observability** | LangSmith + Phoenix | Audit trail, token tracking | ✅ [Ready to enable](https://smith.langchain.com) |
 
 **Guardrails validate:**
 - ✅ Command safety (blocks: sudo, curl | bash, rm -rf /, disk ops)
@@ -124,7 +125,11 @@ assert "[EMAIL]" in filtered
 
 **Architecture:** Validation runs inside Bubblewrap sandbox → if approved, executes in disposable worktree → verified against original checks → diff reviewed → then Apply.
 
-See [safety tests](tests/test_guardrails.py) and [sandbox verification](docs/UBUNTU_SANDBOX.md).
+**Tool Discovery:** [Librarian MCP](docs/THE_TOOLBOX.md) enables agents to discover 9,236+ installed tools across 14 package managers (pacman, cargo, pip, npm, docker, etc.) without loading context-heavy inventories. [Published separately](https://github.com/Protocol-X-01/librarian) with live Nemotron integration verified (8,885 tokens tracked).
+
+**Observability:** Set `BIFANG_TRACING_BACKEND=langsmith` + `LANGSMITH_API_KEY` to enable [LangSmith](https://smith.langchain.com) tracing for token tracking, performance metrics, and audit trails. Phoenix tracing active by default. Both use OpenTelemetry.
+
+See [safety tests](tests/test_guardrails.py), [sandbox verification](docs/UBUNTU_SANDBOX.md), and [Toolbox MCP](https://github.com/Protocol-X-01/librarian/tree/main/mcp).
 
 ## One workspace, three ways in
 
