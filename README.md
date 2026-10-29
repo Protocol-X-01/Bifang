@@ -93,6 +93,39 @@ cd your-project && bifang chat
 
 **Built for the [Nebius x NVIDIA Hackathon](https://nebiusglobalaihackathon.devpost.com/)** — competing for **Best Use of Tavily** prize.
 
+## 🛡️ Safety Features: Defense-in-Depth
+
+**Multi-layer security** ensures AI-generated code stays within bounds:
+
+| Layer | Technology | Purpose | Verification |
+|-------|------------|---------|--------------|
+| **Input/Output Validation** | LangChain Guardrails | PII filtering, dangerous command blocklist | ✅ 48 tests |
+| **Human-in-Loop** | Approval Workflow | Review every action before execution | ✅ Desktop + CLI |
+| **Sandbox Isolation** | Bubblewrap | Network offline, filesystem read-only | ✅ Ubuntu 24.04 verified |
+| **Observability** | LangSmith + Phoenix | Audit trail, token tracking | ✅ Ready to enable |
+
+**Guardrails validate:**
+- ✅ Command safety (blocks: sudo, curl | bash, rm -rf /, disk ops)
+- ✅ PII filtering (emails, phones, SSN, API keys)
+- ✅ Path validation (prevents traversal attacks)
+- ✅ Content inspection (detects dangerous patterns)
+
+```python
+from bifang.guardrails import validate_command_safety, filter_pii
+
+# Validate before execution
+safe, msg = validate_command_safety(["sudo", "rm", "-rf", "/"])
+assert not safe  # Blocked!
+
+# Filter outputs
+filtered, warnings = filter_pii("Email: user@example.com")
+assert "[EMAIL]" in filtered
+```
+
+**Architecture:** Validation runs inside Bubblewrap sandbox → if approved, executes in disposable worktree → verified against original checks → diff reviewed → then Apply.
+
+See [safety tests](tests/test_guardrails.py) and [sandbox verification](docs/UBUNTU_SANDBOX.md).
+
 ## One workspace, three ways in
 
 | Desktop IDE | Terminal | Android Companion |
