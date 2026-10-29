@@ -40,6 +40,31 @@ def test_archive_preserves_worktree_build_support_and_omits_private_state(projec
     assert (tmp_path / "source.tar.gz").stat().st_mode & 0o777 == 0o600
 
 
+def test_archive_preserves_new_client_design_and_demo_sources_without_generated_state(project, tmp_path):
+    included = ["tui/Cargo.toml", "tui/Cargo.lock", "tui/src/main.rs", "tui/src/lib.rs",
+                "demo-output/scenes/01-hook.html", "demo-output/narration/01-hook.txt",
+                "demo-output/scenes.json", "demo-output/build.sh",
+                "scripts/android-proot-string-header.patch", *EXPORTER["OPTIONAL_ROOT_FILES"]]
+    excluded = ["tui/target/private.rs", "tui/.env", "demo-output/.env",
+                "demo-output/narration/generated.wav", "demo-output/generated.mp4"]
+    for name in included + excluded:
+        source = project / name
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("Synthetic source fixture")
+    output = tmp_path / "clients.tar.gz"
+    EXPORTER["build_archive"](project, output)
+    with tarfile.open(output) as archive:
+        names = set(archive.getnames())
+        assert set(included) <= names
+        assert not set(excluded) & names
+
+
+def test_archive_rejects_incomplete_tui_client(project, tmp_path):
+    (project / "tui").mkdir()
+    with pytest.raises(ValueError, match="tui/Cargo"):
+        EXPORTER["build_archive"](project, tmp_path / "incomplete-tui.tar.gz")
+
+
 def test_archive_preserves_android_sources_and_wrapper_without_local_sdk_or_signing_state(project, tmp_path):
     android = project / "companion/src-tauri/gen/android"
     prefix = "companion/src-tauri/gen/android/"

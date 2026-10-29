@@ -22,19 +22,16 @@ def rpm_override(version: str) -> dict:
     return {"version": release, "bundle": {"linux": {"rpm": {"release": f"0.{prerelease}"}}}}
 
 
-def bundle(root: Path, formats: list[str], debug: bool = False) -> None:
+def bundle(root: Path, formats: list[str], debug: bool = False, glibc_baseline: str = "2.35") -> None:
     binary = root / "desktop/src-tauri/target" / ("debug" if debug else "release") / "bifang-desktop"
     with binary.open("rb") as source, mmap.mmap(source.fileno(), 0, access=mmap.ACCESS_READ) as contents:
         if contents.find(b"__TAURI_BUNDLE_TYPE_VAR_UNK") == -1:
             raise ValueError("Build an unbundled desktop first; refusing to reuse an already patched executable")
     configuration = json.loads((root / "desktop/src-tauri/tauri.conf.json").read_text())
     override = rpm_override(configuration["version"])
-    runtime = re.fullmatch(r"glibc (\d+\.\d+)", os.confstr("CS_GNU_LIBC_VERSION") or "")
-    if runtime is None:
-        raise ValueError("Package on the selected GNU glibc baseline")
     capability_suffix = "(64bit)" if struct.calcsize("P") == 8 else ""
     override.setdefault("bundle", {}).setdefault("linux", {}).setdefault("rpm", {})["depends"] = [
-        f"libc.so.6(GLIBC_{runtime[1]}){capability_suffix}"
+        f"libc.so.6(GLIBC_{glibc_baseline}){capability_suffix}"
     ]
     with tempfile.TemporaryDirectory(prefix=".bifang-unbundled-", dir=binary.parent) as temporary:
         snapshot = Path(temporary) / "snapshot"
@@ -64,8 +61,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Bundle each Linux format from the same pristine compiled desktop")
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--formats", nargs="+", choices=["deb", "appimage", "rpm"], default=["deb", "appimage", "rpm"])
+    parser.add_argument("--glibc-baseline", default="2.35", help="Target GLIBC version for broader compatibility (default: 2.35 for Ubuntu 22.04)")
     arguments = parser.parse_args()
-    bundle(Path(__file__).resolve().parents[1], arguments.formats, arguments.debug)
+    bundle(Path(__file__).resolve().parents[1], arguments.formats, arguments.debug, arguments.glibc_baseline)
 
 
 if __name__ == "__main__":
