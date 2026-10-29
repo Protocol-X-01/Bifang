@@ -8,6 +8,7 @@
   <a href="https://github.com/Protocol-X-01/Bifang/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-E63946?style=flat-square" alt="Apache 2.0 license" /></a>
   <img src="https://img.shields.io/badge/Python-3.11-0F172A?style=flat-square" alt="Python 3.11" />
   <img src="https://img.shields.io/badge/Track-01%20Agentic%20Engineering-FF8A3D?style=flat-square" alt="Track 1: Agentic Engineering" />
+  <a href="https://tavily.com"><img src="https://img.shields.io/badge/Built%20with-Tavily-blue?style=flat-square" alt="Built with Tavily" /></a>
   <a href="https://github.com/Protocol-X-01/Bifang/actions/workflows/ci.yml"><img src="https://github.com/Protocol-X-01/Bifang/actions/workflows/ci.yml/badge.svg" alt="CI workflow status" /></a>
   <a href="https://github.com/Protocol-X-01/Bifang/actions/workflows/desktop-platforms.yml"><img src="https://github.com/Protocol-X-01/Bifang/actions/workflows/desktop-platforms.yml/badge.svg" alt="Desktop package workflow status" /></a>
 </p>
@@ -70,6 +71,27 @@ export NEBIUS_API_KEY='your-key-here'
 bifang doctor && bifang sandbox-check
 cd your-project && bifang chat
 ```
+
+## 🔍 Web Intelligence with Tavily
+
+**Real-time web search and extraction** powered by [Tavily](https://tavily.com)
+
+| Capability | Tool | Limits | Verified |
+|------------|------|-------|----------|
+| **Web Search** | `web_search` | 400-char queries, 8 results max | ✅ Live |
+| **Page Extraction** | `web_extract` | Public HTTPS only, 12K chars max | ✅ Live |
+
+**Features:**
+- ✅ Content hashing for verification
+- ✅ Untrusted-data labeling  
+- ✅ HTTPS-only URL filtering
+- ✅ Timeout and size limits
+- ✅ No credential exposure
+- ✅ 83 test suite passing
+
+**Evidence:** [Live Tavily extraction proof](docs/evidence/tavily-extract-20261028.json) — Python asyncio docs extracted (5,944 chars)
+
+**Built for the [Nebius x NVIDIA Hackathon](https://nebiusglobalaihackathon.devpost.com/)** — competing for **Best Use of Tavily** prize.
 
 ## One workspace, three ways in
 
