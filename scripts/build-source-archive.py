@@ -9,13 +9,14 @@ import os
 import tarfile
 from pathlib import Path
 
-TREES = ("src", "tests", "scripts", "docs", "desktop", "companion", "deploy", "examples", "evaluations", ".github", "bifang-brand-kit")
+TREES = ("src", "tests", "scripts", "docs", "desktop", "companion", "tui", "deploy", "examples", "evaluations", ".github", "bifang-brand-kit", "demo-output")
 ROOT_FILES = ("LICENSE", "README.md", "pyproject.toml", "uv.lock", "Dockerfile", ".dockerignore", ".gitignore", ".env.example")
+OPTIONAL_ROOT_FILES = ("CONTRIBUTING.md", "SECURITY.md", "CODEOWNERS", "bifang-design-tokens.json")
 EXCLUDED_DIRS = {"node_modules", "target", "dist", "build", "__pycache__", ".git", ".venv", ".bifang", ".arca"}
 EXTENSIONS = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".rs", ".toml", ".json", ".jsonl", ".yml", ".yaml",
               ".md", ".txt", ".sh", ".html", ".css", ".sql", ".svg", ".png", ".jpg", ".jpeg", ".webp", ".ico",
               ".icns", ".woff", ".woff2", ".ttf", ".h", ".c", ".cpp", ".proto", ".xml", ".kt", ".kts",
-              ".java", ".gradle", ".properties", ".pro", ".bat"}
+              ".java", ".gradle", ".properties", ".pro", ".bat", ".patch"}
 SPECIAL_FILES = {"Cargo.lock", "uv.lock", "Dockerfile", "LICENSE", "NOTICE", "gradlew"}
 EXACT_BINARY_INPUTS = {"companion/src-tauri/gen/android/gradle/wrapper/gradle-wrapper.jar"}
 EXACT_TEXT_INPUTS = {"deploy/vercel-judge-relay/" + name for name in (
@@ -62,7 +63,7 @@ REQUIRED = set(ROOT_FILES) | RELAY_REQUIRED | {
 
 
 def selected_files(root: Path) -> list[Path]:
-    selected = [root / name for name in ROOT_FILES if (root / name).exists()]
+    selected = [root / name for name in ROOT_FILES + OPTIONAL_ROOT_FILES if (root / name).exists()]
     for tree in TREES:
         directory = root / tree
         if directory.is_symlink():
@@ -106,6 +107,8 @@ def build_archive(root: Path, output: Path, max_file_bytes: int = 16_777_216, ma
         payload.append((relative, content, 0o755 if source.stat().st_mode & 0o111 else 0o644))
     names = {name for name, _, _ in payload}
     required = REQUIRED | ANDROID_REQUIRED if (root / ANDROID_ROOT).is_dir() else REQUIRED
+    if (root / "tui").is_dir():
+        required = required | {"tui/Cargo.toml", "tui/Cargo.lock", "tui/src/main.rs", "tui/src/lib.rs"}
     missing = sorted(required - names)
     if missing:
         raise ValueError("Missing required build inputs: " + ", ".join(missing))
