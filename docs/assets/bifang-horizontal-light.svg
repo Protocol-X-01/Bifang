@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 128" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Bifang — Build. Run. Verify.</title>
+  <defs>
+    <linearGradient id="ember" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E63946"/>
+      <stop offset="100%" stop-color="#FF8A3D"/>
+    </linearGradient>
+  </defs>
+  <!-- Bifang bird symbol -->
+  <g transform="translate(16, 8) scale(0.55)">
+    <path d="M140 170 Q100 140 80 110 Q60 80 70 50 Q80 20 120 30 Q160 40 170 80 Q180 120 160 150 Q140 180 110 170" fill="none" stroke="url(#ember)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M372 170 Q412 140 432 110 Q452 80 442 50 Q432 20 392 30 Q352 40 342 80 Q332 120 352 150 Q372 180 402 170" fill="none" stroke="#FF8A3D" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M200 120 L200 320 L312 320 L312 120 Z" fill="#FFFFFF" stroke="url(#ember)" stroke-width="4" rx="12"/>
+    <path d="M236 160 L256 180 L236 200" fill="none" stroke="#0F172A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M276 160 L256 180 L276 200" fill="none" stroke="#0F172A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M256 320 L256 380" stroke="url(#ember)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M240 380 L272 380" stroke="url(#ember)" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="256" cy="80" rx="28" ry="20" fill="#FFFFFF" stroke="url(#ember)" stroke-width="4"/>
+    <path d="M270 80 Q290 75 295 80 Q290 85 270 80" fill="#FF8A3D"/>
+    <circle cx="248" cy="76" r="5" fill="#0F172A"/>
+    <circle cx="249" cy="75" r="2" fill="#FFFFFF"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="160" y="88" fill="#0F172A" font-family="Space Grotesk, Inter, system-ui, sans-serif" font-size="48" font-weight="700" letter-spacing="6">BIFANG</text>
+  <text x="160" y="112" fill="#6B7A94" font-family="Space Grotesk, Inter, system-ui, sans-serif" font-size="14" font-weight="600" letter-spacing="4">BUILD. RUN. VERIFY.</text>
+</svg>

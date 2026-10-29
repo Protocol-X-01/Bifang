@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 430" role="img" aria-labelledby="title desc">
   <title id="title">Bifang — Build. Run. Verify.</title>
-  <desc id="desc">An open-source Nemotron coding workspace built around disposable worktrees, explicit approvals, and reviewable diffs. Geometric Bifang bird in red, orange and white on deep slate.</desc>
+  <desc id="desc">An open-source Nemotron coding workspace for desktop, terminal and mobile, with disposable worktrees, approvals and reviewable diffs. Geometric Bifang bird in red, orange and white on deep slate.</desc>
   <defs>
     <linearGradient id="background" x2="1" y2="1"><stop stop-color="#0F172A"/><stop offset="1" stop-color="#192237"/></linearGradient>
     <radialGradient id="heat"><stop stop-color="#E63946" stop-opacity=".2"/><stop offset="1" stop-color="#E63946" stop-opacity="0"/></radialGradient>
@@ -16,9 +16,9 @@
   <text x="60" y="235" fill="#B8C3D6" font-family="Inter,Segoe UI,sans-serif" font-size="20">A coding workspace with a reviewable agent loop.</text>
   <text x="60" y="271" fill="#FFAE77" font-family="Inter,Segoe UI,sans-serif" font-size="13" font-weight="650" letter-spacing="1.5">NEMOTRON · NEBIUS TOKEN FACTORY</text>
   <g font-family="Inter,Segoe UI,sans-serif" font-size="12" font-weight="600" fill="#CCD5E2">
-    <rect x="58" y="322" width="137" height="35" rx="6" fill="#1C2940" stroke="#34435D"/><text x="126" y="344" text-anchor="middle">DESKTOP + CLI</text>
-    <rect x="207" y="322" width="209" height="35" rx="6" fill="#1C2940" stroke="#34435D"/><text x="311" y="344" text-anchor="middle">DISPOSABLE WORKTREES</text>
-    <rect x="428" y="322" width="178" height="35" rx="6" fill="#1C2940" stroke="#34435D"/><text x="517" y="344" text-anchor="middle">APPROVALS + DIFFS</text>
+    <rect x="58" y="322" width="180" height="35" rx="6" fill="#1C2940" stroke="#34435D"/><text x="148" y="344" text-anchor="middle">DESKTOP · TUI · MOBILE</text>
+    <rect x="250" y="322" width="209" height="35" rx="6" fill="#1C2940" stroke="#34435D"/><text x="355" y="344" text-anchor="middle">DISPOSABLE WORKTREES</text>
+    <rect x="471" y="322" width="178" height="35" rx="6" fill="#1C2940" stroke="#34435D"/><text x="560" y="344" text-anchor="middle">APPROVALS + DIFFS</text>
   </g>
   <path d="M810 73v284" stroke="#34435D" stroke-opacity=".65"/>
   <g transform="translate(882 56) scale(.62)">
