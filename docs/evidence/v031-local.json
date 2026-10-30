@@ -1,0 +1,53 @@
+{
+  "record": "Bifang v0.3.1 local delivery checkpoint",
+  "date": "2026-10-30",
+  "artifacts": {
+    "Bifang_0.3.1_amd64.deb": {
+      "bytes": 58172894,
+      "sha256": "ba9cfdd84a39a381f430cf8d03e46ba61ec91f7fc75221ded28fa6502c9ef762"
+    },
+    "Bifang-Companion_v0.3.1.apk": {
+      "bytes": 51027802,
+      "sha256": "2b962aa64b0baae692b594907e59ba433d784588cfc853be41e2df30b205f237"
+    },
+    "bifang-tui": {
+      "bytes": 4980392,
+      "sha256": "d3b762d26e2a6b03d3d85a56b03459b8a6a53fe3f2ae65fabac8249332417858"
+    }
+  },
+  "android": {
+    "application_id": "com.bifang.companion",
+    "version_name": "0.3.1",
+    "version_code": 3001,
+    "install": "adb install -r on Xiaomi 12T (JF5TTKYLIRZX6XYH) succeeded; launch verified without fatal exceptions"
+  },
+  "server": {
+    "models_endpoint": "/models returns Nebius provider catalog: 5 nvidia/Nemotron models with fast/balanced/reasoning roles",
+    "root_causes_fixed": [
+      "folder_snapshot.py: artifact directories excluded (target, .gradle, .next, .cache, vendor, .tox, .mypy_cache, .pytest_cache, .turbo, .vercel, site-packages), symlink entries and FIFOs skipped, files over 16 MiB skipped with a notice instead of failing the session",
+      "workspace.py: isolated snapshot creation re-baselines and retries (4 attempts) when the source folder changes mid-copy",
+      "server binary rebuilt via scripts/build-server-sidecar.py with Python 3.11 and embedded into the desktop bundle"
+    ],
+    "verified": [
+      "POST /sessions on the real bifang repository and on ~/.local state folders returns an isolated workspace box",
+      "TUI: session flow end-to-end - prompt, write and command approvals, live diff poll, Ctrl+K apply, source checkout updated",
+      "receipt demo: baseline FAILED (failures=1, errors=1), agent fix applied through TUI, rerun in the original checkout OK (5 tests)"
+    ],
+    "standalone": "server serves on BIFANG_SERVER_HOST/PORT (127.0.0.1:8000) using BIFANG_ALLOW_ABSOLUTE_WORKSPACES=1; sessions run inside /home/<user>/.local/state/bifang/boxes"
+  },
+  "desktop": {
+    "version": "0.3.1",
+    "bumped": [
+      "desktop/src-tauri/tauri.conf.json",
+      "desktop/src-tauri/Cargo.toml",
+      "desktop/package.json"
+    ],
+    "env": "provider keys are read from ~/.config/com.bifang.desktop/.env; values never printed or committed",
+    "secret_check": "NEBIUS_API_KEY value not present in shipped binaries (strings scan)"
+  },
+  "release": "https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.1",
+  "outstanding": [
+    "iOS build requires a Mac/Xcode toolchain (Linux host cannot produce it)",
+    "desktop dropdown verification pending on the freshly installed 0.3.1 app"
+  ]
+}

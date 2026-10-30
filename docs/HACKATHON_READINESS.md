@@ -1,6 +1,23 @@
-# Hackathon readiness — 2026-10-28
+# Hackathon readiness — 2026-10-30
 
 ## Current delivery checkpoint
+
+October 30: v0.3.1 is published. The release set — Android companion 0.3.1
+(version code 3001), Debian desktop 0.3.1 with the rebuilt sidecar, the
+`bifang-tui` binary and their checksums — is attached to the
+[v0.3.1 release](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.1).
+[Delivery evidence](evidence/v031-local.json) records exact artifact sizes and
+SHA-256 identities, the server snapshot fixes (artifact-directory exclusion,
+symlink and FIFO skipping, a 16 MiB file ceiling that skips oversize files
+with a notice instead of failing the session, and snapshot race retry) and
+the end-to-end TUI verification including the receipt demo (baseline failure,
+agent fix applied through the TUI, 5 passing checks). Scratch binaries were
+removed from the git tree; oversized legacy packages live only in GitHub
+releases, since GitHub rejects files above 100 MB in the history. iOS
+delivery still requires a Mac/Xcode toolchain and remains with the
+maintainer.
+
+The preceding dev11 checkpoint is retained below.
 
 The locally installed **0.2.1-dev.11** adds approved bounded Tavily page
 extraction. Its [delivery evidence](evidence/dev11-local.json) records a corrected,
