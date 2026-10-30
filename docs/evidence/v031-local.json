@@ -78,5 +78,17 @@
       "android": "APK built and verified on device earlier",
       "windows_macos_ios": "awaiting GitHub Actions runners once billing unblocks"
     }
+  },
+  "terminal": {
+    "tui_auto_start": {
+      "sha256": "f3a8275f0963f8207c61aac0b76f39a6e3d2871aed2339507b457de5e7e76bea",
+      "bytes": 5038784,
+      "glibc_floor": "GLIBC_2.39",
+      "verified_live": "2026-10-30: killed the manual 8000 server, launched bifang-tui, it spawned the server via BIFANG_TUI_SERVER_BINARY, showed 'Server connected' and GET /health returned ok; a second TUI instance connected without spawning a duplicate",
+      "resolution_order": "BIFANG_TUI_SERVER_BINARY > bifang-server[-<triple>] sibling of the TUI executable > bifang-server on PATH; BIFANG_AUTOSTART_SERVER=0 disables",
+      "log": "~/.local/share/bifang/tui-server.log",
+      "release_asset": "replaced in place on the v0.3.2 release with the same checksums file regenerated (5 binaries)"
+    },
+    "tests": "cargo test --lib: 7 passing (5 new server_bootstrap tests); 2 pre-existing status_line failures unrelated"
   }
 }

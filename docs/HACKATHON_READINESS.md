@@ -37,7 +37,14 @@ default `glm-5.3`, 1M-token context) and **HuggingFace Inference Providers**
 October 30 returned 30 live Nebius models (25 non-Nemotron) and 85 live
 NVIDIA models; the suite is at 936 passing with 5 pre-existing, unrelated
 failures (file-security magic and folder-snapshot tests) — see
-[evidence](evidence/v031-local.json).
+[evidence](evidence/v031-local.json). The Rust TUI shipped with v0.3.2 was
+rebuilt after this checkpoint to start its `bifang-server` itself
+(`BIFANG_TUI_SERVER_BINARY`, the sidecar next to the TUI, or `bifang-server`
+on PATH; `BIFANG_AUTOSTART_SERVER=0` opts out), replacing the release asset
+in place: the updated `bifang-tui` is 5,038,784 bytes,
+`f3a8275f0963f8207c61aac0b76f39a6e3d2871aed2339507b457de5e7e76bea`
+(GLIBC 2.39, token in the release checksums file), and a live check
+verified spawn-on-missing plus reuse of an already-running server.
 
 The preceding dev11 checkpoint is retained below.
 
