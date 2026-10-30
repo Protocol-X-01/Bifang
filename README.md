@@ -17,17 +17,17 @@
 
 ## Watch Bifang in Action
 
-https://github.com/Protocol-X-01/Bifang/releases/download/v0.2.1-dev.11-refresh.20261029/Bifang-narrated-demo.mp4
+https://github.com/Protocol-X-01/Bifang/releases/download/v0.3.1/bifang-live-demo.mp4
 
 **From failing checks to reviewed patch:** Watch Nemotron Ultra fix a broken receipt parser through Bifang's tools. The agent proposes edits, you approve actions, run independent checks, review the diff, and control when to apply. All five original tests pass after the fix.
 
 <details>
 <summary><strong>📹 Video details and evidence</strong></summary>
 
-**Duration:** 2 minutes 50 seconds  
+**Duration:** 45 seconds  
 **Task:** Fix CSV quoted-comma handling in receipt parser  
 **Model:** NVIDIA Nemotron Ultra on Nebius Token Factory  
-**Tokens:** 12,252 across 5 live inference calls  
+**Flow:** failing baseline → agent fix proposed in the TUI → write/command approvals → live diff → apply → all 5 checks pass  
 **Outcome:** All 5 original checks pass, parser fixed  
 
 **Evidence:** [`evidence/native-vercel-relay.json`](evidence/native-vercel-relay.json) · [`docs/DEMO_EVIDENCE.md`](docs/DEMO_EVIDENCE.md)
