@@ -13,6 +13,16 @@
     "bifang-tui": {
       "bytes": 4980392,
       "sha256": "d3b762d26e2a6b03d3d85a56b03459b8a6a53fe3f2ae65fabac8249332417858"
+    },
+    "Bifang_0.3.1_amd64.AppImage": {
+      "bytes": 167082488,
+      "sha256": "bac29013a04624146546df0f871d74e923de18725e53ae8648c6ae2249f6f473",
+      "glibc_floor": "GLIBC_2.39"
+    },
+    "Bifang-0.3.1-1.x86_64.rpm": {
+      "bytes": 58178429,
+      "sha256": "3ba7cd0efdda40e3705be84767f34e49a2bf1f0113ce4892bf6de78132dc06e1",
+      "glibc_floor": "GLIBC_2.39"
     }
   },
   "android": {
@@ -49,5 +59,13 @@
   "outstanding": [
     "iOS build requires a Mac/Xcode toolchain (Linux host cannot produce it)",
     "desktop dropdown verification pending on the freshly installed 0.3.1 app"
-  ]
+  ],
+  "delivery": {
+    "github_actions": "account billing-locked (bank/issuer), all workflows incl. iOS build queued until restored; workflows added: .github/workflows/ios-companion.yml, ubuntu-22.04 row in desktop-platforms.yml",
+    "platform_support_today": {
+      "linux": "deb, rpm, AppImage, TUI built locally",
+      "android": "APK built and verified on device earlier",
+      "windows_macos_ios": "awaiting GitHub Actions runners once billing unblocks"
+    }
+  }
 }

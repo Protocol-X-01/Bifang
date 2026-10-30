@@ -4,17 +4,24 @@
 
 October 30: v0.3.1 is published. The release set — Android companion 0.3.1
 (version code 3001), Debian desktop 0.3.1 with the rebuilt sidecar, the
-`bifang-tui` binary and their checksums — is attached to the
+`bifang-tui` binary, the desktop AppImage and RPM, the narrated demo video
+and their checksums — is attached to the
 [v0.3.1 release](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.1).
 [Delivery evidence](evidence/v031-local.json) records exact artifact sizes and
 SHA-256 identities, the server snapshot fixes (artifact-directory exclusion,
 symlink and FIFO skipping, a 16 MiB file ceiling that skips oversize files
 with a notice instead of failing the session, and snapshot race retry) and
 the end-to-end TUI verification including the receipt demo (baseline failure,
-agent fix applied through the TUI, 5 passing checks). Scratch binaries were
-removed from the git tree; oversized legacy packages live only in GitHub
-releases, since GitHub rejects files above 100 MB in the history. iOS
-delivery still requires a Mac/Xcode toolchain and remains with the
+agent fix applied through the TUI, 5 passing checks). Scratch binaries and a
+152 MB legacy APK were removed from the git tree; oversized packages live
+only in the release assets, since GitHub rejects files above 100 MB in the
+history. Linux artifacts were produced on a rolling host, so their ELF
+symbol floor is GLIBC 2.39 (matching Ubuntu 24.04 and Fedora 40+); a CI job
+(`ubuntu-22.04`) is queued in `desktop-platforms.yml` to rebuild deb, RPM and
+AppImage against GLIBC 2.35 for older distros. Windows NSIS/MSI, macOS DMG
+and the iOS companion build are wired to GitHub-hosted runners as well;
+they cannot be produced on this Linux host until the Actions billing block
+is cleared. iOS signed distribution and device testing remain with the
 maintainer.
 
 The preceding dev11 checkpoint is retained below.

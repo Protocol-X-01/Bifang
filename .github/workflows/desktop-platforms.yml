@@ -11,6 +11,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - runner: ubuntu-22.04
+            bundles: deb,rpm,appimage
           - runner: windows-2022
             target: x86_64-pc-windows-msvc
             bundles: nsis,msi
