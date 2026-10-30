@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import httpx
 from .openai import OpenAIProvider
 from .base import ProviderConfig, ModelInfo
 
@@ -22,16 +21,13 @@ class ZAIProvider(OpenAIProvider):
         )
         super().__init__(config)
 
-    def list_models(self) -> list[ModelInfo]:
+    async def list_models(self) -> list[ModelInfo]:
         try:
-            response = httpx.get(
-                f"{self.base_url}/models", headers=self.config.get_headers()
-            )
+            response = await self.client.get("/models", headers=self.config.get_headers())
             response.raise_for_status()
             return self._list_model_ids(response.json())
         except Exception:
             return self._get_fallback_models()
-
     def _list_model_ids(self, data: dict) -> list[ModelInfo]:
         models: list[ModelInfo] = []
         for m in data.get("data", []):
