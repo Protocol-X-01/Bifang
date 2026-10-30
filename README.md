@@ -125,7 +125,7 @@ assert "[EMAIL]" in filtered
 
 **Architecture:** Validation runs inside Bubblewrap sandbox → if approved, executes in disposable worktree → verified against original checks → diff reviewed → then Apply.
 
-**Tool Discovery:** [Librarian MCP](docs/THE_TOOLBOX.md) enables agents to discover 9,236+ installed tools across 14 package managers (pacman, cargo, pip, npm, docker, etc.) without loading context-heavy inventories. [Published separately](https://github.com/Protocol-X-01/librarian) with live Nemotron integration verified (8,885 tokens tracked).
+**Tool Discovery:** [Librarian MCP](https://github.com/Protocol-X-01/toolbox-mcp) (new standalone repo) enables agents to discover 9,236+ installed tools across 14 package managers (pacman, cargo, pip, npm, docker, etc.) with real-time enrichment via Tavily. Live Nemotron integration verified (8,885 tokens tracked).
 
 **Observability:** Set `BIFANG_TRACING_BACKEND=langsmith` + `LANGSMITH_API_KEY` to enable [LangSmith](https://smith.langchain.com) tracing for token tracking, performance metrics, and audit trails. Phoenix tracing active by default. Both use OpenTelemetry.
 
