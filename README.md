@@ -17,7 +17,7 @@
 
 ## Watch Bifang in Action
 
-https://github.com/Protocol-X-01/Bifang/assets/assets/v0.2.1-dev.11-refresh.20261029/Bifang-narrated-demo.mp4
+https://github.com/Protocol-X-01/Bifang/releases/download/v0.2.1-dev.11-refresh.20261029/Bifang-narrated-demo.mp4
 
 **From failing checks to reviewed patch:** Watch Nemotron Ultra fix a broken receipt parser through Bifang's tools. The agent proposes edits, you approve actions, run independent checks, review the diff, and control when to apply. All five original tests pass after the fix.
 
