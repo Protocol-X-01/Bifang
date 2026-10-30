@@ -178,18 +178,25 @@ Built for **Track 1 · Coding and Agentic Engineering** at the Nebius × NVIDIA 
 The [receipt-parser demo](docs/DEMO.md) starts with two broken CSV cases. Nemotron Ultra fixes the parser through Bifang's tools, leaving the original checks intact. The release-profile desktop app completed the live task, approval dialogs, diff review, and patch application. All five original checks passed in the source checkout afterward.
 
 <details>
-<summary><strong>Earlier desktop screenshots · coding, approvals and visual review</strong></summary>
+<summary><strong>Screenshots · desktop, terminal and mobile companion (v0.3.1)</strong></summary>
 
-These captures document the earlier desktop interface. The current source uses
-the refreshed ember-and-slate design across the apps.
+These captures are from the shipping v0.3.1 build: the desktop companion, the
+terminal UI and the Android companion, all connected to isolated sessions and
+reliable approvals.
 
-![Earlier Bifang desktop after a real Nemotron coding task: repository files, reviewed diff and successful apply.](docs/assets/bifang-desktop.png)
+![Bifang desktop v0.3.1 — workspaces, server control, model selection and chat.](docs/assets/bifang-desktop.png)
 
-![Earlier Bifang approval dialog with the proposed action, Deny and Allow once controls.](docs/assets/bifang-approval.png)
+![Bifang TUI — chat turn with a live diff and connected status line.](docs/assets/bifang-tui-chat.png)
 
-Approvals are scoped to one action. The demo harness clicked these actual controls using an exact-action allowlist.
+![Bifang TUI — permission dialog for writes and commands, one action at a time.](docs/assets/bifang-tui-approval.png)
 
-![Preview 6 visual review using synthetic inference and explicit chat handoff.](docs/assets/bifang-vision-native.png)
+![The demo's five checks passing in the original checkout after Apply.](docs/assets/bifang-tests-passing.png)
+
+![Baseline before Bifang: two broken CSV cases and failing checks.](docs/assets/bifang-baseline-fail.png)
+
+![Bifang companion on Android — terminal, distributions and theme picker.](docs/assets/bifang-companion-mobile.png)
+
+![Visual review preview using synthetic inference and explicit chat handoff.](docs/assets/bifang-vision-native.png)
 
 [Visual context guide](docs/VISION.md) · [Recorded demo evidence](docs/DEMO_EVIDENCE.md)
 

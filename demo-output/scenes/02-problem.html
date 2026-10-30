@@ -46,6 +46,12 @@
     }
     .problem-text strong { color: #F28B82; }
     .icon { margin-bottom: 24px; animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .terminal-shot {
+      margin-top: 36px; width: 880px; border-radius: 14px; overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(242, 139, 130, 0.22);
+      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards; opacity: 0;
+    }
+    .terminal-shot img { display: block; width: 100%; height: auto; }
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -58,6 +64,7 @@
     <svg class="icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F28B82" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <h1>Most AI coders are black boxes.</h1>
     <p class="problem-text">You get a diff. <strong>Hope it works.</strong> Pray it passes tests. No receipts. No visibility. Just blind trust.</p>
+    <div class="terminal-shot"><img src="../frames/bifang-baseline-fail.png" alt="Failing baseline checks before Bifang runs" /></div>
   </div>
 </body>
 </html>

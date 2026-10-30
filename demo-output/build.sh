@@ -51,13 +51,9 @@ for scene_spec in "${SCENES[@]}"; do
   echo "  Capturing $scene_id (${duration}s)..."
   
   # Use playwright to capture a frame from the HTML scene
-  if command -v playwright &> /dev/null; then
-    playwright install chromium >/dev/null 2>&1 || true
-    npx playwright screenshot \
-      --device="Desktop Chrome" \
-      --viewport="1920,1080" \
-      "$SCENES_DIR/$scene_id.html" \
-      "$FRAMES_DIR/$scene_id.png" 2>/dev/null || {
+  if [[ -f /tmp/opencode/pw/node_modules/playwright/package.json ]]; then
+    node /tmp/opencode/pw/shot.mjs "$SCRIPT_DIR/scenes/$scene_id.html" \
+      "$FRAMES_DIR/$scene_id.png" 1920 1080 2>/dev/null || {
       echo "  ⚠️  Playwright capture failed for $scene_id. Creating placeholder..."
       # Create a simple placeholder using ImageMagick if available
       if command -v convert &> /dev/null; then
@@ -134,13 +130,13 @@ if command -v ffmpeg &> /dev/null; then
   for i in "${!SCENES[@]}"; do
     scene_spec="${SCENES[i]}"
     duration="${scene_spec##*:}"
-    
+    # Inputs are appended per scene as: image (index i*2), audio (i*2+1).
     if [[ $i -eq 0 ]]; then
-      VIDEO_FILTER="[0:v]trim=duration=$duration,setpts=PTS-STARTPTS[v$i]"
-      AUDIO_FILTER="[${#SCENES[@]}*2]:a]atrim=duration=$duration,asetpts=PTS-STARTPTS[a$i]"
+      VIDEO_FILTER="[$((i*2)):v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,trim=duration=$duration,setpts=PTS-STARTPTS[v$i]"
+      AUDIO_FILTER="[$((i*2+1)):a]atrim=duration=$duration,asetpts=PTS-STARTPTS[a$i]"
     else
-      VIDEO_FILTER="$VIDEO_FILTER;[$i:v]trim=duration=$duration,setpts=PTS-STARTPTS[v$i]"
-      AUDIO_FILTER="$AUDIO_FILTER;[${#SCENES[@]}*2+i:a]atrim=duration=$duration,asetpts=PTS-STARTPTS[a$i]"
+      VIDEO_FILTER="$VIDEO_FILTER;[$((i*2)):v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p,trim=duration=$duration,setpts=PTS-STARTPTS[v$i]"
+      AUDIO_FILTER="$AUDIO_FILTER;[$((i*2+1)):a]atrim=duration=$duration,asetpts=PTS-STARTPTS[a$i]"
     fi
   done
   
