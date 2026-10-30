@@ -264,7 +264,13 @@ sharing, model receipts and a handoff into coding chat. [Remote forge](docs/REMO
 adds selected-source tasks, isolated checks, reviewed patches and a separate Apply.
 The [Android Companion](companion/README.md) has been built and installed on a
 Xiaomi 12T running Android 15, with desktop-approved pairing and a device terminal.
-The [Rust TUI](tui/) brings the refreshed design into the terminal. The published
+The [Rust TUI](tui/) brings the refreshed design into the terminal. The TUI
+expects a `bifang-server` on `BIFANG_TUI_SERVER` (default
+`http://127.0.0.1:8000`); when nothing answers there, it starts the server
+itself from `BIFANG_TUI_SERVER_BINARY`, a `bifang-server` next to the TUI
+executable, or `bifang-server` on PATH, reusing it on later launches. The
+desktop app spawns its private sidecar automatically; both keep working
+without any manual server step. The published
 Preview 6 installer and newer development clients have separate delivery records
 in [product expansion](docs/PRODUCT_EXPANSION.md).
 

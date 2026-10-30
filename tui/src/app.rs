@@ -3,6 +3,7 @@
 //! Central state management for the TUI application.
 
 use std::collections::VecDeque;
+use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
@@ -16,6 +17,7 @@ use ratatui::Frame;
 
 use crate::design::colors;
 use crate::design::styles;
+use crate::server_bootstrap;
 use crate::types::{AppMode, ServerStatus, ChatMessage, MessageRole, ModelInfo, TokenUsage, FileEntry, DiffHunk, DiffLine, DiffKind, TerminalSession, ApprovalRequest, SessionInfo, ChatResponsePayload};
 
 /// How often the pending-approval endpoint is polled while a turn runs
@@ -177,8 +179,68 @@ impl App {
 
         // Try to connect to server
         app.check_server().await;
+        if app.server_status != ServerStatus::Running {
+            app.auto_start_server().await;
+        }
 
         Ok(app)
+    }
+
+    /// Spawn the server sidecar when nothing is listening: the TUI recreates
+    /// the connection on the next health poll instead of waiting idle.
+    async fn auto_start_server(&mut self) {
+        if !server_bootstrap::autostart_enabled(
+            std::env::var(server_bootstrap::AUTOSTART_ENV).ok().as_deref(),
+        ) {
+            return;
+        }
+        let override_value = std::env::var(server_bootstrap::SERVER_BINARY_ENV).ok();
+        let exe_parent = std::env::current_exe().ok().as_deref().and_then(Path::parent).map(Path::to_path_buf);
+        let context = match server_bootstrap::resolve_server_binary(
+            override_value.as_deref(),
+            exe_parent.as_deref(),
+        ) {
+            Some(binary) => binary,
+            None => {
+                self.set_status(
+                    "Server not running; set BIFANG_TUI_SERVER_BINARY (or install bifang-server) to auto-start it",
+                );
+                return;
+            }
+        };
+        match server_bootstrap::launch(&context, &self.server_url).await {
+            Ok(child) => {
+                // Deliberately detached: the TUI exits, the server stays.
+                drop(child);
+                self.set_status(&format!("Starting server ({})...", context.display()));
+                let api_client = Arc::clone(&self.api_client);
+                let server_url = self.server_url.clone();
+                let events = self.event_tx.clone();
+                tokio::spawn(async move {
+                    let mut reached = false;
+                    for _ in 0..server_bootstrap::HEALTH_ATTEMPTS {
+                        tokio::time::sleep(Duration::from_secs(server_bootstrap::HEALTH_POLL_SECS)).await;
+                        if api_client.health_check(&server_url).await.is_ok() {
+                            reached = true;
+                            break;
+                        }
+                    }
+                    let _ = events.send(AppEvent::ServerStatusChanged(
+                        if reached { ServerStatus::Running } else { ServerStatus::Error },
+                    ));
+                    let message = if reached {
+                        "Server connected".to_string()
+                    } else {
+                        format!(
+                            "Auto-started server did not become ready; see {}",
+                            server_bootstrap::server_log_path().display()
+                        )
+                    };
+                    let _ = events.send(AppEvent::StatusMessage(message));
+                });
+            }
+            Err(error) => self.set_status(&error.to_string()),
+        }
     }
 
     fn default_commands() -> Vec<CommandAction> {
