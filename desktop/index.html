@@ -3,19 +3,181 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/svg+xml" href="/favicon-16.svg" sizes="16x16" />
-    <link rel="icon" type="image/svg+xml" href="/bifang-symbol.svg" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/bifang-symbol.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0F172A" />
-    <meta name="description" content="Bifang — Evidence-driven coding workspace with reviewable agent loop. Build. Run. Verify." />
-    <title>Bifang - Build. Run. Verify.</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Bifang - AI Coding Agent</title>
+    
+    <!-- Loading Screen Styles -->
+    <style>
+      #bifang-splash {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, #0f172a 0%, #1a2338 50%, #0f172a 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out;
+      }
+      
+      #bifang-splash.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      
+      .bifang-flame {
+        width: 120px;
+        height: 120px;
+        margin-bottom: 2rem;
+        animation: flame-pulse 2s ease-in-out infinite;
+      }
+      
+      @keyframes flame-pulse {
+        0%, 100% { 
+          filter: drop-shadow(0 0 20px rgba(230, 57, 70, 0.4));
+          transform: scale(1);
+        }
+        50% { 
+          filter: drop-shadow(0 0 40px rgba(255, 138, 61, 0.7));
+          transform: scale(1.05);
+        }
+      }
+      
+      .bifang-title {
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(90deg, #E63946 0%, #FF8A3D 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+      }
+      
+      .bifang-tagline {
+        color: #B8C3D6;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 1rem;
+        margin-bottom: 3rem;
+        letter-spacing: 0.1em;
+      }
+      
+      .bifang-progress-container {
+        width: 300px;
+        height: 6px;
+        background: #2D3A50;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+      }
+      
+      .bifang-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #E63946 0%, #FF8A3D 100%);
+        width: 0%;
+        transition: width 0.4s ease-out;
+        border-radius: 3px;
+      }
+      
+      .bifang-status {
+        color: #9AA9BF;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 0.875rem;
+        min-height: 1.5rem;
+      }
+      
+      .bifang-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 138, 61, 0.3);
+        border-top-color: #FF8A3D;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
+    <!-- Splash Screen -->
+    <div id="bifang-splash">
+      <svg class="bifang-flame" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 10C50 10 30 30 30 50C30 65 40 75 50 80C60 75 70 65 70 50C70 30 50 10 50 10Z" 
+              fill="url(#flame-gradient)" />
+        <path d="M50 25C50 25 40 40 40 55C40 65 45 72 50 75C55 72 60 65 60 55C60 40 50 25 50 25Z" 
+              fill="url(#flame-inner)" opacity="0.6" />
+        <defs>
+          <linearGradient id="flame-gradient" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" style="stop-color:#E63946" />
+            <stop offset="100%" style="stop-color:#FF8A3D" />
+          </linearGradient>
+          <linearGradient id="flame-inner" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" style="stop-color:#FF8A3D" />
+            <stop offset="100%" style="stop-color:#FFB366" />
+          </linearGradient>
+        </defs>
+      </svg>
+      
+      <div class="bifang-title">Bifang</div>
+      <div class="bifang-tagline">BUILD · RUN · VERIFY</div>
+      
+      <div class="bifang-progress-container">
+        <div class="bifang-progress-bar" id="progress-bar"></div>
+      </div>
+      
+      <div class="bifang-status" id="splash-status">
+        <span class="bifang-spinner"></span>
+        Initializing...
+      </div>
+    </div>
+
     <div id="root"></div>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Progress Animation Script -->
+    <script>
+      const progressBar = document.getElementById('progress-bar');
+      const statusText = document.getElementById('splash-status');
+      const splashScreen = document.getElementById('bifang-splash');
+      
+      const stages = [
+        { progress: 15, status: 'Loading environment...' },
+        { progress: 30, status: 'Connecting to server...' },
+        { progress: 50, status: 'Initializing models...' },
+        { progress: 70, status: 'Loading workspace...' },
+        { progress: 85, status: 'Preparing interface...' },
+        { progress: 100, status: 'Ready!' }
+      ];
+      
+      let currentStage = 0;
+      
+      function updateProgress() {
+        if (currentStage < stages.length) {
+          const stage = stages[currentStage];
+          progressBar.style.width = stage.progress + '%';
+          statusText.innerHTML = '<span class="bifang-spinner"></span>' + stage.status;
+          currentStage++;
+          
+          if (stage.progress < 100) {
+            const delay = Math.random() * 400 + 200;
+            setTimeout(updateProgress, delay);
+          } else {
+            setTimeout(() => {
+              splashScreen.classList.add('fade-out');
+              setTimeout(() => splashScreen.remove(), 500);
+            }, 300);
+          }
+        }
+      }
+      
+      // Start after a brief delay
+      setTimeout(updateProgress, 200);
+    </script>
   </body>
 </html>
