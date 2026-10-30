@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_terminal"
+        android:icon="@drawable/ic_terminal"
+        android:title="@string/nav_terminal" />
+
+    <item
+        android:id="@+id/nav_files"
+        android:icon="@drawable/ic_files"
+        android:title="@string/nav_files" />
+
+    <item
+        android:id="@+id/nav_git"
+        android:icon="@drawable/ic_git"
+        android:title="@string/nav_git" />
+
+    <item
+        android:id="@+id/nav_outputs"
+        android:icon="@drawable/ic_outputs"
+        android:title="@string/nav_outputs" />
+
+</menu>

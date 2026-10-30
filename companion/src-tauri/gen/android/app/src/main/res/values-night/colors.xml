@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="surface_primary">#0A0A0B</color>
+    <color name="surface_secondary">#1C1C1E</color>
+    <color name="surface_terminal">#050505</color>
+    <color name="surface_drawer">#1C1C1E</color>
+    <color name="surface_drawer_header">#0A0A0B</color>
+    
+    <color name="text_primary">#F7F7F5</color>
+    <color name="text_secondary">#A0A0A2</color>
+    <color name="text_tertiary">#6B6B6D</color>
+    <color name="text_on_primary">#0A0A0B</color>
+    <color name="text_terminal">#E6E6E6</color>
+    
+    <color name="accent_primary">#FF6B35</color>
+    <color name="accent_secondary">#FFB347</color>
+    <color name="accent_terminal">#FFB347</color>
+    
+    <color name="border_color">#2C2C2E</color>
+    <color name="border_subtle">#1C1C1E</color>
+    
+    <color name="success">#34D399</color>
+    <color name="warning">#F59E0B</color>
+    <color name="error">#EF4444</color>
+    <color name="info">#60A5FA</color>
+    
+    <color name="ripple_color">#1AF7F7F5</color>
+    
+    <color name="window_background">#0A0A0B</color>
+    <color name="status_bar">#050505</color>
+    <color name="navigation_bar">#050505</color>
+</resources>

@@ -3,7 +3,7 @@ requires=["hatchling"]
 build-backend="hatchling.build"
 [project]
 name="bifang-terminal"
-version="0.2.1.dev11"
+version="0.3.0"
 description="Bifang: Build. Run. Verify. — An evidence-driven coding agent powered by NVIDIA models on Nebius"
 readme="README.md"
 requires-python=">=3.11,<3.12"

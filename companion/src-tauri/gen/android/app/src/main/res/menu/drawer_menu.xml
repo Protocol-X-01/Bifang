@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item
+        android:id="@+id/nav_code_output"
+        android:icon="@drawable/ic_code_output"
+        android:title="@string/nav_code_output"
+        android:checkable="true" />
+
+    <item
+        android:id="@+id/nav_environment"
+        android:icon="@drawable/ic_environment"
+        android:title="@string/nav_environment"
+        android:checkable="true" />
+
+    <item
+        android:id="@+id/nav_mcp_servers"
+        android:icon="@drawable/ic_mcp"
+        android:title="@string/nav_mcp_servers"
+        android:checkable="true" />
+
+    <item
+        android:id="@+id/nav_context"
+        android:icon="@drawable/ic_context"
+        android:title="@string/nav_context"
+        android:checkable="true" />
+
+    <item android:title="@string/nav_section_tools">
+        <menu>
+            <item
+                android:id="@+id/nav_tools"
+                android:icon="@drawable/ic_tools"
+                android:title="@string/nav_tools" />
+            
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="@string/nav_settings" />
+        </menu>
+    </item>
+
+</menu>
