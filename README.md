@@ -290,6 +290,15 @@ export BIFANG_NVIDIA_MODEL='<model-served-by-your-NIM>'
 
 For NIM, point the NVIDIA-compatible provider at the OpenAI-compatible NIM endpoint and use the model name configured by that deployment. NGC credentials are needed to pull licensed NVIDIA containers; they are not inference API keys. The app does not deploy NIM or provision GPUs by itself.
 
+Z.ai GLM and HuggingFace Inference Providers use OpenAI-compatible keys. OpenAI and Anthropic/OpenRouter account keys are also honored when present. `bifang models` reports every configured provider's live catalog; ids from non-default providers appear as `provider::model` and can be used anywhere a bare model id is accepted (composite ids are routed to the right provider on completion).
+
+```bash
+export ZAI_API_KEY='...'          # or ZHIPU_API_KEY / GLM_API_KEY; BIFANG_ZAI_MODEL defaults to glm-5.3
+export HF_TOKEN='...'             # BIFANG_HUGGINGFACE_MODEL defaults to meta-llama/Llama-3.3-70B-Instruct
+```
+
+The app lists every model returned by the configured providers, not only the Nemotron family: the Nebius Token Factory account it is configured with is queried directly, and each provider's roles (fast/balanced/reasoning) preselect a model from its own catalog. `Auto` mode requires every role id to exist in the provider's live catalog.
+
 Use `bifang models` to inspect the live model catalog rather than relying on a hard-coded model ID.
 
 ## Use

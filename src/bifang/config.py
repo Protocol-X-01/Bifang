@@ -111,6 +111,26 @@ class Config:
                 default_model=os.getenv("BIFANG_OPENROUTER_MODEL", "openrouter/anthropic/claude-3.5-sonnet"),
             )
 
+        # Z.ai GLM
+        zai_key = os.getenv("ZAI_API_KEY") or os.getenv("ZHIPU_API_KEY") or os.getenv("GLM_API_KEY", "")
+        if zai_key:
+            providers["zai"] = ProviderConfig(
+                name="zai",
+                api_key=zai_key,
+                base_url=os.getenv("BIFANG_ZAI_BASE_URL", "https://api.z.ai/api/paas/v4").rstrip("/"),
+                default_model=os.getenv("BIFANG_ZAI_MODEL", "glm-5.3"),
+            )
+
+        # HuggingFace Inference Providers
+        hf_key = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_API_KEY", "")
+        if hf_key:
+            providers["huggingface"] = ProviderConfig(
+                name="huggingface",
+                api_key=hf_key,
+                base_url=os.getenv("BIFANG_HUGGINGFACE_BASE_URL", "https://router.huggingface.co/v1").rstrip("/"),
+                default_model=os.getenv("BIFANG_HUGGINGFACE_MODEL", "meta-llama/Llama-3.3-70B-Instruct"),
+            )
+
         # Determine default provider
         default_provider = os.getenv("BIFANG_DEFAULT_PROVIDER", "nebius")
         if default_provider not in providers and providers:
@@ -163,7 +183,8 @@ class Config:
             raise RuntimeError(
                 f"No API key for provider '{provider_name or self.default_provider}'. "
                 f"Available providers: {available}. "
-                f"Set one of: NVIDIA_API_KEY, NEBIUS_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY"
+                f"Set one of: NVIDIA_API_KEY, NEBIUS_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, "
+                f"OPENROUTER_API_KEY, ZAI_API_KEY, HF_TOKEN"
             )
 
 

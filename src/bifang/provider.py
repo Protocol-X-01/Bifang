@@ -9,6 +9,8 @@ from .providers.nebius import NebiusProvider
 from .providers.openai import OpenAIProvider
 from .providers.anthropic import AnthropicProvider
 from .providers.openrouter import OpenRouterProvider
+from .providers.zai import ZAIProvider
+from .providers.huggingface import HuggingFaceProvider
 
 if TYPE_CHECKING:
     from .routing import TieredProviderManager, TaskType
@@ -30,6 +32,8 @@ class ProviderManager:
             "openai": OpenAIProvider,
             "anthropic": AnthropicProvider,
             "openrouter": OpenRouterProvider,
+            "zai": ZAIProvider,
+            "huggingface": HuggingFaceProvider,
         }
 
         for name, config in self.cfg.providers.items():
@@ -67,6 +71,21 @@ class ProviderManager:
             raise ValueError("The selected provider has no verified catalog adapter")
         return await selected.verified_model_ids()
 
+    @staticmethod
+    def _split_model_spec(provider: str | None, model: str | None, default_provider: str) -> tuple[str, str | None]:
+        """Resolve a 'provider::model' composite id into its parts.
+
+        Bare model ids keep the default (or explicitly requested) provider;
+        the split only happens when the caller did not choose a provider and
+        the id carries an explicit tag.
+        """
+        if provider or not model or "::" not in model:
+            return provider or default_provider, model
+        prefix, _, remainder = model.partition("::")
+        if prefix and remainder and "/" not in prefix:
+            return prefix, remainder
+        return default_provider, model
+
     async def complete(
         self,
         messages: list[dict],
@@ -76,12 +95,9 @@ class ProviderManager:
         **kwargs,
     ) -> dict[str, Any]:
         """Complete using the specified or auto-detected provider."""
-        target_provider = provider or self.cfg.default_provider
-        target_model = model or self.cfg.get_default_model(target_provider)
-
+        target_provider, target_model = self._split_model_spec(provider, model, default_provider=self.cfg.default_provider)
         if not target_model:
             raise ValueError(f"No model specified for provider {target_provider}")
-
         p = self.registry.get(target_provider)
         if not p:
             raise ValueError(f"Provider {target_provider} not found or doesn't support model {target_model}")
@@ -147,8 +163,7 @@ class ProviderManager:
         **kwargs,
     ):
         """Stream completion from the specified or auto-detected provider."""
-        target_provider = provider or self.cfg.default_provider
-        target_model = model or self.cfg.get_default_model(target_provider)
+        target_provider, target_model = self._split_model_spec(provider, model, default_provider=self.cfg.default_provider)
 
         if not target_model:
             raise ValueError(f"No model specified for provider {target_provider}")

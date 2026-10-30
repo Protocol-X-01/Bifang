@@ -57,6 +57,16 @@
     "version_note": "desktop 0.3.2 adds read_workspace_file command + FileViewer preview; clicking explorer files opens a read-only preview"
   },
   "release": "https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.2",
+  "providers": {
+    "change": "server /models now merges the live catalog of every configured provider; non-default ids are provider::model composites routed on completion",
+    "verified_live": "GET /models on 2026-10-30: nebius 30 live models (25 non-Nemotron: MiniMax, Hermes, Qwen3 instruct/embeddings), nvidia 85 live models, openai fallback (no key)",
+    "added": [
+      "zai (Z.ai GLM-5.3 via https://api.z.ai/api/paas/v4; glm-5.3, glm-5.3-flash, glm-5.3-flashx; activates on ZAI_API_KEY/ZHIPU_API_KEY/GLM_API_KEY)",
+      "huggingface (HF Inference Providers router; activates on HF_TOKEN/HUGGINGFACE_API_KEY)"
+    ],
+    "tests": "tests/test_models_catalog.py (3 tests) + tests/test_config_env.py provider wiring test; suite: 936 passed, 5 pre-existing failures unrelated to providers (file_security magic + folder_snapshot)",
+    "client_compat": "desktop parseModelCatalog tolerates the extra providers key; composite ids flow through ModelSelection.model (pydantic max_length 256)"
+  },
   "outstanding": [
     "iOS build requires a Mac/Xcode toolchain (Linux host cannot produce it)",
     "desktop dropdown verification pending on the freshly installed 0.3.1 app"

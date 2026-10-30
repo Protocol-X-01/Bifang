@@ -28,6 +28,7 @@ from .implementation import EngineeringWorkflow
 from .provider import ProviderManager
 from .review_workflow import ReviewWorkflow
 from .routing import TOKEN_FACTORY_ROLES, CatalogUnavailable, ModelSelectionError
+from .model_ids import PROVIDER_ROLES
 from .tools.commands import SandboxUnavailableError
 from .vision import (
     MAX_REQUEST_BYTES,
@@ -148,21 +149,65 @@ class CandidateStageRequest(BaseModel):
 
 
 async def selectable_models():
+    """Live model catalog across every configured provider.
+
+    The legacy top-level keys (provider/models/roles/...) describe the DEFAULT
+    provider so existing clients keep working. The 'providers' map carries the
+    full catalog with per-provider roles; ids from non-default providers are
+    'provider::model' composites that the completion router splits.
+    """
     config = Config.load()
-    if config.default_provider != "nebius" or "nebius" not in config.providers:
-        return {"provider": config.default_provider, "models": [], "auto_available": False,
-                "configured_model": config.get_default_model(), "configured_mode": config.routing_mode, "roles": {}}
+    if not config.providers:
+        return {"provider": "", "models": [], "auto_available": False,
+                "configured_model": None, "configured_mode": config.routing_mode,
+                "roles": {}, "providers": {}}
+    default_provider = config.default_provider if config.default_provider in config.providers else next(iter(config.providers))
     manager = ProviderManager(config)
     try:
-        identifiers = await manager.verified_model_ids("nebius")
-    except (httpx.HTTPError, ValueError) as error:
-        raise HTTPException(503, "Live model catalog unavailable; configured deployment remains selectable") from error
+        payload_providers = {}
+        for name in config.providers:
+            roles = dict(PROVIDER_ROLES.get(name, {}))
+            if name == default_provider:
+                roles = {**roles, **config.routing_models}
+            try:
+                identifiers = await manager.verified_model_ids(name)
+                live_name = name
+            except (httpx.HTTPError, ValueError):
+                identifiers = None
+            if identifiers:
+                models = sorted(identifiers)
+                auto_available = all(model in identifiers for model in roles.values()) if roles else False
+            else:
+                models = []
+                auto_available = False
+                try:
+                    provider = manager.registry.get(name)
+                    fallback = [m.id for m in (await provider.list_models())] if provider else []
+                except Exception:
+                    fallback = []
+                models = fallback
+                live_name = name
+            payload_providers[name] = {
+                "models": models[:4096],
+                "roles": roles,
+                "auto_available": auto_available,
+                "live": True if identifiers else False,
+            }
     finally:
         await manager.close()
-    roles = {**TOKEN_FACTORY_ROLES, **config.routing_models}
-    return {"provider": "nebius", "models": sorted(model for model in identifiers if "nemotron" in model.lower()),
-            "auto_available": all(model in identifiers for model in roles.values()),
-            "configured_model": config.get_default_model(), "configured_mode": config.routing_mode, "roles": roles}
+    default_entry = payload_providers.get(default_provider, {"models": [], "roles": {}, "auto_available": False})
+    tagged_models = []
+    for name, entry in payload_providers.items():
+        if name == default_provider:
+            tagged_models.extend(entry["models"])
+        else:
+            tagged_models.extend(f"{name}::{model}" for model in entry["models"] if "::" not in model)
+    return {"provider": default_provider, "models": sorted(tagged_models)[:8192],
+            "auto_available": default_entry["auto_available"],
+            "configured_model": config.get_default_model(default_provider),
+            "configured_mode": config.routing_mode,
+            "roles": default_entry["roles"],
+            "providers": payload_providers}
 
 
 class SessionCreate(BaseModel):

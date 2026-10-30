@@ -25,6 +25,20 @@ they cannot be produced on this Linux host until the Actions billing block
 is cleared. iOS signed distribution and device testing remain with the
 maintainer.
 
+After v0.3.2 the server stops being Nemotron-bound: `GET /models` merges the
+live catalog of every configured provider (verified against that provider's
+own `/models`), so the full Nebius Token Factory account is visible —
+MiniMax, Hermes, Qwen3 and the rest, not just Nemotron ids — and ids from
+non-default providers appear as `provider::model` composites that the
+completion router resolves. Two providers were added: **Z.ai GLM** (`ZAI_API_KEY`
+or `ZHIPU_API_KEY`/`GLM_API_KEY`, base `https://api.z.ai/api/paas/v4`,
+default `glm-5.3`, 1M-token context) and **HuggingFace Inference Providers**
+(`HF_TOKEN`, router `https://router.huggingface.co/v1`). The live check on
+October 30 returned 30 live Nebius models (25 non-Nemotron) and 85 live
+NVIDIA models; the suite is at 936 passing with 5 pre-existing, unrelated
+failures (file-security magic and folder-snapshot tests) — see
+[evidence](evidence/v031-local.json).
+
 The preceding dev11 checkpoint is retained below.
 
 The locally installed **0.2.1-dev.11** adds approved bounded Tavily page
