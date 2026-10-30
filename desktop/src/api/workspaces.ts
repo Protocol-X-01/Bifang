@@ -33,6 +33,17 @@ export async function createWorkspace(parent: string, name: string): Promise<str
 export async function workspaceTree(path: string): Promise<string> {
   return isTauri() ? invoke<string>('get_file_tree', { path }) : JSON.stringify(await browserRequest('tree', { path }));
 }
+export interface WorkspaceFile {
+  path: string;
+  content: string;
+}
+export async function workspaceFile(root: string, relative: string): Promise<WorkspaceFile> {
+  if (!isTauri()) throw new Error('Opening files requires the Bifang desktop app.');
+  const payload = await invoke<string>('read_workspace_file', { root, relative });
+  const value = JSON.parse(payload) as WorkspaceFile;
+  if (typeof value?.path !== 'string' || typeof value?.content !== 'string') throw new Error('Invalid workspace file response');
+  return value;
+}
 export async function workspaceDirectories(path?: string): Promise<{ root: string; path: string; directories: { name: string; path: string }[] }> {
   const identity = await connect();
   return browserRequest('directories', { path: path || identity.root }) as Promise<{ root: string; path: string; directories: { name: string; path: string }[] }>;

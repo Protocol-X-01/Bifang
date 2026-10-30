@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { workspaceTree } from '../api/workspaces';
+import { workspaceTree, workspaceFile, type WorkspaceFile } from '../api/workspaces';
 import { FolderOpen, File, ChevronRight, ChevronDown, Search, RefreshCw } from 'lucide-react';
 import { useWorkspaceStore } from '../stores/bifangStore';
+import { FileViewer } from './FileViewer';
 
 interface FileNode {
   name: string;
@@ -17,6 +18,9 @@ export function FileExplorer() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('');
   const [error, setError] = useState('');
+  const [preview, setPreview] = useState<WorkspaceFile | null>(null);
+  const [previewError, setPreviewError] = useState('');
+  const previewBusyPath = useRef('');
   const requestSerial = useRef(0);
   const workspacePath = useWorkspaceStore((state) => state.activeWorkspacePath);
 
@@ -51,8 +55,27 @@ export function FileExplorer() {
     setTree(toggleNode(node, tree));
   };
 
+  const handleOpenFile = async (node: FileNode) => {
+    if (!workspacePath) return;
+    previewBusyPath.current = node.path;
+    setPreviewError('');
+    try {
+      const file = await workspaceFile(workspacePath, node.path);
+      if (previewBusyPath.current === node.path) {
+        setPreview(file);
+        previewBusyPath.current = '';
+      }
+    } catch (e) {
+      if (previewBusyPath.current === node.path) {
+        setPreviewError(e instanceof Error ? e.message : 'Could not open the file.');
+        previewBusyPath.current = '';
+      }
+    }
+  };
+
   const renderNode = (node: FileNode, depth: number = 0): React.ReactElement | null => {
     const indent = depth * 16;
+    const isFile = node.type === 'file';
     const hasChildren = node.type === 'directory' && node.children && node.children.length > 0;
     const matchesFilter = !filter || node.name.toLowerCase().includes(filter.toLowerCase());
 
@@ -63,8 +86,13 @@ export function FileExplorer() {
     return (
       <div key={node.path} style={{ marginLeft: indent }}>
         <div
-          className="flex items-center gap-1 px-2 py-1.5 rounded hover:bg-bifang-panel-hover cursor-pointer transition-colors"
-          onClick={() => hasChildren && handleToggle(node)}
+          className={`flex items-center gap-1 px-2 py-1.5 rounded hover:bg-bifang-panel-hover ${isFile ? 'cursor-pointer' : 'cursor-pointer'} transition-colors`}
+          onClick={() => (isFile ? handleOpenFile(node) : hasChildren && handleToggle(node))}
+          title={isFile ? `Open ${node.name}` : hasChildren ? undefined : node.name}
+          role={isFile ? 'button' : undefined}
+          aria-label={isFile ? `Open file ${node.name}` : undefined}
+          tabIndex={isFile ? 0 : undefined}
+          onKeyDown={isFile ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void handleOpenFile(node); } } : undefined}
         >
           {hasChildren ? (
             <button className="p-1 rounded hover:bg-bifang-surface" onClick={(e) => { e.stopPropagation(); handleToggle(node); }}>
@@ -125,7 +153,26 @@ export function FileExplorer() {
             {tree.map(renderNode)}
           </div>
         )}
+        {previewError && (
+          <div className="mx-2 mb-2 rounded border border-bifang-warning/40 bg-bifang-surface px-3 py-2 text-caption text-bifang-warning" role="alert">
+            {previewError}
+          </div>
+        )}
       </div>
+      {preview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6"
+          onClick={() => setPreview(null)}
+          aria-label="File preview"
+        >
+          <div
+            className="flex h-[80vh] w-[min(960px,90vw)] flex-col overflow-hidden rounded-xl border border-bifang-border bg-bifang-panel shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <FileViewer file={preview} onClose={() => setPreview(null)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

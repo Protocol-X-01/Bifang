@@ -155,6 +155,7 @@ fn main() {
         .manage(setup::SetupState::default())
         .invoke_handler(generate_handler![
             commands::get_file_tree,
+            commands::read_workspace_file,
             commands::resolve_workspace_path,
             commands::create_workspace,
             workbench::workbench_request,

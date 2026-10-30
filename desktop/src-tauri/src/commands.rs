@@ -139,10 +139,82 @@ struct FileEntry {
     has_changes: bool,
 }
 
+const WORKSPACE_FILE_PREVIEW_LIMIT: u64 = 1 << 20;
+
+fn read_workspace_file_contents(root: &Path, relative: &str) -> Result<String, String> {
+    let requested = Path::new(relative);
+    if requested.is_absolute() || relative.contains('\\') || relative.is_empty() {
+        return Err("Choose a file inside the workspace".to_string());
+    }
+    let root = fs::canonicalize(root).map_err(|_| "Workspace no longer accessible".to_string())?;
+    let target = fs::canonicalize(root.join(requested))
+        .map_err(|_| "File does not exist in this workspace".to_string())?;
+    if !target.starts_with(&root) {
+        return Err("Choose a file inside the workspace".to_string());
+    }
+    if !target.is_file() {
+        return Err("Choose a file, not a directory".to_string());
+    }
+    if target.metadata().map_err(|e| e.to_string())?.len() > WORKSPACE_FILE_PREVIEW_LIMIT {
+        return Err(format!(
+            "File is larger than the {} MB preview limit",
+            WORKSPACE_FILE_PREVIEW_LIMIT / (1 << 20)
+        ));
+    }
+    let bytes = fs::read(&target).map_err(|e| e.to_string())?;
+    if bytes.contains(&0) {
+        return Err("Preview is unavailable for binary files".to_string());
+    }
+    let content = String::from_utf8_lossy(&bytes).into_owned();
+    serde_json::to_string(&serde_json::json!({
+        "path": target.strip_prefix(&root).map_err(|e| e.to_string())?.to_string_lossy(),
+        "content": content,
+    }))
+    .map_err(|e| e.to_string())
+}
+
+#[command]
+pub(crate) fn read_workspace_file(root: String, relative: String) -> Result<String, String> {
+    read_workspace_file_contents(Path::new(&root), &relative)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{create_workspace_directory, resolve_workspace_path, FileEntry};
+    use super::{create_workspace_directory, read_workspace_file_contents, resolve_workspace_path, FileEntry};
     use std::path::Path;
+
+    #[test]
+    fn workspace_file_read_rejects_escapes_and_non_text() {
+        let identity = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!(
+            "bifang-file-read-{}-{identity}",
+            std::process::id()
+        ));
+        std::fs::create_dir(&root).unwrap();
+        std::fs::write(root.join("readable.txt"), "hello").unwrap();
+        std::fs::write(root.join("binary.bin"), [1, 0, 2]);
+        std::fs::write(root.parent().unwrap().join("outside.txt"), "secret").unwrap_or_default();
+
+        let root_string = root.to_string_lossy().into_owned();
+        assert!(
+            read_workspace_file_contents(&root, "../outside.txt")
+                .unwrap_err()
+                .contains("inside the workspace"),
+            "traversal must be rejected"
+        );
+        assert!(read_workspace_file_contents(&root, "/etc/passwd").is_err());
+        assert!(read_workspace_file_contents(&root, "").is_err());
+        assert!(read_workspace_file_contents(&root, "missing.txt").is_err());
+        assert!(read_workspace_file_contents(&root, "binary.bin").unwrap_err().contains("binary"));
+        let content = read_workspace_file_contents(&root, "readable.txt").unwrap();
+        assert!(content.contains("hello"), "got {content}");
+        assert!(content.contains("readable.txt"), "got {content}");
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
 
     #[test]
     fn new_workspace_rejects_paths_and_reserved_names() {

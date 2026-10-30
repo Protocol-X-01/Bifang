@@ -2,11 +2,12 @@
 
 ## Current delivery checkpoint
 
-October 30: v0.3.1 is published. The release set — Android companion 0.3.1
-(version code 3001), Debian desktop 0.3.1 with the rebuilt sidecar, the
-`bifang-tui` binary, the desktop AppImage and RPM, the narrated demo video
-and their checksums — is attached to the
-[v0.3.1 release](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.1).
+October 30: v0.3.1 was followed by v0.3.2 the same day. The release set —
+Android companion 0.3.1 (version code 3001), Debian desktop 0.3.2 with the
+rebuilt sidecar and the file-explorer file preview fix, the `bifang-tui`
+binary, the desktop AppImage and RPM, the narrated demo video and their
+checksums — is attached to the
+[v0.3.2 release](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.2).
 [Delivery evidence](evidence/v031-local.json) records exact artifact sizes and
 SHA-256 identities, the server snapshot fixes (artifact-directory exclusion,
 symlink and FIFO skipping, a 16 MiB file ceiling that skips oversize files

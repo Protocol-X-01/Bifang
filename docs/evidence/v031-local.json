@@ -53,9 +53,10 @@
       "desktop/package.json"
     ],
     "env": "provider keys are read from ~/.config/com.bifang.desktop/.env; values never printed or committed",
-    "secret_check": "NEBIUS_API_KEY value not present in shipped binaries (strings scan)"
+    "secret_check": "NEBIUS_API_KEY value not present in shipped binaries (strings scan)",
+    "version_note": "desktop 0.3.2 adds read_workspace_file command + FileViewer preview; clicking explorer files opens a read-only preview"
   },
-  "release": "https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.1",
+  "release": "https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.2",
   "outstanding": [
     "iOS build requires a Mac/Xcode toolchain (Linux host cannot produce it)",
     "desktop dropdown verification pending on the freshly installed 0.3.1 app"
