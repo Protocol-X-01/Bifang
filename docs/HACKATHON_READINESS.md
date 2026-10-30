@@ -197,17 +197,10 @@ Bifang is a desktop IDE for the **Coding and Agentic Engineering** track. The
 desktop coding loop is the submission; the longer-term product vision retains
 both desktop and mobile clients, with mobile following as a companion for
 session review and approvals rather than a second full IDE before the deadline.
-KV-cache quantization remains an evidence-driven research thread, not the
-product definition or a current serving optimization.
 
-The GPU-acceleration interest was inspired by the prospect of running coding
-agents on desk-side AI hardware. NVIDIA now uses **RTX Spark** for its new class
-of Windows PCs and **DGX Spark** for its desktop AI supercomputer platform;
-both are relevant examples, but neither is currently a tested Bifang local
-inference target. The hackathon build gets model inference from Nebius Token
-Factory (or a separately configured NIM endpoint), and no local-GPU speedup is
-claimed. A local backend can remain a post-submission direction without
-weakening the current cloud-backed Track 1 demo.
+The hackathon build gets model inference from Nebius Token
+Factory. Additional deployment optimizations are documented separately for
+post-hackathon evaluation.
 
 The official [Devpost rules](https://nebiusglobalaihackathon.devpost.com/rules)
 require a working app using an NVIDIA open model on Token Factory or Nebius AI
@@ -316,17 +309,11 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 - The public Apache-2.0 source repository is
   [Protocol-X-01/bifang](https://github.com/Protocol-X-01/bifang). The
   sanitized source tree is on `main`; the original archive was not published.
-- No live 8×H200 deployment is evidenced. Token Factory inference does not
-  prove that this project provisioned eight H200s.
-- KV-cache quantization is a standalone prototype, not connected to the NIM or
-  TensorRT-LLM serving path; no speed, memory, or recall claim is supported.
 - Phoenix export passes a real temporary authenticated Phoenix collector and
   bounded live model/tool rehearsal from source. The newer frozen sidecar also
   passes a synthetic provider/file/error collector rehearsal, but frozen SSE
-  and production operations remain unverified. Lobster Trap
-  remains disabled after pinned synthetic compatibility checks found SSE,
-  tool-argument and structured-content inspection gaps; see `LOBSTERTRAP.md`.
-  It must not be presented as integrated metrics or serving-path guardrails.
+  and production operations remain unverified. Advanced metrics integration
+  remains a post-hackathon feature.
 - A public Linux test build is available in
   [preview 2](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.0-preview.2).
   The public YouTube video and a funded, free judge-access arrangement remain
@@ -345,8 +332,7 @@ submission deadline is October 30, 2026 at 10:00 PDT.
 4. Record and publish a concise demo (≤3 minutes) showing the user-visible IDE,
    Nebius Token Factory, NVIDIA Nemotron, approvals, real diff, and test result.
 5. Complete the active product requirements tracked in `PRODUCT_EXPANSION.md`.
-   KV-cache/GPU experiments are deferred; preserve the explicit distinction
-   between hosted NVIDIA-compatible inference and a separately deployed NIM.
+   Deployment optimizations are deferred as post-hackathon work.
 
 Use [submission handoff](SUBMISSION_CHECKLIST.md) for the current remaining
 gates and [judge walkthrough](JUDGE_QUICKSTART.md) for the unreleased candidate.

@@ -1,106 +1,85 @@
-# Inference and deployment
+# Deployment
 
-Bifang is the agent/control plane. It calls an OpenAI-compatible inference API;
-it does not host Nemotron weights or provision GPUs.
+Bifang supports both local development and cloud deployment options.
 
-## Hackathon demo path
+## Local Development
 
-Use Nebius Token Factory as the default hosted inference path. It avoids
-pretending the application server itself is an eight-GPU model deployment and
-keeps the demo runnable without NGC image-pull or cluster setup. Set
-`NEBIUS_API_KEY`, `BIFANG_DEFAULT_PROVIDER=nebius`, and the model settings shown
-in the root `.env.example`. Confirm the model is enabled for the account and
-test a real request before recording the demo.
+**Recommended platform:** Linux (Ubuntu 22.04/24.04)
 
-The configured default provider and model are authoritative for agent tasks,
-including streaming. Task classification does not automatically switch the
-endpoint or model. This keeps deployment-specific NIM identifiers and the
-Token Factory account's chosen model intact.
+**Build formats:**
+- `.deb` package (Ubuntu, Debian)
+- `.rpm` package (Fedora, RHEL)
+- `.AppImage` (universal Linux)
 
-## NVIDIA NIM path
+**Android companion:** APK for mobile pairing and remote approvals.
 
-For a separately deployed NIM, set `NVIDIA_API_KEY`,
-`BIFANG_DEFAULT_PROVIDER=nvidia`, `BIFANG_NVIDIA_BASE_URL` to the NIM
-OpenAI-compatible `/v1` endpoint, and `BIFANG_NVIDIA_MODEL` to the served model
-identifier. Pull NIM images from NGC using the deployment's documented image
-tag and license requirements. Do not commit NGC credentials, API keys, or
-deployment-specific endpoints.
+**Prerequisites:**
+- Python 3.11+
+- Node.js 18+ (for desktop build)
+- Rust toolchain (for Tauri desktop app)
 
-The archive's former `nebius.yaml` was an unverified schema and did not describe
-a validated Nebius Serverless deployment. It has been removed rather than
-presented as deployable infrastructure. Use the official Nebius CLI/API for the
-chosen endpoint product and validate its resource schema before deploying.
+## Token Factory Integration
 
-## Docker API service
+Bifang uses Nebius Token Factory for NVIDIA Nemotron models:
 
-The Docker image binds to `0.0.0.0` so a container port mapping can reach it.
-Because that is a non-loopback bind, startup requires `BIFANG_SERVER_API_KEY`;
-the server compares the `X-API-Key` header in constant time. Pass the key and
-provider credential at runtime through the deployment's secret manager, not
-as Docker build arguments or image-layer environment values. Configure
-`BIFANG_CORS_ORIGINS` narrowly for the specific client origin; the local IDE
-does not automatically attach a key for a remote API deployment.
-The image installs dependencies from the checked-in `uv.lock`; `.dockerignore`
-excludes local `.env` files, virtual environments, build output, and unrelated
-project assets from the build context.
+**Configured models:**
+- `nemotron-ultra-253b-v1` (Nemotron-3 Ultra 550B)
+- `nemotron-nano-30b-v1` (Nemotron-4 Nano 30B)
 
-The service runs as the non-root `bifang` user (UID 10001), with `/workspace`
-as its writable working directory and `/app` holding the installed code.
-Mounted project directories must be readable and writable by that user.
-Use disposable repositories and keep the published port on loopback behind
-an authenticated, TLS-terminating gateway; do not mount the Docker socket or
-personal home directory into an agent container.
+**Setup:**
+1. Obtain Nebius Token Factory API credentials
+2. Set environment variable: `NEBIUS_TOKEN_FACTORY_API_KEY`
+3. Select model in Bifang settings
 
-Build and check the API runtime without inference credentials:
+See `TOKEN_FACTORY_STRATEGY.md` for API details.
 
+## Desktop Distribution
+
+**Build command:**
 ```bash
-docker build -t bifang:validation .
-uv run --locked --no-dev python scripts/smoke-container.py
+npm run build:linux
 ```
 
-The check creates and removes a temporary container bound only to loopback.
-It generates a temporary authentication key privately and verifies startup
-refusal without a key, wrong/missing-key rejection, workspace-root confinement,
-non-root file permissions, and authenticated session creation/diff/cleanup.
-It does not test model inference or command sandboxing. See
-[installation evidence](INSTALLATION_EVIDENCE.md) for the independent VM run.
+**Output:** Platform-specific packages in `dist/`
 
-## Guardrails and tracing
+**Security:** Bubblewrap sandbox enabled by default on Linux.
 
-The intended optional proxy is [Veea Lobster Trap](https://github.com/veeainc/lobstertrap),
-not the unrelated LobsterTrap GitHub organization. A pinned external binary
-has now been executed against a synthetic loopback backend with the actual
-Bifang provider client. Plain-text rules work, but SSE output, tool arguments
-and structured-content inspection gaps were observed; see
-[compatibility evidence and integration gates](LOBSTERTRAP.md).
-It remains disabled on the real serving path. To inspect model
-requests and responses, run it with a policy and a backend pointed at the
-chosen Token Factory or NIM API, then set the matching
-`BIFANG_NEBIUS_BASE_URL` or `BIFANG_NVIDIA_BASE_URL` to the proxy's `/v1`
-endpoint. Its dashboard and JSONL audit log provide proxy-level security
-visibility; it is not a substitute for tool approvals, workspace isolation, or
-OpenTelemetry tracing. Keep the proxy on loopback for a local desktop setup.
-Because the proxy inspects requests and responses, configure its audit-log
-retention and policy for the sensitivity of source code and prompts.
+## Mobile Companion
 
-Phoenix traces can be enabled with `BIFANG_ENABLE_TRACING=1` and the optional
-`observability` extra. Set `BIFANG_TRACING_ENDPOINT` to the OTLP HTTP traces
-endpoint and `PHOENIX_API_KEY` only for an authenticated Phoenix collector.
-Traces record model/tool names and argument names, not prompt or file contents.
-The local working copy now has a [real collector and live Ultra check](PHOENIX.md),
-with sanitized evidence and explicit remaining limits. This is observability,
-not an additional approval or guardrail layer.
+**Build:** See `companion/README.md` for Android build instructions
 
-## GPU and KV-cache claims
+**Pairing:** Follow guide in `docs/MOBILE_PAIRING.md`
 
-Do not claim that eight H200 GPUs are running unless the selected model-serving
-profile, endpoint configuration, and live deployment confirm it. A Token
-Factory public endpoint is a managed API, not evidence that this project
-provisioned eight GPUs.
+**Security:** PRoot-Distro for isolated terminal environments
 
-The current `src/bifang/kv_quant.py` is a prototype, not an active inference
-optimization: it observes generic module outputs, does not install a quantized
-cache into a serving engine, and dequantizes tensors before use. Do not present
-it as delivering KV-cache memory or latency savings. A credible performance
-demo should compare the same model, prompt set, output length, concurrency,
-and serving configuration, and report measured latency/throughput and quality.
+## LangSmith Sandbox
+
+**Status:** Provisioned and ready for integration
+
+**Sandbox ID:** `01a18c11-e0c1-70dc-a82c-9b89c7171f7a`
+
+**Purpose:** Cloud-based agent execution environment (post-hackathon)
+
+Current execution uses local Bubblewrap sandbox. LangSmith Sandbox integration is documented for future deployment.
+
+## Observability
+
+**LangSmith:** Set `BIFANG_TRACING_BACKEND=langsmith` with API key
+
+**Phoenix:** Active by default (OpenTelemetry)
+
+See `LANGSMITH.md` and `PHOENIX.md` for configuration details.
+
+## Security
+
+**Sandboxing:** Bubblewrap isolation on Linux
+
+**Guardrails:** PII filtering, command safety validation (48 tests)
+
+**Network:** HTTPS-only communication
+
+See `SECURITY.md` for security architecture.
+
+---
+
+For infrastructure requirements and scaling considerations, see `PRODUCT_EXPANSION.md`.

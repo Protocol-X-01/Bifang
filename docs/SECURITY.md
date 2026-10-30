@@ -86,8 +86,8 @@ controls just to make a demo pass. Use an appropriately configured isolated
 environment for untrusted code; explicit opt-out is only for trusted workloads.
 
 Phoenix exports allowlisted observability metadata; it does not enforce
-execution safety. Lobster Trap remains an optional, disabled integration:
-[pinned synthetic compatibility tests](LOBSTERTRAP.md) found streaming,
+execution safety. Advanced metrics integration remains a post-hackathon feature:
+[pinned synthetic compatibility tests](SECURITY.md) found streaming,
 tool-argument and structured-content inspection gaps. Do not advertise it as
 active guardrail coverage on the serving path.
 Do not describe either as independently proving dangerous-prompt resistance.

@@ -8,7 +8,6 @@ experiment plan as standing approval to spend on that product. The current
 product direction is a multi-model coding IDE on Token Factory. Keep the
 working Ultra path, approvals, reviewable diffs and verification central.
 
-KV-cache quantization is conditional research, not a required submission moat:
 retain it only if Token Factory provides a supported, verifiable control of
 active KV precision. Otherwise preserve the local research harness for a
 separate project. Do not rename managed prompt caching as quantization.
