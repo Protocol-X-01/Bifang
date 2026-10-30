@@ -61,7 +61,7 @@ class TermuxRuntime(private val activity: Activity) {
 
     @Synchronized
     fun setup(): JSObject {
-        run("/data/data/com.termux/files/usr/bin/bash", arrayOf("-c", "pkg install -y python proot curl tar xz-utils bzip2 gzip unzip file util-linux gawk coreutils findutils grep sed"), false)
+        run("/data/data/com.termux/files/usr/bin/bash", arrayOf("-c", "termux-wake-lock; pkg install -y python proot curl tar xz-utils bzip2 gzip unzip file util-linux gawk coreutils findutils grep sed"), false)
         return JSObject().put("dispatched", true)
     }
 
@@ -75,7 +75,7 @@ class TermuxRuntime(private val activity: Activity) {
         manualConnection = true
         val source = activity.assets.open("bifang_runtime.py").use { it.readBytes() }
         val encoded = Base64.encodeToString(source, Base64.NO_WRAP)
-        val command = "python -c 'import base64;exec(compile(base64.b64decode(\"$encoded\"),\"bifang_runtime.py\",\"exec\"))' $port ${hex(key)}"
+        val command = "termux-wake-lock && python -c 'import base64;exec(compile(base64.b64decode(\"$encoded\"),\"bifang_runtime.py\",\"exec\"))' $port ${hex(key)}"
         val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("Bifang private connector", command)
         clip.description.extras = PersistableBundle().apply { putBoolean("android.content.extra.IS_SENSITIVE", true) }
@@ -102,6 +102,11 @@ class TermuxRuntime(private val activity: Activity) {
         }
         port = ServerSocket(0, 1, InetAddress.getByName("127.0.0.1")).use { it.localPort }
         key = ByteArray(32).also { random.nextBytes(it) }
+        try {
+            run("/data/data/com.termux/files/usr/bin/termux-wake-lock", arrayOf(), true)
+        } catch (_: IllegalStateException) {
+            // Wake lock is best-effort; the session still works while Termux is focused
+        }
         val source = activity.assets.open("bifang_runtime.py").bufferedReader().use { it.readText() }
         run("/data/data/com.termux/files/usr/bin/python", arrayOf("-c", source, port.toString(), hex(key)), true)
         repeat(24) {
@@ -115,7 +120,7 @@ class TermuxRuntime(private val activity: Activity) {
     @Synchronized
     fun request(request: JSONObject): JSONObject {
         val action = request.optString("action")
-        require(action in setOf("catalog", "terminal_open", "terminal_read", "terminal_write", "terminal_resize", "terminal_close", "stop")) { "Unknown runtime action" }
+        require(action in setOf("catalog", "uninstall", "terminal_open", "terminal_read", "terminal_write", "terminal_resize", "terminal_close", "stop")) { "Unknown runtime action" }
         check(port != 0) { "Connect the distribution runtime first" }
         return exchange(request)
     }

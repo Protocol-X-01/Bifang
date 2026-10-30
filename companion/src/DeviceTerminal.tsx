@@ -35,6 +35,8 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
   const [runtimeBusy, setRuntimeBusy] = useState(false);
   const [runtimeMessage, setRuntimeMessage] = useState('');
+  const [uninstalling, setUninstalling] = useState(false);
+  const [confirmingUninstall, setConfirmingUninstall] = useState(false);
   const [hardware, setHardware] = useState<HardwareReport | null>(null);
   const [hardwareBusy, setHardwareBusy] = useState(false);
   const chosenDistribution = catalog?.environments.find(item => item.id === environment);
@@ -56,6 +58,23 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
       if (mounted.current) setCatalog(next);
     } catch (reason) {
       if (mounted.current) { setCatalog(null); setError(String(reason)); }
+    }
+  }
+
+  async function uninstallDistribution() {
+    if (!chosenDistribution || uninstalling) return;
+    setUninstalling(true);
+    setError('');
+    try {
+      const result = await invoke<{ uninstalled: string; freed_bytes: number }>('device_runtime_request', { request: { action: 'uninstall', environment: chosenDistribution.id } });
+      if (!mounted.current) return;
+      setConfirmingUninstall(false);
+      setRuntimeMessage(`Removed ${chosenDistribution.name}. ${(result.freed_bytes / 1048576).toFixed(0)} MB returned to storage.`);
+      await refreshCatalog();
+    } catch (reason) {
+      if (mounted.current) { setError(String(reason)); setConfirmingUninstall(false); await refreshCatalog(); }
+    } finally {
+      if (mounted.current) setUninstalling(false);
     }
   }
 
@@ -260,6 +279,7 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
               <li>Use a Termux build with external-command support. Open Termux itself and run <code>mkdir -p ~/.termux</code>, then add <code>allow-external-apps=true</code> to <code>~/.termux/termux.properties</code> and run <code>termux-reload-settings</code>. These paths belong to Termux; do this inside Termux, without root.</li>
               <li>Allow Bifang’s Termux connection and install the runtime tools.</li>
               <li>Return here and connect. Choose Install distribution for the first run.</li>
+              <li>Keep Termux installed when removing a distribution later: uninstall frees its files through Termux, and Android settings let you exclude Termux from battery optimization for longer-lived sessions.</li>
             </ol>
             <div className="flex flex-wrap gap-2 py-2">
               <button type="button" className="btn-secondary" disabled={runtimeBusy} onClick={() => void runtimeAction('status')}>Check setup</button>
@@ -276,6 +296,13 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
           {!catalog ? <button type="button" className="btn-primary" disabled={runtimeBusy} onClick={() => void runtimeAction('connect')}>{runtimeBusy ? 'Connecting…' : 'Connect runtime'}</button> : <>
             <p className="text-xs text-muted-foreground">{chosenDistribution?.installed ? `Installed · packages via ${chosenDistribution.packages}` : environment === 'blackarch' ? 'Installs an Arch Linux ARM base and adds the BlackArch repository. Add tool packages when needed.' : 'Installs a minimal environment. Add languages and tools through its package manager.'}</p>
             <button type="button" className="btn-primary" disabled={starting || !chosenDistribution} onClick={() => void start(chosenDistribution?.installed ? 'login' : 'install')}>{starting ? 'Starting…' : chosenDistribution?.installed ? 'Open terminal' : 'Install distribution'}</button>
+            {chosenDistribution?.installed && (confirmingUninstall ? <div className="space-y-2 rounded-lg border border-red-400/40 p-3">
+              <p className="text-xs text-red-300">Delete every file of {chosenDistribution.name}? This cannot be undone.</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className="btn-secondary text-red-300" disabled={uninstalling} onClick={() => void uninstallDistribution()}>{uninstalling ? 'Removing…' : 'Delete distribution'}</button>
+                <button type="button" className="btn-secondary" disabled={uninstalling} onClick={() => setConfirmingUninstall(false)}>Keep distribution</button>
+              </div>
+            </div> : <button type="button" className="btn-secondary" disabled={starting || uninstalling} onClick={() => { setError(''); setRuntimeMessage(''); setConfirmingUninstall(true); }}>Uninstall distribution</button>)}
           </>}
           {runtimeMessage && <p role="status" className="text-xs text-muted-foreground">{runtimeMessage}</p>}
         </div>}

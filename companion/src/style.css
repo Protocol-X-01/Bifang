@@ -201,6 +201,169 @@
   background: #151D30;
 }
 
+/* ============================================================
+   Premium immersive styling — v0.3.0
+   Palette: near-black surfaces, orange/gold accents, hairlines
+   (scoped under .companion, no markup or logic changes)
+   ============================================================ */
+
+html,
+body {
+  background: #0A0A0B;
+}
+
+.companion {
+  background: #0A0A0B;
+  color: #F7F7F5;
+}
+
+.companion .text-muted-foreground {
+  color: #A0A0A2;
+}
+
+/* Header — immersive dark bar with hairline */
+.companion .companion-header {
+  background: linear-gradient(180deg, #141416 0%, #0F0F11 100%);
+  border-bottom: 1px solid #26262B;
+}
+
+/* Tabs — segment control */
+.companion .companion-navigation {
+  background: #0A0A0B;
+  border-bottom: 1px solid #26262B;
+  gap: 0.5rem;
+}
+
+.companion .companion-navigation button {
+  background: #141416;
+  border: 1px solid #26262B;
+  border-radius: 12px;
+  color: #B9B9BD;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.companion .companion-navigation button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #FF6B35 0%, #FFB347 100%);
+  border-color: transparent;
+  color: #140B02;
+  box-shadow: 0 2px 12px rgba(255, 107, 53, 0.35);
+}
+
+/* Primary action — orange/gold gradient */
+.companion .btn-primary {
+  background: linear-gradient(135deg, #FF6B35 0%, #FFB347 100%);
+  border: 1px solid transparent;
+  color: #140B02;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(255, 107, 53, 0.28);
+}
+
+.companion .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.42);
+  transform: translateY(-1px);
+}
+
+.companion .btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Secondary — elevated dark panel */
+.companion .btn-secondary {
+  background: #1C1C1E;
+  border: 1px solid #2A2A2E;
+  color: #F7F7F5;
+  border-radius: 12px;
+}
+
+.companion .btn-secondary:hover:not(:disabled) {
+  background: #232327;
+  border-color: #3A3A40;
+}
+
+.companion .btn-primary:disabled,
+.companion .btn-secondary:disabled {
+  opacity: 0.45;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Focus ring — visible orange for keyboard/switch access */
+.companion :focus-visible {
+  outline: 2px solid #FF6B35;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Terminal stage */
+.companion .device-terminal {
+  background: #0A0A0B;
+}
+
+.companion .device-terminal-output {
+  background: #050505;
+  border: 1px solid #26262B;
+  border-radius: 12px;
+  padding: 0.5rem;
+}
+
+/* Command bar + key rail — floating dock */
+.companion .device-terminal-controls {
+  background: linear-gradient(0deg, #141416 0%, rgba(10, 10, 11, 0.92) 70%, rgba(10, 10, 11, 0.6) 100%);
+  border-top: 1px solid #26262B;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.companion .device-terminal-controls input {
+  background: #141416;
+  border: 1px solid #2A2A2E;
+  color: #F7F7F5;
+  border-radius: 12px;
+  min-height: 48px;
+}
+
+.companion .device-terminal-controls input:focus {
+  border-color: rgba(255, 107, 53, 0.6);
+}
+
+.companion .device-terminal-keys button {
+  background: #141416;
+  border: 1px solid #2A2A2E;
+  color: #C9C9CD;
+  border-radius: 10px;
+}
+
+/* Environment picker + collapsibles */
+.companion .device-terminal select {
+  background: #141416;
+  border-color: #2A2A2E;
+  color: #F7F7F5;
+}
+
+.companion .device-terminal details {
+  border-color: #26262B;
+  background: #121214;
+  border-radius: 12px;
+}
+
+/* Output selection sheet */
+.companion section[aria-label="Select terminal output"] {
+  background: #121214 !important;
+  border: 1px solid #26262B !important;
+}
+
+.companion section[aria-label="Select terminal output"] textarea {
+  background: #0A0A0B !important;
+  border-color: #2A2A2E !important;
+  color: #F7F7F5 !important;
+}
+
+/* Footer — status rail */
+.companion .companion-footer {
+  background: linear-gradient(0deg, #141416 0%, #0F0F11 100%);
+  border-top: 1px solid #26262B;
+}
+
 @media (max-height: 500px) {
   .companion-header {
     display: none;
@@ -281,4 +444,178 @@ section[aria-label="Select terminal output"] textarea {
   color: #F7F7F7 !important;
   font-family: 'JetBrains Mono', monospace !important;
   border-radius: 8px !important;
+}
+/* ============================================================
+   Theme system — v0.3.1
+   Dark rules above are the verified baseline. Light theme is
+   activated by <html data-theme="light"> (set from main.tsx);
+   "system" follows prefers-color-scheme. The terminal output
+   stage intentionally stays dark in both themes.
+   ============================================================ */
+
+:root[data-theme="light"] .companion {
+  --color-bifang-canvas: #F4F5F7;
+  --color-bifang-surface: #FFFFFF;
+  --color-bifang-surface-hover: #F3F5F8;
+  --color-bifang-panel: #FFFFFF;
+  --color-bifang-panel-hover: #F3F5F8;
+  --color-bifang-border: #DCDFE4;
+  --color-bifang-border-bright: #C2C7CF;
+  --color-bifang-divider: rgba(22, 24, 29, 0.08);
+  --color-bifang-text-primary: #16181D;
+  --color-bifang-text-secondary: #3F4654;
+  --color-bifang-text-muted: #575E6C;
+  --color-bifang-text-disabled: #8B93A1;
+  --color-bifang-text-inverse: #FFFFFF;
+  --color-background: #F4F5F7;
+  --color-foreground: #16181D;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #16181D;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #16181D;
+  --color-secondary: #EFF1F4;
+  --color-secondary-foreground: #16181D;
+  --color-muted: #EFF1F4;
+  --color-muted-foreground: #575E6C;
+  --color-accent: #FFF3EC;
+  --color-accent-foreground: #B4400C;
+  --color-border: #DCDFE4;
+  --color-input: #FFFFFF;
+  --color-ring: #EA580C;
+}
+
+:root[data-theme="light"],
+:root[data-theme="light"] > body {
+  background: #E9EAEE;
+}
+
+:root[data-theme="light"] .companion {
+  background: #F4F5F7;
+  color: #16181D;
+}
+
+:root[data-theme="light"] .companion .text-muted-foreground {
+  color: #575E6C;
+}
+
+:root[data-theme="light"] .companion .companion-header {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FA 100%);
+  border-bottom: 1px solid #E3E5E9;
+  box-shadow: 0 1px 10px rgba(16, 18, 23, 0.06);
+}
+
+:root[data-theme="light"] .companion .companion-header h1 {
+  color: #16181D;
+}
+
+:root[data-theme="light"] .companion .companion-navigation {
+  background: #F4F5F7;
+  border-bottom: 1px solid #E3E5E9;
+}
+
+:root[data-theme="light"] .companion .companion-navigation button {
+  background: #FFFFFF;
+  border: 1px solid #DCDFE4;
+  color: #4B515C;
+}
+
+/* Active tab keeps the orange gradient; it reads the same in both themes */
+
+:root[data-theme="light"] .companion .btn-secondary {
+  background: #FFFFFF;
+  border: 1px solid #DCDFE4;
+  color: #16181D;
+}
+
+:root[data-theme="light"] .companion .btn-secondary:hover:not(:disabled) {
+  background: #F3F5F8;
+  border-color: #C2C7CF;
+}
+
+:root[data-theme="light"] .companion :focus-visible {
+  outline-color: #D9480F;
+}
+
+:root[data-theme="light"] .companion .device-terminal {
+  background: #F4F5F7;
+}
+:root[data-theme="light"] .companion .device-terminal[data-expanded="true"] {
+  background: #F4F5F7;
+}
+
+:root[data-theme="light"] .companion .device-terminal-output {
+  border-color: #3A3A40;
+}
+
+:root[data-theme="light"] .companion .device-terminal-controls {
+  background: linear-gradient(0deg, #FFFFFF 0%, rgba(244, 245, 247, 0.92) 70%, rgba(244, 245, 247, 0.6) 100%);
+  border-top: 1px solid #E3E5E9;
+}
+
+:root[data-theme="light"] .companion .device-terminal-controls input {
+  background: #FFFFFF;
+  border: 1px solid #DCDFE4;
+  color: #16181D;
+}
+
+:root[data-theme="light"] .companion .device-terminal-controls input:focus {
+  border-color: rgba(217, 72, 15, 0.55);
+}
+
+:root[data-theme="light"] .companion .device-terminal-keys button {
+  background: #FFFFFF;
+  border: 1px solid #DCDFE4;
+  color: #3F4654;
+}
+
+:root[data-theme="light"] .companion .device-terminal select {
+  background: #FFFFFF;
+  border-color: #DCDFE4;
+  color: #16181D;
+}
+
+:root[data-theme="light"] .companion .device-terminal details {
+  border-color: #E3E5E9;
+  background: #FFFFFF;
+}
+
+:root[data-theme="light"] .companion .device-terminal summary {
+  color: #16181D;
+}
+
+:root[data-theme="light"] .companion .terminal-heading h2 {
+  color: #16181D;
+}
+
+:root[data-theme="light"] .companion section[aria-label="Select terminal output"] {
+  background: #FFFFFF !important;
+  border: 1px solid #E3E5E9 !important;
+  box-shadow: 0 8px 24px rgba(16, 18, 23, 0.08) !important;
+}
+
+:root[data-theme="light"] .companion section[aria-label="Select terminal output"] textarea {
+  background: #FFFFFF !important;
+  border: 1px solid #DCDFE4 !important;
+  color: #16181D !important;
+}
+
+:root[data-theme="light"] .companion .companion-footer {
+  background: linear-gradient(0deg, #FFFFFF 0%, #F8F9FA 100%);
+  border-top: 1px solid #E3E5E9;
+}
+
+.companion .companion-theme-select {
+  min-height: 32px;
+  padding: 0 0.5rem;
+  border-radius: 8px;
+  background: #141416;
+  border: 1px solid #2A2A2E;
+  color: #F7F7F5;
+  font-size: 16px;
+}
+
+:root[data-theme="light"] .companion .companion-theme-select {
+  background: #FFFFFF;
+  border: 1px solid #DCDFE4;
+  color: #16181D;
 }

@@ -54,15 +54,29 @@ export function VisionPanel({ ensureSession, onUse }: { ensureSession: () => Pro
   const refresh = async (selected = provider) => {
     if (busy || loading) return;
     const generation = epoch.current;
-    setLoading(true); setError(''); setModel(''); setModels([]); setResult(null);
+    setLoading(true); setError(''); setResult(null);
     try {
       const response = await localFetch(`/vision/models?provider=${encodeURIComponent(selected)}`);
-      if (!response.ok) throw new Error('Visual model capabilities unavailable. Refresh before sharing images.');
+      if (!response.ok) throw new Error('Visual model capabilities unavailable.');
       const catalog = parseVisualCatalog(await response.json());
       if (generation !== epoch.current) return;
-      setProviders(catalog.providers); setProvider(catalog.provider || selected); setModels(catalog.models);
-      if (!catalog.models.length) setError('No declared vision models are listed for this endpoint. Check provider configuration.');
-    } catch (failure) { if (generation === epoch.current) setError(String(failure)); }
+      
+      setProviders(catalog.providers);
+      setProvider(catalog.provider || selected);
+      setModels(catalog.models);
+      setError('');
+      
+      if (!catalog.models.length) {
+        setError('No vision models listed for this provider.');
+      } else if (!model && catalog.models.length > 0) {
+        setModel(catalog.models[0].model);
+      }
+    } catch (failure) {
+      if (generation === epoch.current) {
+        setError('Could not load vision models. Check provider configuration.');
+        console.error('Vision refresh error:', failure);
+      }
+    }
     finally { if (generation === epoch.current) setLoading(false); }
   };
 

@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -71,17 +72,26 @@ class Workspace:
 
     @classmethod
     def create_snapshot(cls, source: Path) -> Workspace:
-        baseline = capture(source)
         boxes = state_home() / "boxes"
         if boxes.resolve().is_relative_to(source.resolve()):
             raise RuntimeError("Isolated workspace storage must be outside the source folder")
         boxes.mkdir(parents=True, exist_ok=True)
         root = Path(tempfile.mkdtemp(prefix="folder-", dir=boxes))
         try:
-            materialize(root, baseline)
-            if capture(source) != baseline:
-                raise RuntimeError("The source folder changed while preparing the isolated workspace")
-            return cls(source, root, isolated=True, snapshot=FolderSnapshot(baseline))
+            # Live folders change while the copy is in flight (logs, editors,
+            # caches). Re-baseline and retry a few times instead of refusing
+            # the session; only give up when churn never settles.
+            baseline = capture(source)
+            for _ in range(4):
+                materialize(root, baseline)
+                check = capture(source)
+                if check == baseline:
+                    return cls(source, root, isolated=True, snapshot=FolderSnapshot(baseline))
+                baseline = check
+                shutil.rmtree(root)
+                root = Path(tempfile.mkdtemp(prefix="folder-", dir=boxes))
+                time.sleep(0.5)
+            raise RuntimeError("The source folder kept changing while preparing the isolated workspace")
         except BaseException:
             shutil.rmtree(root)
             raise

@@ -14,10 +14,19 @@ export function LoadingScreen({ status, progress }: Props) {
           <Server className="w-20 h-20 mx-auto text-bifang-brand-orange relative animate-bounce" />
         </div>
         
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-bifang-brand-red via-bifang-brand-orange to-bifang-brand-orange bg-clip-text text-transparent">
+        <div className="mb-6 relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-40 h-40 rounded-full bg-gradient-to-r from-bifang-brand-red via-bifang-brand-orange to-bifang-brand-orange opacity-30 blur-3xl animate-pulse" />
+          </div>
+          <div className="relative flex items-center justify-center">
+            <div className="text-7xl animate-bounce" style={{ animationDuration: '2s' }}>⚡</div>
+          </div>
+        </div>
+        
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-bifang-brand-red via-bifang-brand-orange to-bifang-brand-orange bg-clip-text text-transparent">
           Bifang
         </h1>
-        <p className="text-bifang-text-secondary mb-8 text-sm">Build. Run. Verify.</p>
+        <p className="text-bifang-text-secondary mb-8 text-base font-medium">Build. Run. Verify.</p>
         
         <p className="text-bifang-text-muted mb-4 text-xs">{status}</p>
         

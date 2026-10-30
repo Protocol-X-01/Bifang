@@ -4,9 +4,11 @@
 
 use std::collections::VecDeque;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tokio::sync::{mpsc, RwLock};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 use crossterm::event::{KeyEvent, KeyCode, KeyModifiers, MouseEvent};
@@ -14,7 +16,12 @@ use ratatui::Frame;
 
 use crate::design::colors;
 use crate::design::styles;
-use crate::types::{AppMode, ServerStatus, ChatMessage, MessageRole, ModelInfo, TokenUsage, FileEntry, DiffHunk, DiffLine, DiffKind, TerminalSession, ApprovalRequest, RiskLevel};
+use crate::types::{AppMode, ServerStatus, ChatMessage, MessageRole, ModelInfo, TokenUsage, FileEntry, DiffHunk, DiffLine, DiffKind, TerminalSession, ApprovalRequest, SessionInfo, ChatResponsePayload};
+
+/// How often the pending-approval endpoint is polled while a turn runs
+const APPROVAL_POLL_INTERVAL: Duration = Duration::from_millis(1500);
+/// How often the server health banner is refreshed
+const SERVER_CHECK_INTERVAL: Duration = Duration::from_secs(30);
 
 /// Main application state
 pub struct App {
@@ -40,6 +47,13 @@ pub struct App {
     pub command_palette_query: String,
     pub command_palette_results: Vec<CommandAction>,
     pub should_quit: bool,
+    // Live server session for the current conversation
+    pub session_id: Option<String>,
+    pub patch_sha256: Option<String>,
+    pub chat_inflight: bool,
+    pub last_approval_poll: Instant,
+    pub last_server_check: Instant,
+    pub last_diff_refresh: Instant,
     // Async handles
     event_tx: mpsc::UnboundedSender<AppEvent>,
     event_rx: mpsc::UnboundedReceiver<AppEvent>,
@@ -51,10 +65,13 @@ pub struct App {
 pub enum AppEvent {
     ServerStatusChanged(ServerStatus),
     ChatMessageReceived(ChatMessage),
-    DiffUpdated(Vec<DiffHunk>),
+    DiffUpdated(Vec<DiffHunk>, String),
     FilesUpdated(Vec<FileEntry>),
     TerminalOutput(TerminalOutput),
     ApprovalRequested(ApprovalRequest),
+    SessionCreated(String),
+    SessionLost(String),
+    ChatTurnDone,
     Error(String),
     StatusMessage(String),
 }
@@ -119,10 +136,15 @@ impl App {
         let (event_tx, event_rx) = mpsc::unbounded_channel();
         let api_client = Arc::new(crate::ApiClient::new()?);
 
+        let server_url = std::env::var("BIFANG_TUI_SERVER").ok()
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or_else(|| "http://127.0.0.1:8000".to_string());
+        let now = Instant::now();
+
         let mut app = Self {
             mode: AppMode::Workspace,
             server_status: ServerStatus::Stopped,
-            server_url: "http://127.0.0.1:8765".to_string(),
+            server_url,
             workspace_path: None,
             workspace_files: Vec::new(),
             selected_file: None,
@@ -142,6 +164,12 @@ impl App {
             command_palette_query: String::new(),
             command_palette_results: Self::default_commands(),
             should_quit: false,
+            session_id: None,
+            patch_sha256: None,
+            chat_inflight: false,
+            last_approval_poll: now - APPROVAL_POLL_INTERVAL,
+            last_server_check: now,
+            last_diff_refresh: now,
             event_tx,
             event_rx,
             api_client,
@@ -194,7 +222,7 @@ impl App {
                 id: "apply-diff".into(),
                 title: "Apply Changes".into(),
                 description: "Apply reviewed diff to project".into(),
-                shortcut: Some("Ctrl+Enter".into()),
+                shortcut: Some("Ctrl+K".into()),
                 action: CommandActionKind::ApplyDiff,
             },
             CommandAction {
@@ -240,6 +268,12 @@ impl App {
                 self.toggle_files();
             }
             KeyCode::Char('\n') | KeyCode::Enter if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.apply_diff().await?;
+            }
+            // Ctrl+Enter reaches many terminals as a bare Enter/LF, so offer
+            // Ctrl+K as a reliable apply alias (the command palette covers
+            // any other binding gap).
+            KeyCode::Char('k') | KeyCode::Char('K') if key.modifiers.contains(KeyModifiers::CONTROL) => {
                 self.apply_diff().await?;
             }
             KeyCode::Tab => {
@@ -435,6 +469,9 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
         self.chat_messages.clear();
         self.chat_input.clear();
         self.chat_scroll = 0;
+        self.diff_hunks.clear();
+        self.session_id = None;
+        self.patch_sha256 = None;
         self.set_status("New chat started");
         Ok(())
     }
@@ -492,11 +529,32 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
     }
 
     async fn apply_diff(&mut self) -> Result<()> {
+        if self.chat_inflight {
+            self.set_status("Wait for the current agent turn to finish");
+            return Ok(());
+        }
         if self.diff_hunks.is_empty() {
             self.set_status("No changes to apply");
             return Ok(());
         }
+        let Some(session) = self.session_id.clone() else {
+            self.set_status("No changes to apply");
+            return Ok(());
+        };
+        let Some(sha) = self.patch_sha256.clone() else {
+            self.set_status("No changes to apply");
+            return Ok(());
+        };
         self.set_status("Applying changes...");
+        match self.api_client.apply_diff(&self.server_url, &session, &sha).await {
+            Ok(true) => {
+                self.set_status("Changes applied to the workspace");
+                self.patch_sha256 = None;
+                self.refresh_diff(&session).await;
+            }
+            Ok(false) => self.set_status("Changes were already applied"),
+            Err(e) => self.set_status(&format!("Error: {}", e)),
+        }
         Ok(())
     }
 
@@ -539,6 +597,14 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
         if content.is_empty() {
             return Ok(());
         }
+        if self.chat_inflight {
+            self.set_status("Agent is working - wait for the current turn");
+            return Ok(());
+        }
+        if content.chars().count() > 20000 {
+            self.set_status("Prompt too long for the server (20,000 characters)");
+            return Ok(());
+        }
 
         let msg = ChatMessage {
             id: Uuid::new_v4(),
@@ -549,10 +615,74 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
         };
         self.chat_messages.push(msg);
         self.chat_input.clear();
+        self.chat_inflight = true;
+        self.set_status("Agent working... press Esc later to keep using the UI");
 
-        if let Err(e) = self.api_client.send_chat(&self.server_url, &content).await {
-            self.set_status(&format!("Error: {}", e));
-        }
+        let api = Arc::clone(&self.api_client);
+        let server_url = self.server_url.clone();
+        let sender = self.event_tx.clone();
+        let workspace = self.workspace_path.clone().unwrap_or_else(|| {
+            std::env::current_dir().map(|p| p.to_string_lossy().to_string()).unwrap_or_else(|_| ".".to_string())
+        });
+        let known_session = self.session_id.clone();
+
+        tokio::spawn(async move {
+            // Reuse the shared session or create a fresh one on the server
+            let session: SessionInfo = match known_session {
+                Some(shared) => SessionInfo { session_id: shared, workspace: workspace.clone() },
+                None => match api.create_session(&server_url, &workspace).await {
+                    Ok(info) => {
+                        let _ = sender.send(AppEvent::SessionCreated(info.session_id.clone()));
+                        info
+                    }
+                    Err(e) => {
+                        let _ = sender.send(AppEvent::Error(e.to_string()));
+                        let _ = sender.send(AppEvent::ChatTurnDone);
+                        return;
+                    }
+                },
+            };
+            let session_id = session.session_id.clone();
+
+            let result = api.send_chat(&server_url, &session_id, &content).await;
+            let turn_id = Uuid::new_v4();
+            match result {
+                Ok(payload) => {
+                    let model_info = payload.routing.first().and_then(|entry| {
+                        let provider = entry.get("provider")?.as_str()?;
+                        let model = entry.get("model")?.as_str()?;
+                        let task_type = entry.get("task_type").and_then(Value::as_str).unwrap_or("pinned");
+                        let usage = entry.get("usage").map(|u| TokenUsage {
+                            prompt: u.get("prompt").and_then(Value::as_u64).unwrap_or(0),
+                            completion: u.get("completion").and_then(Value::as_u64).unwrap_or(0),
+                        });
+                        Some(ModelInfo { provider: provider.to_string(), model: model.to_string(), task_type: task_type.to_string(), tokens: usage })
+                    });
+                    let _ = sender.send(AppEvent::ChatMessageReceived(ChatMessage {
+                        id: turn_id,
+                        role: MessageRole::Assistant,
+                        content: payload.response.clone(),
+                        timestamp: Utc::now(),
+                        model_info,
+                    }));
+                    let _ = sender.send(AppEvent::StatusMessage(format!("Agent responded · session {}", session_id)));
+                    if let Ok(diff_payload) = api.get_diff(&server_url, &session_id).await {
+                        let hunks = parse_unified_diff(&diff_payload.diff);
+                        let _ = sender.send(AppEvent::DiffUpdated(hunks, diff_payload.patch_sha256));
+                    }
+                }
+                Err(e) => {
+                    let text = e.to_string();
+                    if text.contains("404") && text.contains("Chat failed") {
+                        // Session expired server-side; let the next message recreate it
+                        let _ = sender.send(AppEvent::SessionLost(session_id));
+                    }
+                    let _ = sender.send(AppEvent::Error(text));
+                }
+            }
+            let _ = sender.send(AppEvent::StatusMessage("Agent finished".to_string()));
+            let _ = sender.send(AppEvent::ChatTurnDone);
+        });
 
         Ok(())
     }
@@ -563,26 +693,59 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
     }
 
     async fn approve_action(&mut self, approved: bool) -> Result<bool> {
-        if let Some(_approval) = self.approval_pending.take() {
-            self.set_status(if approved { "Action approved" } else { "Action denied" });
+        let Some(approval) = self.approval_pending.take() else {
+            return Ok(false);
+        };
+        let Some(session) = self.session_id.clone() else {
+            self.set_status("Approval expired - session missing");
+            return Ok(false);
+        };
+        match self.api_client.resolve_approval(&self.server_url, &session, &approval.approval_id, approved).await {
+            Ok(true) => self.set_status(if approved { "Approved - agent continues" } else { "Denied - agent continues without it" }),
+            Ok(false) => self.set_status("Approval was no longer valid"),
+            Err(e) => self.set_status(&format!("Error: {}", e)),
         }
         Ok(false)
     }
 
     async fn load_workspace_files(&mut self, path: &str) -> Result<()> {
-        self.workspace_files = self.api_client.list_files(&self.server_url, path).await?;
+        match self.api_client.list_files(&self.server_url, path).await {
+            Ok(Some(files)) => self.workspace_files = files,
+            Ok(None) => {
+                // Server has no /files endpoint: list the local folder instead
+                let mut entries = Vec::new();
+                if let Ok(children) = std::fs::read_dir(path) {
+                    for child in children.flatten() {
+                        let child_path = child.path();
+                        let Ok(meta) = child.metadata() else { continue };
+                        entries.push(FileEntry {
+                            path: child_path.to_string_lossy().to_string(),
+                            name: child_path.file_name().unwrap_or_default().to_string_lossy().to_string(),
+                            is_dir: meta.is_dir(),
+                            size: if meta.is_file() { Some(meta.len()) } else { None },
+                            modified: meta.modified().ok().map(DateTime::<Utc>::from),
+                        });
+                    }
+                }
+                entries.sort_by(|a, b| b.is_dir.cmp(&a.is_dir).then_with(|| a.name.cmp(&b.name)));
+                self.workspace_files = entries;
+                self.set_status("Server file listing unavailable - showing the local folder");
+            }
+            Err(e) => self.set_status(&format!("Error: {}", e)),
+        }
         Ok(())
     }
 
     async fn check_server(&mut self) {
+        self.last_server_check = Instant::now();
         match self.api_client.health_check(&self.server_url).await {
             Ok(_) => {
                 self.server_status = ServerStatus::Running;
                 self.set_status("Server connected");
             }
             Err(_) => {
-                self.server_status = ServerStatus::Stopped;
-                self.set_status("Server not running (start with 'bifang-server')");
+                self.server_status = ServerStatus::Error;
+                self.set_status("Server not running (Bifang TUI expects it on 127.0.0.1:8000)");
             }
         }
     }
@@ -592,8 +755,14 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
             match event {
                 AppEvent::ServerStatusChanged(status) => self.server_status = status,
                 AppEvent::ChatMessageReceived(msg) => self.chat_messages.push(msg),
-                AppEvent::DiffUpdated(hunks) => self.diff_hunks = hunks,
+                AppEvent::DiffUpdated(hunks, sha256) => {
+                    self.diff_hunks = hunks;
+                    self.patch_sha256 = Some(sha256);
+                }
                 AppEvent::FilesUpdated(files) => self.workspace_files = files,
+                AppEvent::SessionCreated(id) => self.session_id = Some(id),
+                AppEvent::SessionLost(_) => self.session_id = None,
+                AppEvent::ChatTurnDone => self.chat_inflight = false,
                 AppEvent::TerminalOutput(output) => {
                     if let Some(idx) = self.active_terminal {
                         if idx < self.terminal_sessions.len() {
@@ -613,11 +782,44 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
     }
 
     async fn poll_server(&mut self) -> Result<()> {
+        // Refresh the connection banner on a slow cadence
+        if self.last_server_check.elapsed() >= SERVER_CHECK_INTERVAL {
+            self.check_server().await;
+        }
+
+        // While an agent turn runs, watch for pending tool approvals
+        if self.chat_inflight
+            && self.approval_pending.is_none()
+            && self.last_approval_poll.elapsed() >= APPROVAL_POLL_INTERVAL
+        {
+            self.last_approval_poll = Instant::now();
+            if let Some(session) = self.session_id.clone() {
+                if let Some(approval) = self.api_client.poll_approval(&self.server_url, &session).await {
+                    self.approval_pending = Some(approval.clone());
+                    self.set_status("Permission requested - Y to allow, N/Esc to deny");
+                }
+            }
+        }
+
         Ok(())
     }
 
     fn set_status(&mut self, msg: &str) {
         self.status_message = Some(msg.to_string());
+    }
+
+    /// Refresh the workspace diff for a live session and remember its hash
+    async fn refresh_diff(&mut self, session: &str) {
+        match self.api_client.get_diff(&self.server_url, session).await {
+            Ok(payload) => {
+                self.diff_hunks = parse_unified_diff(&payload.diff);
+                self.patch_sha256 = Some(payload.patch_sha256);
+            }
+            Err(_) => {
+                self.diff_hunks.clear();
+                self.patch_sha256 = None;
+            }
+        }
     }
 
     pub async fn handle_mouse(&mut self, _mouse: MouseEvent) -> Result<()> {
@@ -626,5 +828,90 @@ async fn handle_mode_key(&mut self, key: KeyEvent) -> Result<bool> {
 
     pub fn draw(&self, f: &mut Frame) {
         crate::components::draw_app(f, self);
+    }
+}
+
+/// Parse a unified diff into hunk/line structures for the diff tab
+pub fn parse_unified_diff(diff: &str) -> Vec<DiffHunk> {
+    let mut hunks = Vec::new();
+    let mut current: Option<DiffHunk> = None;
+    let mut old_line = 0u32;
+    let mut new_line = 0u32;
+
+    for raw_line in diff.lines() {
+        if raw_line.is_empty() || (raw_line.starts_with("\\ No newline")) {
+            continue;
+        }
+
+        let kind: DiffKind;
+        let content: String;
+
+        if let Some(rest) = raw_line.strip_prefix("@@") {
+            // Example header: @@ -12,3 +12,4 @@ context
+            let mut old_start = 0u32;
+            let mut new_start = 0u32;
+            if let Some((old_spec, new_spec)) = extract_range_specs(rest) {
+                old_start = old_spec.0;
+                new_start = new_spec.0;
+            }
+            old_line = old_start;
+            new_line = new_start;
+            if let Some(hunk) = current.take() {
+                hunks.push(hunk);
+            }
+            current = Some(DiffHunk {
+                old_start,
+                old_lines: 0,
+                new_start,
+                new_lines: 0,
+                lines: Vec::new(),
+            });
+            continue;
+        } else if let Some(rest) = raw_line.strip_prefix('+') {
+            kind = DiffKind::Added;
+            content = rest.to_string();
+            new_line += 1;
+        } else if let Some(rest) = raw_line.strip_prefix('-') {
+            kind = DiffKind::Removed;
+            content = rest.to_string();
+            old_line += 1;
+        } else {
+            kind = DiffKind::Context;
+            content = raw_line.strip_prefix(' ').unwrap_or(raw_line).to_string();
+        }
+
+        if let Some(hunk) = current.as_mut() {
+            let (old_num, new_num) = match kind {
+                DiffKind::Added => (None, Some(new_line)),
+                DiffKind::Removed => (Some(old_line), None),
+                DiffKind::Context => (Some(old_line), Some(new_line)),
+            };
+            hunk.lines.push(DiffLine { kind, content, old_line_num: old_num, new_line_num: new_num });
+        }
+    }
+    if let Some(hunk) = current.take() {
+        hunks.push(hunk);
+    }
+    hunks
+}
+
+/// Extract "(-start,-count, +start,+count)" specs from a hunk header
+fn extract_range_specs(header: &str) -> Option<((u32, u32), (u32, u32))> {
+    let mut specs = Vec::new();
+    let mut parts = header.split_whitespace();
+    while let Some(part) = parts.next() {
+        let spec = part.trim_start_matches(['-', '+']);
+        let (start_str, count_str) = spec.split_once(',').unwrap_or((spec, "1"));
+        let start = start_str.parse::<u32>().ok()?;
+        let count = count_str.parse::<u32>().unwrap_or(1);
+        specs.push((start, count));
+        if specs.len() == 2 {
+            break;
+        }
+    }
+    if specs.len() == 2 {
+        Some((specs[0], specs[1]))
+    } else {
+        None
     }
 }

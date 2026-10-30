@@ -8,6 +8,7 @@ import platform
 import pty
 import select
 import shlex
+import shutil
 import signal
 import socket
 import struct
@@ -290,6 +291,8 @@ class Runtime:
         action = request.get('action')
         if action == 'catalog':
             return {'version': VERSION, 'environments': [{'id': identity, 'name': provider['name'], 'installed': ready(identity), 'packages': provider['packages']} for identity, provider in PROVIDERS.items()]}
+        if action == 'uninstall':
+            return self.uninstall(request)
         if action == 'terminal_open':
             return self.open(request)
         if action == 'stop':
@@ -333,6 +336,23 @@ class Runtime:
             self.close()
             return {}
         raise ValueError('Unknown terminal operation')
+
+    def uninstall(self, request):
+        if self.session is not None:
+            raise ValueError('Close the running terminal before uninstalling')
+        directory = rootfs(request.get('environment'))
+        parent = BASE / 'runtime/installed-rootfs'
+        if directory.is_symlink() or not directory.is_dir() or directory.parent != parent:
+            raise ValueError('This distribution is not installed')
+        size = 0
+        for path in directory.rglob('*'):
+            if path.is_file():
+                try:
+                    size += path.lstat().st_size
+                except OSError:
+                    pass
+        shutil.rmtree(directory)
+        return {'uninstalled': request.get('environment'), 'freed_bytes': size}
 
     def open(self, request):
         if request.get('confirmed') is not True or self.session is not None:
@@ -414,7 +434,9 @@ def serve(port, key):
         listener.listen(4)
         listener.settimeout(1)
         try:
-            while time.monotonic() - last_request < 90:
+            # 15 minute idle window. Connections stay reachable only via
+            # 127.0.0.1 and remain protected by the per-session HMAC key.
+            while time.monotonic() - last_request < 900:
                 try:
                     connection, _ = listener.accept()
                 except TimeoutError:

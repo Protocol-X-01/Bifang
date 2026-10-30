@@ -10,7 +10,7 @@ use ratatui::{
     Frame,
 };
 use crate::app::App;
-use crate::types::{AppMode, ServerStatus, Tab, ChatMessage, MessageRole, FileEntry, DiffHunk, DiffLine, DiffKind, ApprovalRequest, RiskLevel};
+use crate::types::{AppMode, ServerStatus, Tab, ChatMessage, MessageRole, FileEntry, DiffHunk, DiffLine, DiffKind, ApprovalRequest};
 use crate::design::{styles, colors, box_drawing, ember_gradient};
 
 /// Draw the main application layout
@@ -489,13 +489,6 @@ fn draw_approval_dialog(f: &mut Frame, app: &App, area: Rect) {
         let popup_area = centered_rect(70, 30, area);
         f.render_widget(Clear, popup_area);
 
-        let risk_color = match approval.risk_level {
-            RiskLevel::Low => styles::text_success(),
-            RiskLevel::Medium => styles::text_warning(),
-            RiskLevel::High => styles::text_error(),
-            RiskLevel::Critical => styles::btn_destructive(),
-        };
-
         let text = Text::from(vec![
             Line::from(vec![
                 Span::styled("⚠ Permission Required", styles::text_ember_strong()),
@@ -504,15 +497,6 @@ fn draw_approval_dialog(f: &mut Frame, app: &App, area: Rect) {
             Line::from(vec![
                 Span::styled("Action: ", styles::text_muted()),
                 Span::styled(&approval.action, styles::text_primary()),
-            ]),
-            Line::from(vec![
-                Span::styled("Description: ", styles::text_muted()),
-                Span::styled(&approval.description, styles::text_secondary()),
-            ]),
-            Line::from(""),
-            Line::from(vec![
-                Span::styled("Risk: ", styles::text_muted()),
-                Span::styled(format!("{:?}", approval.risk_level), risk_color.add_modifier(Modifier::BOLD)),
             ]),
             Line::from(""),
             Line::from(vec![

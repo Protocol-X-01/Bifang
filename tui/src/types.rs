@@ -118,19 +118,8 @@ pub struct TerminalSession {
 /// Approval request from server
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApprovalRequest {
-    pub id: Uuid,
+    pub approval_id: String,
     pub action: String,
-    pub description: String,
-    pub risk_level: RiskLevel,
-}
-
-/// Risk level for approvals
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum RiskLevel {
-    Low,
-    Medium,
-    High,
-    Critical,
 }
 
 /// Tab in the workspace
@@ -150,4 +139,29 @@ pub struct RoutingReceipt {
     pub model: String,
     pub task_type: String,
     pub usage: Option<TokenUsage>,
+}
+
+/// Server chat response payload (src/bifang/server.py ChatResponse)
+#[derive(Debug, Clone, Deserialize)]
+pub struct ChatResponsePayload {
+    pub session_id: String,
+    pub response: String,
+    pub message_count: u64,
+    #[serde(default)]
+    pub routing: Vec<serde_json::Value>,
+}
+
+/// Server session payload (SessionResponse)
+#[derive(Debug, Clone, Deserialize)]
+pub struct SessionInfo {
+    pub session_id: String,
+    #[serde(default)]
+    pub workspace: String,
+}
+
+/// Server diff payload
+#[derive(Debug, Clone, Deserialize)]
+pub struct DiffResponsePayload {
+    pub diff: String,
+    pub patch_sha256: String,
 }

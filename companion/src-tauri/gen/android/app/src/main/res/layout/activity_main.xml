@@ -86,14 +86,11 @@
                 android:fillViewport="true"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-                <app.r_terminal.TerminalView
+                <WebView
                     android:id="@+id/terminalView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/surface_terminal"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:importantForAccessibility="yes" />
+                    android:background="@color/surface_terminal" />
 
             </androidx.core.widget.NestedScrollView>
 
