@@ -103,6 +103,7 @@ cd your-project && bifang chat
 | **Human-in-Loop** | Approval Workflow | Review every action before execution | ✅ Desktop + CLI |
 | **Sandbox Isolation** | Bubblewrap | Network offline, filesystem read-only | ✅ Ubuntu 24.04 verified |
 | **Tool Discovery** | Librarian MCP | 9,236 indexed tools across 14 sources | ✅ [Published](https://github.com/Protocol-X-01/librarian) |
+| **Cloud Execution** | LangSmith Sandbox | Managed agent runtime, LangChain tools | ✅ [Provisioned](https://smith.langchain.com) |
 | **Observability** | LangSmith + Phoenix | Audit trail, token tracking | ✅ [Ready to enable](https://smith.langchain.com) |
 
 **Guardrails validate:**
@@ -124,6 +125,8 @@ assert "[EMAIL]" in filtered
 ```
 
 **Architecture:** Validation runs inside Bubblewrap sandbox → if approved, executes in disposable worktree → verified against original checks → diff reviewed → then Apply.
+
+**Cloud Execution:** LangSmith Sandbox (`id: 01a18c11-e0c1-70dc-a82c-9b89c7171f7a`) provides managed runtime for LangChain tools and agent execution in cloud environment. Hybrid architecture supports both local (Bubblewrap) and cloud (LangSmith) execution paths.
 
 **Tool Discovery:** [Librarian MCP](https://github.com/Protocol-X-01/toolbox-mcp) (new standalone repo) enables agents to discover 9,236+ installed tools across 14 package managers (pacman, cargo, pip, npm, docker, etc.) with real-time enrichment via Tavily. Live Nemotron integration verified (8,885 tokens tracked).
 
