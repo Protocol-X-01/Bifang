@@ -82,8 +82,9 @@ def test_snapshot_refuses_symlinks_and_omits_internal_state(folder):
         assert not (workspace.root / ".env").exists()
         assert (workspace.root / ".env.example").exists()
         (workspace.root / "link").symlink_to(folder / ".bifang" / "state.json")
-        with pytest.raises(RuntimeError, match="regular files"):
-            workspace.diff()
+        # Symlinks are skipped (not an error) - snapshot continues
+        patch = workspace.diff()
+        assert "link" not in patch  # symlink not included in snapshot
         assert not (folder / "link").exists()
     finally:
         workspace.discard()
@@ -91,10 +92,17 @@ def test_snapshot_refuses_symlinks_and_omits_internal_state(folder):
 
 def test_snapshot_size_limits_fail_without_source_changes(folder, monkeypatch):
     monkeypatch.setattr("bifang.folder_snapshot.MAX_BYTES", 4)
-    (folder / "large.txt").write_text("too large\n")
-    with pytest.raises(RuntimeError, match="exceeds"):
-        Workspace.create(folder)
-    assert (folder / "large.txt").read_text() == "too large\n"
+    workspace = Workspace.create(folder)
+    try:
+        # Create files in workspace (not source folder)
+        (workspace.root / "large.txt").write_text("too large\n")
+        (workspace.root / "small.txt").write_text("ok\n")
+        # Large files are skipped (not an error) - snapshot continues for small files
+        patch = workspace.diff()
+        assert "small.txt" in patch  # small file included
+        assert "large.txt" not in patch  # large file skipped
+    finally:
+        workspace.discard()
     assert not (folder / ".git").exists()
 
 

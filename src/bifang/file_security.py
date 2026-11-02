@@ -100,6 +100,39 @@ def validate_single_file(file_path: Path, allowed_extensions: list[str] | None =
         if ext not in allowed_extensions:
             raise FileValidationError(f"Extension '{ext}' not allowed")
     
+    # Read file bytes for magic byte checks
+    file_bytes = file_path.read_bytes()
+    
+    # Check for executable signatures FIRST (before MIME detection)
+    executable_sigs = [
+        b'MZ',  # Windows PE
+        b'\x7fELF',  # Linux ELF
+        b'\xca\xfe\xba\xbe',  # Java class
+        b'dex\n',  # Android DEX
+    ]
+    
+    for sig in executable_sigs:
+        if file_bytes.startswith(sig):
+            raise FileValidationError("Executable files not allowed")
+    
+    # Check for image decompression bombs via magic bytes (PNG, etc.)
+    # PNG signature
+    if file_bytes.startswith(b'\x89PNG\r\n\x1a\n'):
+        # Try to open as image to trigger decompression bomb check
+        try:
+            with Image.open(file_path) as img:
+                img.load()
+                width, height = img.size
+                if width * height > 4_000_000:
+                    raise FileValidationError("Image dimensions too large (potential decompression bomb)")
+                n_frames = getattr(img, 'n_frames', 1)
+                if n_frames > 100:
+                    raise FileValidationError("Too many frames (potential animation bomb)")
+        except UnidentifiedImageError:
+            raise FileValidationError("Invalid or corrupted image file")
+        except Image.DecompressionBombError:
+            raise FileValidationError("Decompression bomb detected")
+    
     # Detect actual file type
     mime_type = detect_mime_type(file_path)
     
@@ -314,21 +347,8 @@ def validate_generic_file(file_path: Path) -> None:
     
     Extra cautious validation:
     - Scan for embedded scripts
-    - Check for executable signatures
     """
     file_bytes = file_path.read_bytes()
-    
-    # Check for executable signatures
-    executable_sigs = [
-        b'MZ',  # Windows PE
-        b'\x7fELF',  # Linux ELF
-        b'\xca\xfe\xba\xbe',  # Java class
-        b'dex\n',  # Android DEX
-    ]
-    
-    for sig in executable_sigs:
-        if file_bytes.startswith(sig):
-            raise FileValidationError("Executable files not allowed")
     
     # Scan for script signatures anywhere in file
     script_patterns = [
@@ -350,6 +370,14 @@ def sanitize_filename(filename: str) -> str:
     
     Returns safe filename or raises FileValidationError.
     """
+    # Block path traversal attempts (.. as a path component)
+    # Check for .. at start, end, or surrounded by path separators
+    if (filename.startswith('..') and len(filename) > 2 and filename[2] in '/\\') or \
+       (filename.endswith('..') and len(filename) > 2 and filename[-3] in '/\\') or \
+       ('/..' in filename) or ('\\..' in filename) or \
+       filename.startswith('/') or filename.startswith('\\'):
+        raise FileValidationError(f"Path traversal attempt blocked: {filename}")
+    
     # Remove path separators
     safe = filename.replace('/', '_').replace('\\', '_')
     
