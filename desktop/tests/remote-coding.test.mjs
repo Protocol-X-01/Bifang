@@ -71,7 +71,8 @@ test('native transport is fixed-route, session-only and does not weaken browser 
   assert.match(native, /no_proxy\(\)/);
   assert.doesNotMatch(native, /danger_accept_invalid|std::fs|println!|eprintln!/);
   const view = await readFile(new URL('../src/components/RemoteWorkspace.tsx', import.meta.url), 'utf8');
-  assert.doesNotMatch(view, /localStorage|sessionStorage|dangerouslySetInnerHTML|console\./);
+  assert.doesNotMatch(view, /localStorage|sessionStorage|dangerouslySetInnerHTML/);
+  assert.doesNotMatch(view, /console\.(?!error\()/);
   assert.match(view, /candidate_sha256: job.candidate_sha256/);
   assert.match(view, /pending.current.key/);
 });

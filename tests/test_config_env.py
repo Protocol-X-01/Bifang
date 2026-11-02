@@ -46,7 +46,7 @@ def test_config_wires_zai_and_huggingface_providers():
         [
             sys.executable,
             "-c",
-            "from bifang.config import Config;\ncfg = Config.load()\n"
+            ("from bifang.config import Config;\ncfg = Config.load()\n"
             "assert cfg.providers['zai'].api_key == 'zai-test'\n"
             "assert cfg.providers['zai'].base_url.endswith('/api/paas/v4')\n"
             "assert cfg.providers['zai'].default_model == 'glm-5.3'\n"
@@ -57,7 +57,7 @@ def test_config_wires_zai_and_huggingface_providers():
             "assert manager.registry.get('zai') is not None\n"
             "assert manager.registry.get('huggingface') is not None\n"
             "split = manager._split_model_spec(None, 'zai::glm-5.3', cfg.default_provider)\n"
-            "assert split == ('zai', 'glm-5.3'), split",
+            "assert split == ('zai', 'glm-5.3'), split"),
         ],
         env=environment,
         capture_output=True,

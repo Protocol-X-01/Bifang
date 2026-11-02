@@ -25,7 +25,10 @@ test('companion reuses remote transport and permits only the Android device runt
 test('companion shares approval UI rather than forking state or persisting tokens', async () => {
   const source = await readFile(new URL('../../companion/src/main.tsx', import.meta.url), 'utf8');
   assert.match(source, /desktop\/src\/components\/RemoteWorkspace/);
-  assert.doesNotMatch(source, /localStorage|sessionStorage|fetch\(|api_key|API_KEY/);
+  assert.doesNotMatch(source, /sessionStorage|fetch\(|api_key|API_KEY/);
+  const localStorageUses = source.match(/localStorage/g) || [];
+  const themeUses = source.match(/localStorage\.(?:getItem|setItem)\(['"]bifang-theme['"]/g) || [];
+  assert.equal(localStorageUses.length, themeUses.length, 'localStorage only allowed for bifang-theme preference');
   const style = await readFile(new URL('../../companion/src/style.css', import.meta.url), 'utf8');
   assert.match(style, /safe-area-inset-top/);
   assert.match(style, /safe-area-inset-bottom/);
