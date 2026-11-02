@@ -12,7 +12,7 @@ jobs:
       - run: uv run python -m compileall -q src
       - name: Lint maintained safety-critical modules
         run: >-
-          uv run ruff --fix --unsafe-fixes check src/bifang/workspace.py src/bifang/tracing
+          uv run ruff check --fix --unsafe-fixes src/bifang/workspace.py src/bifang/tracing
           tests/test_workspace.py tests/test_config_env.py tests/test_ngc.py
           tests/test_phoenix_tracing.py tests/test_server_auth.py
           src/bifang/judge_relay.py src/bifang/judge_access.py
