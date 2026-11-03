@@ -1,85 +1,65 @@
-# Deployment
+# Deployment and runtime boundaries
 
-Bifang supports both local development and cloud deployment options.
+Bifang separates the coding client from model serving. The desktop and CLI send
+OpenAI-compatible HTTP requests to the selected provider; they do not load
+Nemotron weights or start a GPU-serving container.
 
-## Local Development
+## Python and desktop runtime
 
-**Recommended platform:** Linux (Ubuntu 22.04/24.04)
+The source package currently declares Python `>=3.11,<3.12` in
+`pyproject.toml`. The desktop release bundles its Python service as a sidecar,
+so end users do not need to install this development runtime. This project
+constraint describes Bifang's tested dependency set; it is not a universal
+TensorRT Python limit. See [TensorRT compatibility](TENSORRT_COMPATIBILITY.md).
 
-**Build formats:**
-- `.deb` package (Ubuntu, Debian)
-- `.rpm` package (Fedora, RHEL)
-- `.AppImage` (universal Linux)
+Desktop development also requires Node.js, Rust and the platform-specific Tauri
+build dependencies. See [`desktop/README.md`](../desktop/README.md).
 
-**Android companion:** APK for mobile pairing and remote approvals.
+## Model-serving choices
 
-**Prerequisites:**
-- Python 3.11+
-- Node.js 18+ (for desktop build)
-- Rust toolchain (for Tauri desktop app)
+### Nebius Token Factory
 
-## Token Factory Integration
+Configure `NEBIUS_API_KEY`, optionally choose `BIFANG_NEBIUS_MODEL`, and use
+the Token Factory base URL in `.env.example`. Inference runs through Nebius's
+hosted API; Bifang does not provision GPUs for this route.
 
-Bifang uses Nebius Token Factory for NVIDIA Nemotron models:
+### NVIDIA-hosted NIM API Catalog
 
-**Configured models:**
-- `nemotron-ultra-253b-v1` (Nemotron-3 Ultra 550B)
-- `nemotron-nano-30b-v1` (Nemotron-4 Nano 30B)
+The default NVIDIA API endpoint is `https://integrate.api.nvidia.com/v1`.
+It provides hosted model inference through an OpenAI-compatible API and needs
+`NVIDIA_API_KEY`. NVIDIA documents this service as its hosted NIM API Catalog;
+using it does not mean that Bifang has deployed a self-hosted NIM container.
 
-**Setup:**
-1. Obtain Nebius Token Factory API credentials
-2. Set environment variable: `NEBIUS_TOKEN_FACTORY_API_KEY`
-3. Select model in Bifang settings
+### Self-hosted NVIDIA NIM
 
-See `TOKEN_FACTORY_STRATEGY.md` for API details.
+Set `BIFANG_NVIDIA_BASE_URL` to the reachable OpenAI-compatible endpoint and
+`BIFANG_NVIDIA_MODEL` to the model ID served there. `NVIDIA_API_KEY` is optional
+when the endpoint does not require authentication. NGC credentials are a
+separate concern: the exact container or model artifact determines whether
+registry authentication is needed. They are not inference API keys.
 
-## Desktop Distribution
+Self-hosting requires a compatible NVIDIA GPU, driver, container runtime and
+NVIDIA Container Toolkit, plus enough GPU memory for the chosen model profile.
+Check the version-specific [NIM installation guide](https://docs.nvidia.com/nim/large-language-models/latest/get-started/installation.html)
+and [prerequisites](https://docs.nvidia.com/nim/large-language-models/latest/get-started/prerequisites.html)
+before selecting hardware or a container image. Bifang does not deploy NIM or
+allocate GPUs automatically.
 
-**Build command:**
-```bash
-npm run build:linux
-```
+A successful hosted API request does not identify the GPUs serving that request.
+Do not claim an eight-H200 deployment from Token Factory or NVIDIA API Catalog
+access; that would require provider-side deployment evidence.
 
-**Output:** Platform-specific packages in `dist/`
+## Desktop distribution
 
-**Security:** Bubblewrap sandbox enabled by default on Linux.
+Native build workflows and the currently available platform artifacts are
+tracked in [Hackathon readiness](HACKATHON_READINESS.md) and
+[product expansion](PRODUCT_EXPANSION.md). Build output and CI status are
+separate from evidence that an installed GUI works on a particular machine.
 
-## Mobile Companion
+## Security and observability
 
-**Build:** See `companion/README.md` for Android build instructions
-
-**Pairing:** Follow guide in `docs/MOBILE_PAIRING.md`
-
-**Security:** PRoot-Distro for isolated terminal environments
-
-## LangSmith Sandbox
-
-**Status:** Provisioned and ready for integration
-
-**Sandbox ID:** `01a18c11-e0c1-70dc-a82c-9b89c7171f7a`
-
-**Purpose:** Cloud-based agent execution environment (post-hackathon)
-
-Current execution uses local Bubblewrap sandbox. LangSmith Sandbox integration is documented for future deployment.
-
-## Observability
-
-**LangSmith:** Set `BIFANG_TRACING_BACKEND=langsmith` with API key
-
-**Phoenix:** Active by default (OpenTelemetry)
-
-See `LANGSMITH.md` and `PHOENIX.md` for configuration details.
-
-## Security
-
-**Sandboxing:** Bubblewrap isolation on Linux
-
-**Guardrails:** PII filtering, command safety validation (48 tests)
-
-**Network:** HTTPS-only communication
-
-See `SECURITY.md` for security architecture.
-
----
-
-For infrastructure requirements and scaling considerations, see `PRODUCT_EXPANSION.md`.
+Provider keys belong in local environment configuration or the operating
+system's secure settings store. Do not put them in source, screenshots, logs,
+or model prompts. Tracing is disabled by default; the optional Phoenix and
+LangSmith integrations are configured separately. See [Phoenix](PHOENIX.md)
+and [engineering workflow](ENGINEERING_WORKFLOW.md).

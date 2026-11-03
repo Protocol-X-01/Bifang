@@ -91,12 +91,13 @@ Those versions describe the managed Python runtime, not all Vercel hosting.
 Its [container runtime](https://vercel.com/docs/functions/runtimes/container)
 is documented as beta on all plans and can use an image's own Python 3.11.
 Account availability and actual hosting behavior still need verification.
-The desktop/server source project deliberately requires Python 3.11, including
-the TensorRT compatibility boundary. Do not relax that root requirement just
-to make a Vercel deployment pass. Prepare the inference-only relay in a
-separate supported runtime, with its own dependency and ASGI-entrypoint
-validation, before creating a hosted project. It does not need TensorRT or
-model weights; inference must continue to call Nebius Token Factory.
+The desktop/server source project deliberately requires Python 3.11. This is
+the project's runtime contract, not a blanket TensorRT version limit. Do not
+relax that root requirement just to make a Vercel deployment pass. Prepare the
+inference-only relay in a separate supported runtime, with its own dependency
+and ASGI-entrypoint validation, before creating a hosted project. It does not
+need TensorRT or model weights; inference must continue to call Nebius Token
+Factory.
 
 ## Relay-only local bundle
 

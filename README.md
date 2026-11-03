@@ -279,16 +279,21 @@ export BIFANG_NEBIUS_BASE_URL='https://api.tokenfactory.nebius.com/v1'
 export BIFANG_NEBIUS_MODEL='nvidia/Nemotron-3-Ultra-550b-a55b'
 ```
 
-For an NVIDIA NIM deployment instead:
+For NVIDIA-hosted NIM API Catalog access:
 
 ```bash
 export NVIDIA_API_KEY='...'
 export BIFANG_DEFAULT_PROVIDER='nvidia'
-export BIFANG_NVIDIA_BASE_URL='http://localhost:8000/v1'
-export BIFANG_NVIDIA_MODEL='<model-served-by-your-NIM>'
+export BIFANG_NVIDIA_MODEL='<model-id-from-NVIDIA-catalog>'
 ```
 
-For NIM, point the NVIDIA-compatible provider at the OpenAI-compatible NIM endpoint and use the model name configured by that deployment. NGC credentials are needed to pull licensed NVIDIA containers; they are not inference API keys. The app does not deploy NIM or provision GPUs by itself.
+For a self-hosted NIM container, set `BIFANG_NVIDIA_BASE_URL` to its
+OpenAI-compatible endpoint and `BIFANG_NVIDIA_MODEL` to the model it serves.
+`NVIDIA_API_KEY` is optional if that endpoint has no authentication. NGC
+credentials are required only where the selected image or model artifact
+requires registry access; they are not inference API keys. Bifang does not
+deploy NIM or provision GPUs. See [deployment boundaries](docs/DEPLOYMENT.md)
+and [TensorRT compatibility](docs/TENSORRT_COMPATIBILITY.md).
 
 Z.ai GLM and HuggingFace Inference Providers use OpenAI-compatible keys. OpenAI and Anthropic/OpenRouter account keys are also honored when present. `bifang models` reports every configured provider's live catalog; ids from non-default providers appear as `provider::model` and can be used anywhere a bare model id is accepted (composite ids are routed to the right provider on completion).
 
