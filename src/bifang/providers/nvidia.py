@@ -1,18 +1,23 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from typing import Any
+
 import httpx
-from typing import AsyncIterator, Any
+
 from .base import (
+    ChatMessage,
+    CompletionResponse,
+    ModelInfo,
     Provider,
     ProviderConfig,
-    ModelInfo,
-    ChatMessage,
     ToolCall,
-    CompletionResponse,
     ToolFunction,
 )
 from .embeddings import request_embedding
 from .streaming import decode_chat_stream
+
+_NVIDIA_API_CATALOG_URL = "https://integrate.api.nvidia.com/v1"
 
 
 class NVIDIAProvider(Provider):
@@ -24,7 +29,8 @@ class NVIDIAProvider(Provider):
 
     def __init__(self, config: ProviderConfig):
         super().__init__(config)
-        self.base_url = config.base_url or "https://integrate.api.nvidia.com/v1"
+        self.base_url = config.base_url or _NVIDIA_API_CATALOG_URL
+        self._is_hosted_catalog = self.base_url.rstrip("/") == _NVIDIA_API_CATALOG_URL
         self.client = httpx.AsyncClient(timeout=60.0, base_url=self.base_url)
 
     async def list_models(self) -> list[ModelInfo]:
@@ -33,22 +39,30 @@ class NVIDIAProvider(Provider):
             response = await self.client.get("/models", headers=self.config.get_headers())
             response.raise_for_status()
             data = response.json()
+            entries = data.get("data") if isinstance(data, dict) else None
+            if not isinstance(entries, list):
+                raise TypeError("Invalid NVIDIA model catalog")
             models = []
-            for m in data.get("data", []):
+            for m in entries:
+                if not isinstance(m, dict):
+                    continue
                 model_id = m.get("id", "")
-                if "nemotron" in model_id.lower() or "nvidia" in model_id.lower():
-                    models.append(ModelInfo(
-                        id=model_id,
-                        name=model_id.split("/")[-1],
-                        provider=self.name,
-                        context_window=self._get_context_window(model_id),
-                        supports_tools=True,
-                        supports_streaming=True,
-                        metadata=m,
-                    ))
+                if not isinstance(model_id, str) or not model_id.strip():
+                    continue
+                if self._is_hosted_catalog and "nemotron" not in model_id.lower() and "nvidia" not in model_id.lower():
+                    continue
+                models.append(ModelInfo(
+                    id=model_id,
+                    name=model_id.split("/")[-1],
+                    provider=self.name,
+                    context_window=self._get_context_window(model_id),
+                    supports_tools=True,
+                    supports_streaming=True,
+                    metadata=m,
+                ))
             return models
-        except Exception:
-            return self._get_fallback_models()
+        except (httpx.HTTPError, ValueError, TypeError, AttributeError):
+            return self._get_fallback_models() if self._is_hosted_catalog else []
 
     async def verified_model_ids(self) -> set[str]:
         response = await self.client.get("/models", headers=self.config.get_headers())
