@@ -24,8 +24,18 @@ INPUTS = {
 def trusted_executable(path: Path) -> Path:
     target = path.resolve(strict=True)
     metadata = target.stat()
-    if (not stat.S_ISREG(metadata.st_mode) or metadata.st_uid not in {0, os.getuid()}
-            or metadata.st_mode & 0o002 or not os.access(target, os.X_OK)):
+    rejected = {
+        "regular_file": stat.S_ISREG(metadata.st_mode),
+        "owner_uid_allowed": metadata.st_uid in {0, os.getuid()},
+        "world_writable": bool(metadata.st_mode & 0o002),
+        "executable": os.access(target, os.X_OK),
+    }
+    if not all((rejected["regular_file"], rejected["owner_uid_allowed"],
+                not rejected["world_writable"], rejected["executable"])):
+        if os.environ.get("BIFANG_WORKBENCH_DIAGNOSTICS") == "1":
+            details = ", ".join(f"{name}={value}" for name, value in rejected.items())
+            details += f", owner_uid={metadata.st_uid}, current_uid={os.getuid()}, mode={stat.S_IMODE(metadata.st_mode):04o}, name={target.name}"
+            raise ValueError(f"Select an installed, owner-controlled executable ({details})")
         raise ValueError("Select an installed, owner-controlled executable")
     with target.open("rb") as source:
         if source.read(4) != b"\x7fELF":

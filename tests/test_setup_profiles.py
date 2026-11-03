@@ -20,7 +20,7 @@ from types import SimpleNamespace
 import pytest
 
 from bifang.package_setup import read_manifest, run_setup, setup_plan
-from bifang.setup_profiles import probe, safe_library_search_path, selected_uv
+from bifang.setup_profiles import probe, safe_library_search_path, selected_uv, trusted_executable
 
 
 @pytest.fixture
@@ -79,6 +79,22 @@ def test_probe_preserves_only_safe_host_library_paths(tmp_path, monkeypatch):
     assert probe(["/usr/bin/true"], root) == "ok"
     assert captured["LD_LIBRARY_PATH"] == str(host_library)
     assert "LD_PRELOAD" not in captured
+
+
+def test_executable_rejection_details_are_opt_in(tmp_path, monkeypatch):
+    executable = tmp_path / "fixture-python"
+    executable.write_text("#!/bin/sh\nexit 0\n")
+    executable.chmod(0o777)
+
+    monkeypatch.delenv("BIFANG_WORKBENCH_DIAGNOSTICS", raising=False)
+    with pytest.raises(ValueError, match="Select an installed, owner-controlled executable$"):
+        trusted_executable(executable)
+
+    monkeypatch.setenv("BIFANG_WORKBENCH_DIAGNOSTICS", "1")
+    with pytest.raises(ValueError) as error:
+        trusted_executable(executable)
+    assert "world_writable=True" in str(error.value)
+    assert "name=fixture-python" in str(error.value)
 
 
 @contextmanager
