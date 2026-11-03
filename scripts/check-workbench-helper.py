@@ -73,7 +73,11 @@ def check(binary: Path, metrics: bool = False, setup: bool = False, languages: b
         (project / "package.json").write_text('{"scripts":{"postinstall":"must-not-run"}}')
         (project / ".env").write_text(f"XDG_STATE_HOME={root / 'forbidden-dotenv-state'}\n")
         environment = {key: value for key, value in os.environ.items()
-                       if key in {"PATH", "SystemRoot", "WINDIR", "LANG", "LC_ALL", "TEMP", "TMP"}}
+                       if key in {"PATH", "SystemRoot", "WINDIR", "LANG", "LC_ALL", "TEMP", "TMP", "RUSTUP_HOME"}}
+        if "RUSTUP_HOME" not in environment:
+            default_rustup_home = Path.home() / ".rustup"
+            if default_rustup_home.is_dir():
+                environment["RUSTUP_HOME"] = str(default_rustup_home)
         environment.update({"HOME": str(home), "USERPROFILE": str(home),
                             "XDG_STATE_HOME": str(root / "state"), "BIFANG_ENV_FILE": str(project / ".env")})
 
@@ -83,7 +87,10 @@ def check(binary: Path, metrics: bool = False, setup: bool = False, languages: b
                                     input=json.dumps(request) + "\n", text=True, capture_output=True,
                                     cwd=project, env=environment, timeout=15, check=False)
             response = json.loads(result.stdout)
-            assert response["ok"] is expected
+            assert response["ok"] is expected, (
+                f"Workbench action {action} ({extra.get('profile', 'default')}) returned an unexpected status: "
+                f"{response.get('error', 'no error details') if isinstance(response, dict) else 'invalid response'}"
+            )
             assert (result.returncode == 0) is expected
             assert len(result.stdout.splitlines()) == 1
             assert not result.stderr
