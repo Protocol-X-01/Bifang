@@ -40,6 +40,23 @@ def probe(arguments: list[str], root: Path) -> str:
         if candidate.is_absolute() and candidate.is_dir() and not candidate.resolve().is_relative_to(root):
             directories.append(str(candidate))
     environment = {"HOME": str(Path.home()), "PATH": os.pathsep.join(directories), "LANG": "C.UTF-8", "RUSTUP_AUTO_INSTALL": "0"}
+    library_path = safe_library_search_path(root)
+    if library_path:
+        environment["LD_LIBRARY_PATH"] = library_path
+    for key in ("RUSTUP_HOME", "UV_PYTHON_INSTALL_DIR", "XDG_DATA_HOME"):
+        if key in os.environ and Path(os.environ[key]).is_absolute() and not Path(os.environ[key]).resolve().is_relative_to(root):
+            environment[key] = os.environ[key]
+    try:
+        result = subprocess.run(arguments, cwd="/", env=environment,
+                                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=8, check=False)
+    except subprocess.TimeoutExpired as error:
+        raise ValueError("Installed tool probe timed out") from error
+    if result.returncode or len(result.stdout) > 16384:
+        raise ValueError("Required runtime is not installed; install it explicitly and review again")
+    return result.stdout.strip()
+
+
+def safe_library_search_path(root: Path) -> str | None:
     library_directories = []
     for entry in os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep):
         candidate = Path(entry)
@@ -54,19 +71,7 @@ def probe(arguments: list[str], root: Path) -> str:
                 or metadata.st_uid not in {0, os.getuid()} or metadata.st_mode & stat.S_IWOTH):
             continue
         library_directories.append(str(resolved))
-    if library_directories:
-        environment["LD_LIBRARY_PATH"] = os.pathsep.join(library_directories)
-    for key in ("RUSTUP_HOME", "UV_PYTHON_INSTALL_DIR", "XDG_DATA_HOME"):
-        if key in os.environ and Path(os.environ[key]).is_absolute() and not Path(os.environ[key]).resolve().is_relative_to(root):
-            environment[key] = os.environ[key]
-    try:
-        result = subprocess.run(arguments, cwd="/", env=environment,
-                                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=8, check=False)
-    except subprocess.TimeoutExpired as error:
-        raise ValueError("Installed tool probe timed out") from error
-    if result.returncode or len(result.stdout) > 16384:
-        raise ValueError("Required runtime is not installed; install it explicitly and review again")
-    return result.stdout.strip()
+    return os.pathsep.join(library_directories) if library_directories else None
 
 
 def selected_uv(root: Path) -> Path:

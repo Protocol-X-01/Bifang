@@ -20,7 +20,7 @@ from types import SimpleNamespace
 import pytest
 
 from bifang.package_setup import read_manifest, run_setup, setup_plan
-from bifang.setup_profiles import probe, selected_uv
+from bifang.setup_profiles import probe, safe_library_search_path, selected_uv
 
 
 @pytest.fixture
@@ -75,6 +75,7 @@ def test_probe_preserves_only_safe_host_library_paths(tmp_path, monkeypatch):
         return SimpleNamespace(returncode=0, stdout="ok")
 
     monkeypatch.setattr("bifang.setup_profiles.subprocess.run", capture_environment)
+    assert safe_library_search_path(root) == str(host_library)
     assert probe(["/usr/bin/true"], root) == "ok"
     assert captured["LD_LIBRARY_PATH"] == str(host_library)
     assert "LD_PRELOAD" not in captured

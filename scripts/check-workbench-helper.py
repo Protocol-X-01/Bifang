@@ -10,6 +10,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from bifang.setup_profiles import safe_library_search_path
+
 
 async def install_fixture(binary: Path, project: Path, environment: dict, plan: dict) -> dict:
     process = await asyncio.create_subprocess_exec(str(binary), "--setup", cwd=project, env=environment,
@@ -74,6 +76,9 @@ def check(binary: Path, metrics: bool = False, setup: bool = False, languages: b
         (project / ".env").write_text(f"XDG_STATE_HOME={root / 'forbidden-dotenv-state'}\n")
         environment = {key: value for key, value in os.environ.items()
                        if key in {"PATH", "SystemRoot", "WINDIR", "LANG", "LC_ALL", "TEMP", "TMP", "RUSTUP_HOME"}}
+        library_path = safe_library_search_path(project)
+        if library_path:
+            environment["LD_LIBRARY_PATH"] = library_path
         if "RUSTUP_HOME" not in environment:
             default_rustup_home = Path.home() / ".rustup"
             if default_rustup_home.is_dir():
