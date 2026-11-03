@@ -7,6 +7,18 @@ on:
       - main
     paths:
       - 'companion/**'
+      - 'desktop/src/**'
+      - 'desktop/package.json'
+      - 'desktop/package-lock.json'
+      - 'desktop/tsconfig.json'
+      - '.github/workflows/ios-companion.yml'
+  pull_request:
+    paths:
+      - 'companion/**'
+      - 'desktop/src/**'
+      - 'desktop/package.json'
+      - 'desktop/package-lock.json'
+      - 'desktop/tsconfig.json'
       - '.github/workflows/ios-companion.yml'
 
 permissions:
@@ -27,9 +39,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
-          cache-dependency-path: companion/package-lock.json
+          cache-dependency-path: |
+            companion/package-lock.json
+            desktop/package-lock.json
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -40,6 +54,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: companion/src-tauri
+
+      - name: Install shared desktop dependencies
+        working-directory: desktop
+        run: npm ci
 
       - name: Install frontend dependencies
         run: npm ci
@@ -59,9 +77,12 @@ jobs:
       - name: Fallback unsigned Xcode archive
         if: steps.tauri_build.outcome == 'failure'
         run: |
-          PROJ=$(ls src-tauri/gen/apple/*.xcodeproj | head -1)
-          SCHEME=$(xcodebuild -list -project "$PROJ" 2>/dev/null | awk '/Schemes:/{f=1;next} f && /_iOS/{print;exit}')
-          SCHEME=$(echo "$SCHEME" | xargs)
+          mkdir -p build
+          PROJ=$(find src-tauri/gen/apple -maxdepth 1 -type d -name '*.xcodeproj' -print -quit)
+          test -n "$PROJ" || { echo 'Tauri did not generate an Xcode project'; exit 1; }
+          xcodebuild -list -json -project "$PROJ" > build/xcode-project.json
+          SCHEME=$(python3 -c 'import json,sys; p=json.load(open(sys.argv[1])).get("project", {}); s=p.get("schemes", []); print(next((x for x in s if x.endswith("_iOS")), s[0] if s else ""))' build/xcode-project.json)
+          test -n "$SCHEME" || { echo 'No buildable Xcode scheme was generated'; cat build/xcode-project.json; exit 1; }
           echo "Scheme: $SCHEME"
           xcodebuild -project "$PROJ" -scheme "$SCHEME" -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/archive.xcarchive archive \

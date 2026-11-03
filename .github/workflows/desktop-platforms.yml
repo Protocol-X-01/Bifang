@@ -1,6 +1,30 @@
 name: desktop-platforms
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'desktop/**'
+      - 'companion/**'
+      - 'src/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'scripts/build-server-sidecar.py'
+      - 'scripts/check-workbench-helper.py'
+      - 'scripts/collect-platform-packages.py'
+      - '.github/workflows/desktop-platforms.yml'
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - 'companion/**'
+      - 'src/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'scripts/build-server-sidecar.py'
+      - 'scripts/check-workbench-helper.py'
+      - 'scripts/collect-platform-packages.py'
+      - '.github/workflows/desktop-platforms.yml'
 
 permissions:
   contents: read
@@ -11,8 +35,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-22.04
-            bundles: deb,rpm,appimage
           - runner: windows-2022
             target: x86_64-pc-windows-msvc
             bundles: nsis,msi
