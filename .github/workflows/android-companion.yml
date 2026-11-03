@@ -1,0 +1,177 @@
+name: Android builds
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'companion/**'
+      - 'desktop/src/**'
+      - 'desktop/package.json'
+      - 'desktop/package-lock.json'
+      - 'desktop/tsconfig.json'
+      - 'scripts/android-proot-string-header.patch'
+      - 'scripts/build-android-proot.sh'
+      - 'scripts/build-android-proot-loader.sh'
+      - 'scripts/build-android-talloc.py'
+      - 'scripts/stage-android-proot.py'
+      - 'scripts/android-talloc/**'
+      - '.github/workflows/android-companion.yml'
+  pull_request:
+    paths:
+      - 'companion/**'
+      - 'desktop/src/**'
+      - 'desktop/package.json'
+      - 'desktop/package-lock.json'
+      - 'desktop/tsconfig.json'
+      - 'scripts/android-proot-string-header.patch'
+      - 'scripts/build-android-proot.sh'
+      - 'scripts/build-android-proot-loader.sh'
+      - 'scripts/build-android-talloc.py'
+      - 'scripts/stage-android-proot.py'
+      - 'scripts/android-talloc/**'
+      - '.github/workflows/android-companion.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Bifang Companion and Terminal (Android ARM64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: companion
+    env:
+      BIFANG_NO_DOTENV: '1'
+      RUSTUP_TOOLCHAIN: stable
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: |
+            companion/src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties
+            companion/src-tauri/gen/android/settings.gradle.kts
+            companion/src-tauri/gen/android/build.gradle.kts
+            companion/src-tauri/gen/android/app/build.gradle.kts
+            companion/src-tauri/gen/android/buildSrc/build.gradle.kts
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            companion/package-lock.json
+            desktop/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: companion/src-tauri
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install pinned Android SDK packages
+        run: |
+          sdkmanager --install \
+            'platforms;android-37' \
+            'build-tools;37.0.0' \
+            'ndk;29.0.14206865'
+          echo "NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> "$GITHUB_ENV"
+
+      - name: Install shared desktop dependencies
+        working-directory: desktop
+        run: npm ci
+
+      - name: Install companion dependencies
+        run: npm ci
+
+      - name: Build unsigned Companion APK
+        run: npm run tauri -- android build --ci --apk --target aarch64
+
+      - name: Save and validate Companion APK
+        run: |
+          APK=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+          test -f "$APK" || { echo 'Companion build produced no unsigned APK'; exit 1; }
+          "$ANDROID_HOME/build-tools/37.0.0/aapt" dump badging "$APK" | grep -F "package: name='com.bifang.companion' "
+          "$ANDROID_HOME/build-tools/37.0.0/zipalign" -c -P 16 4 "$APK"
+          mkdir -p artifacts
+          cp "$APK" artifacts/Bifang-Companion-android-arm64-unsigned.apk
+
+      - name: Stop Gradle daemon before switching editions
+        run: ./src-tauri/gen/android/gradlew --stop
+
+      - name: Build pinned PRoot runtime for Terminal
+        working-directory: .
+        run: |
+          python3 --version
+          mkdir -p build/android-runtime
+          curl --fail --location --proto '=https' --tlsv1.2 --retry 3 \
+            https://www.samba.org/ftp/talloc/talloc-2.5.0.tar.gz \
+            --output build/android-runtime/talloc-2.5.0.tar.gz
+          git clone https://github.com/termux/proot.git build/android-runtime/proot
+          git -C build/android-runtime/proot checkout --detach b27d81a68d765f3462e807f4a14e01a03f8e89ea
+          python3 scripts/build-android-talloc.py \
+            --archive build/android-runtime/talloc-2.5.0.tar.gz \
+            --ndk "$ANDROID_HOME/ndk/29.0.14206865" \
+            --output build/android-runtime/talloc
+          export BIFANG_PROOT_SOURCE="$GITHUB_WORKSPACE/build/android-runtime/proot"
+          export BIFANG_TALLOC_BUILD="$GITHUB_WORKSPACE/build/android-runtime/talloc"
+          bash scripts/build-android-proot.sh
+          bash scripts/build-android-proot-loader.sh
+          python3 scripts/stage-android-proot.py \
+            --proot-source "$BIFANG_PROOT_SOURCE" \
+            --talloc-source "$BIFANG_TALLOC_BUILD/talloc-2.5.0" \
+            --output "$GITHUB_WORKSPACE/build/android-runtime/stage"
+
+      - name: Build unsigned standalone Terminal APK
+        working-directory: companion
+        env:
+          BIFANG_TERMINAL_EDITION: '1'
+          BIFANG_NATIVE_RUNTIME: ${{ github.workspace }}/build/android-runtime/stage
+          VITE_BIFANG_EDITION: terminal
+        run: npm run tauri -- android build --ci --apk --target aarch64
+
+      - name: Save and validate Terminal APK
+        run: |
+          APK=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
+          test -f "$APK" || { echo 'Terminal build produced no unsigned APK'; exit 1; }
+          "$ANDROID_HOME/build-tools/37.0.0/aapt" dump badging "$APK" | grep -F "package: name='com.bifang.terminal' "
+          "$ANDROID_HOME/build-tools/37.0.0/zipalign" -c -P 16 4 "$APK"
+          unzip -Z1 "$APK" | grep -Fx 'lib/arm64-v8a/libbifang_proot.so'
+          unzip -Z1 "$APK" | grep -Fx 'lib/arm64-v8a/libbifang_proot_loader.so'
+          unzip -Z1 "$APK" | grep -Fx 'assets/bifang-runtime/manifest.json'
+          cp "$APK" artifacts/Bifang-Terminal-android-arm64-unsigned.apk
+          (cd artifacts && sha256sum Bifang-*.apk > SHA256SUMS)
+          cp "$GITHUB_WORKSPACE/build/android-runtime/stage/assets/bifang-runtime/manifest.json" artifacts/ANDROID_RUNTIME_MANIFEST.json
+          printf 'Source commit: %s\nAndroid platform: 37\nBuild tools: 37.0.0\nNDK: 29.0.14206865\n' "$GITHUB_SHA" > artifacts/BUILD_PROVENANCE.txt
+          ls -lh artifacts/*
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bifang-android-arm64
+          path: |
+            companion/artifacts/Bifang-Companion-android-arm64-unsigned.apk
+            companion/artifacts/Bifang-Terminal-android-arm64-unsigned.apk
+            companion/artifacts/SHA256SUMS
+            companion/artifacts/ANDROID_RUNTIME_MANIFEST.json
+            companion/artifacts/BUILD_PROVENANCE.txt
+          if-no-files-found: error
