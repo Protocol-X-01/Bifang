@@ -16,6 +16,7 @@ from .config import Config
 from .context import ContextManager
 from .policy import Policy
 from .provider import ProviderManager
+from .providers.nvidia import NVIDIA_API_CATALOG_URL
 from .tools import run_command
 from .workspace import Workspace
 
@@ -23,18 +24,24 @@ C = Console()
 
 
 def doctor(cfg: Config):
+    nvidia = cfg.providers.get("nvidia")
+    has_key = any(provider.api_key for provider in cfg.providers.values())
+    has_custom_nvidia_endpoint = bool(
+        nvidia and nvidia.base_url and nvidia.base_url.rstrip("/") != NVIDIA_API_CATALOG_URL
+    )
+    api_access = "credential set" if has_key else "endpoint configured" if has_custom_nvidia_endpoint else "missing"
     checks = {
         "python": sys.version.split()[0],
         "git": shutil.which("git") or "missing",
         "rg": shutil.which("rg") or "missing",
         "bwrap": shutil.which("bwrap") or "missing",
-        "api_key": "set" if any(p.api_key for p in cfg.providers.values()) else "missing",
+        "api_access": api_access,
         "model": cfg.get_default_model(),
         "provider": cfg.default_provider,
     }
     for k, v in checks.items():
         C.print(f"{k:10} {v}")
-    return 0 if checks["git"] != "missing" and checks["api_key"] == "set" else 1
+    return 0 if checks["git"] != "missing" and checks["api_access"] != "missing" else 1
 
 
 async def amain(a):

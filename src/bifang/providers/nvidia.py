@@ -17,7 +17,7 @@ from .base import (
 from .embeddings import request_embedding
 from .streaming import decode_chat_stream
 
-_NVIDIA_API_CATALOG_URL = "https://integrate.api.nvidia.com/v1"
+NVIDIA_API_CATALOG_URL = "https://integrate.api.nvidia.com/v1"
 
 
 class NVIDIAProvider(Provider):
@@ -29,8 +29,8 @@ class NVIDIAProvider(Provider):
 
     def __init__(self, config: ProviderConfig):
         super().__init__(config)
-        self.base_url = config.base_url or _NVIDIA_API_CATALOG_URL
-        self._is_hosted_catalog = self.base_url.rstrip("/") == _NVIDIA_API_CATALOG_URL
+        self.base_url = config.base_url or NVIDIA_API_CATALOG_URL
+        self._is_hosted_catalog = self.base_url.rstrip("/") == NVIDIA_API_CATALOG_URL
         self.client = httpx.AsyncClient(timeout=60.0, base_url=self.base_url)
 
     async def list_models(self) -> list[ModelInfo]:
