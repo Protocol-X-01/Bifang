@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   build:
-    name: Bifang Companion (iOS, unsigned)
+    name: Bifang Companion (iOS, unsigned archive)
     runs-on: macos-latest
     timeout-minutes: 75
     defaults:
@@ -65,53 +65,25 @@ jobs:
       - name: Initialize iOS project
         run: npm run tauri ios init -- --ci --skip-targets-install
 
-      - name: Build with Tauri CLI
-        id: tauri_build
-        continue-on-error: true
-        env:
-          CODE_SIGNING_ALLOWED: 'NO'
-          CODE_SIGNING_REQUIRED: 'NO'
-          CODE_SIGN_IDENTITY: ''
-        run: npm run tauri ios build -- --ci --target aarch64 --export-method debugging
+      - name: Build unsigned iOS archive
+        run: npm run tauri ios build -- --ci --target aarch64 --no-sign --archive-only
 
-      - name: Fallback unsigned Xcode archive
-        if: steps.tauri_build.outcome == 'failure'
-        run: |
-          mkdir -p build
-          PROJ=$(find src-tauri/gen/apple -maxdepth 1 -type d -name '*.xcodeproj' -print -quit)
-          test -n "$PROJ" || { echo 'Tauri did not generate an Xcode project'; exit 1; }
-          xcodebuild -list -json -project "$PROJ" > build/xcode-project.json
-          SCHEME=$(python3 -c 'import json,sys; p=json.load(open(sys.argv[1])).get("project", {}); s=p.get("schemes", []); print(next((x for x in s if x.endswith("_iOS")), s[0] if s else ""))' build/xcode-project.json)
-          test -n "$SCHEME" || { echo 'No buildable Xcode scheme was generated'; cat build/xcode-project.json; exit 1; }
-          echo "Scheme: $SCHEME"
-          xcodebuild -project "$PROJ" -scheme "$SCHEME" -configuration Release \
-            -destination 'generic/platform=iOS' -archivePath build/archive.xcarchive archive \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
-
-      - name: Collect IPA and archive
+      - name: Collect archive and checksum
         run: |
           VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
-          APP=$(find src-tauri/gen/apple -path '*/Applications/*.app' -type d | head -1)
-          [ -n "$APP" ] || APP=$(find build/archive.xcarchive/Products/Applications -name '*.app' -type d | head -1)
-          test -n "$APP"
-          echo "App bundle: $APP"
-          rm -rf Payload "Bifang-Companion_v${VERSION}_arm64_unsigned.ipa"
-          mkdir Payload
-          cp -R "$APP" Payload/
-          zip -qry "Bifang-Companion_v${VERSION}_arm64_unsigned.ipa" Payload
-          rm -rf Payload
-          if [ -d build/archive.xcarchive ]; then
-            zip -qry "Bifang-Companion_v${VERSION}_arm64.xcarchive.zip" build/archive.xcarchive
-          fi
-          shasum -a 256 "Bifang-Companion_v${VERSION}_arm64_unsigned.ipa" > "Bifang-Companion_v${VERSION}_arm64_unsigned.ipa.sha256"
-          ls -l *.ipa *.sha256 *.xcarchive.zip 2>/dev/null || true
+          ARCHIVE=$(find src-tauri/gen/apple -type d -name '*.xcarchive' -print -quit)
+          test -n "$ARCHIVE" || { echo 'Tauri completed without producing an iOS archive'; exit 1; }
+          mkdir -p build
+          OUTPUT="build/Bifang-Companion_v${VERSION}_arm64_unsigned.xcarchive.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$ARCHIVE" "$OUTPUT"
+          shasum -a 256 "$OUTPUT" > "${OUTPUT}.sha256"
+          ls -lh "$OUTPUT" "${OUTPUT}.sha256"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: bifang-companion-ios
           path: |
-            companion/*.ipa
-            companion/*.ipa.sha256
-            companion/*.xcarchive.zip
+            companion/build/*.xcarchive.zip
+            companion/build/*.xcarchive.zip.sha256
           if-no-files-found: error
