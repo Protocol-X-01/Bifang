@@ -52,6 +52,9 @@ def probe(arguments: list[str], root: Path) -> str:
     except subprocess.TimeoutExpired as error:
         raise ValueError("Installed tool probe timed out") from error
     if result.returncode or len(result.stdout) > 16384:
+        if os.environ.get("BIFANG_WORKBENCH_DIAGNOSTICS") == "1":
+            details = (result.stderr or result.stdout).strip()[:512]
+            raise ValueError(f"Installed tool probe failed with exit status {result.returncode}: {details}")
         raise ValueError("Required runtime is not installed; install it explicitly and review again")
     return result.stdout.strip()
 

@@ -79,6 +79,7 @@ def check(binary: Path, metrics: bool = False, setup: bool = False, languages: b
         library_path = safe_library_search_path(project)
         if library_path:
             environment["LD_LIBRARY_PATH"] = library_path
+        environment["BIFANG_WORKBENCH_DIAGNOSTICS"] = "1"
         if "RUSTUP_HOME" not in environment:
             default_rustup_home = Path.home() / ".rustup"
             if default_rustup_home.is_dir():
@@ -94,7 +95,8 @@ def check(binary: Path, metrics: bool = False, setup: bool = False, languages: b
             response = json.loads(result.stdout)
             assert response["ok"] is expected, (
                 f"Workbench action {action} ({extra.get('profile', 'default')}) returned an unexpected status: "
-                f"{response.get('error', 'no error details') if isinstance(response, dict) else 'invalid response'}"
+                f"{response.get('error', 'no error details') if isinstance(response, dict) else 'invalid response'}; "
+                f"diagnostic={response.get('diagnostic') if isinstance(response, dict) else None}"
             )
             assert (result.returncode == 0) is expected
             assert len(result.stdout.splitlines()) == 1

@@ -95,8 +95,11 @@ def serve_once(source: BinaryIO, destination: BinaryIO) -> int:
         encoded = json.dumps(response, ensure_ascii=True).encode("utf-8")
         if len(encoded) > MAX_RESPONSE_BYTES:
             raise ValueError("Response too large")
-    except (OSError, ValueError, TypeError, RecursionError):
-        encoded = b'{"ok":false,"error":"Workbench request failed. Refresh and review the current files and selection."}'
+    except (OSError, ValueError, TypeError, RecursionError) as error:
+        failure = {"ok": False, "error": "Workbench request failed. Refresh and review the current files and selection."}
+        if os.environ.get("BIFANG_WORKBENCH_DIAGNOSTICS") == "1":
+            failure["diagnostic"] = {"type": type(error).__name__, "message": str(error)[:512]}
+        encoded = json.dumps(failure, ensure_ascii=True).encode("utf-8")
     destination.write(encoded + b"\n")
     destination.flush()
     return 0 if json.loads(encoded)["ok"] else 1

@@ -86,6 +86,21 @@ def test_framing_errors_have_one_redacted_response(raw):
     assert len(output.getvalue().splitlines()) == 1
 
 
+def test_diagnostics_are_opt_in(monkeypatch):
+    monkeypatch.delenv("BIFANG_WORKBENCH_DIAGNOSTICS", raising=False)
+    output = io.BytesIO()
+    assert serve_once(io.BytesIO(b"{}\n"), output) == 1
+    response = json.loads(output.getvalue())
+    assert response["error"].startswith("Workbench request failed.")
+    assert "diagnostic" not in response
+
+    monkeypatch.setenv("BIFANG_WORKBENCH_DIAGNOSTICS", "1")
+    output = io.BytesIO()
+    assert serve_once(io.BytesIO(b"{}\n"), output) == 1
+    response = json.loads(output.getvalue())
+    assert response["diagnostic"] == {"type": "ValueError", "message": "Unknown action"}
+
+
 def test_sidecar_dispatch_exits_without_starting_http_or_loading_dotenv(project):
     repository = Path(__file__).resolve().parents[1]
     dotenv_target = project / "dotenv-must-not-be-loaded"
