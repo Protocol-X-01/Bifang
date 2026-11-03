@@ -48,18 +48,21 @@ https://github.com/Protocol-X-01/Bifang/releases/download/v0.3.1/bifang-live-dem
 
 ## Downloads
 
-**Latest Release (v0.2.1-dev.11):** [Debian, AppImage + Android APK](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.1-dev.11-refresh.20261029)
+**Latest published release (v0.3.2):** [Linux desktop packages, Android companion APK, TUI and checksums](https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.2)
 
 | Platform | Format | Size | Status |
 |----------|--------|------|--------|
-| Linux | `.deb`, `.AppImage` | 34-108 MB | ✅ Tested on Ubuntu 22.04/24.04 |
-| Android | `.apk` (ARM64) | 152 MB | ✅ Tested on Xiaomi 12T (Android 15) |
-| Windows/macOS | Source | — | Build on demand (native required) |
+| Linux desktop | `.deb`, `.rpm`, `.AppImage` | 56-160 MB | v0.3.2; extracted payload audit ceiling: GLIBC 2.35 |
+| Android companion | `.apk` (ARM64) | 51 MB | v0.3.1; tested on Xiaomi 12T (Android 15) |
+| Terminal | `bifang-tui` (Linux x86_64) | 4.8 MB | v0.3.2 |
+| Windows | `.exe`, `.msi` (x64) | 3-46 MB | Desktop v0.3.2 and Companion v0.3.1 installers in the release |
+| macOS | `.dmg` (Intel x64, Apple Silicon arm64) | 4-40 MB | Desktop v0.3.2 and Companion v0.3.1 installers in the release |
+| iOS companion | Unsigned `.xcarchive` (arm64) | — | [Build artifact](https://github.com/Protocol-X-01/Bifang/actions/runs/41562890458); Apple signing required for installation |
 
 Install CLI globally on any Python 3.11 system:
 
 ```bash
-pipx install git+https://github.com/Protocol-X-01/Bifang.git@v0.2.1-dev.11-refresh.20261029
+pipx install git+https://github.com/Protocol-X-01/Bifang.git@v0.3.2
 # or from source:
 git clone https://github.com/Protocol-X-01/Bifang.git
 cd Bifang && pipx install --python python3.11 .
@@ -91,26 +94,23 @@ cd your-project && bifang chat
 
 **Evidence:** [Live Tavily extraction proof](docs/evidence/tavily-extract-20261028.json) — Python asyncio docs extracted (5,944 chars)
 
-**Built for the [Nebius x NVIDIA Hackathon](https://nebiusglobalaihackathon.devpost.com/)** — competing for **Best Use of Tavily** prize.
+Tavily search and extraction are optional. See the [integration guide](docs/TAVILY.md) and its [live extraction evidence](docs/evidence/tavily-extract-20261028.json).
 
-## 🛡️ Safety Features: Defense-in-Depth
+## Safety features
 
-**Multi-layer security** ensures AI-generated code stays within bounds:
+The coding loop combines visible approvals, reviewable changes and host-level isolation:
 
 | Layer | Technology | Purpose | Verification |
 |-------|------------|---------|--------------|
-| **Input/Output Validation** | LangChain Guardrails | PII filtering, dangerous command blocklist | ✅ 48 tests |
-| **Human-in-Loop** | Approval Workflow | Review every action before execution | ✅ Desktop + CLI |
-| **Sandbox Isolation** | Bubblewrap | Network offline, filesystem read-only | ✅ Ubuntu 24.04 verified |
-| **Tool Discovery** | Librarian MCP | 9,236 indexed tools across 14 sources | ✅ [Published](https://github.com/Protocol-X-01/librarian) |
-| **Cloud Execution** | LangSmith Sandbox | Managed agent runtime, LangChain tools | ✅ [Provisioned](https://smith.langchain.com) |
-| **Observability** | LangSmith + Phoenix | Audit trail, token tracking | ✅ [Ready to enable](https://smith.langchain.com) |
+| **Action review** | Approval modes | Choose manual review or opt-in automation levels; inspect the patch before Apply | Desktop, CLI and TUI flows |
+| **Linux command isolation** | Bubblewrap | Run eligible commands with scoped filesystem and network access | Depends on host namespace policy; see [Ubuntu setup](docs/UBUNTU_SANDBOX.md) |
+| **Local checks** | Command, path and text validation | Flag selected risky commands and common sensitive-text patterns | [Guardrail tests](tests/test_guardrails.py) |
+| **MCP tools** | Local stdio servers | Connect reviewed local tool servers such as [The Toolbox](docs/THE_TOOLBOX.md) | Explicit server configuration and tool approval |
+| **Tracing** | Phoenix or LangSmith | Export allowlisted operational metadata when configured | [Configuration guide](docs/ENGINEERING_WORKFLOW.md#web-and-observability) |
 
-**Guardrails validate:**
-- ✅ Command safety (blocks: sudo, curl | bash, rm -rf /, disk ops)
-- ✅ PII filtering (emails, phones, SSN, API keys)
-- ✅ Path validation (prevents traversal attacks)
-- ✅ Content inspection (detects dangerous patterns)
+The text checks are pattern-based. For untrusted repositories, use the supported
+host sandbox and review each proposed change; the checks do not replace OS
+isolation.
 
 ```python
 from bifang.guardrails import validate_command_safety, filter_pii
@@ -124,15 +124,9 @@ filtered, warnings = filter_pii("Email: user@example.com")
 assert "[EMAIL]" in filtered
 ```
 
-**Architecture:** Validation runs inside Bubblewrap sandbox → if approved, executes in disposable worktree → verified against original checks → diff reviewed → then Apply.
-
-**Cloud Execution:** LangSmith Sandbox (`id: 01a18c11-e0c1-70dc-a82c-9b89c7171f7a`) provides managed runtime for LangChain tools and agent execution in cloud environment. Hybrid architecture supports both local (Bubblewrap) and cloud (LangSmith) execution paths.
-
-**Tool Discovery:** [Librarian MCP](https://github.com/Protocol-X-01/toolbox-mcp) (new standalone repo) enables agents to discover 9,236+ installed tools across 14 package managers (pacman, cargo, pip, npm, docker, etc.) with real-time enrichment via Tavily. Live Nemotron integration verified (8,885 tokens tracked).
-
-**Observability:** Set `BIFANG_TRACING_BACKEND=langsmith` + `LANGSMITH_API_KEY` to enable [LangSmith](https://smith.langchain.com) tracing for token tracking, performance metrics, and audit trails. Phoenix tracing active by default. Both use OpenTelemetry.
-
-See [safety tests](tests/test_guardrails.py), [sandbox verification](docs/UBUNTU_SANDBOX.md), and [Toolbox MCP](https://github.com/Protocol-X-01/librarian/tree/main/mcp).
+The [Toolbox guide](docs/THE_TOOLBOX.md) records a real local MCP round trip with
+Nemotron Nano and an indexed inventory. The recorded count is tied to that
+October 29 scan and is not presented as a current machine inventory.
 
 ## One workspace, three ways in
 
