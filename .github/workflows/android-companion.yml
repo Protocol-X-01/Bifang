@@ -8,6 +8,12 @@ on:
     paths:
       - 'companion/**'
       - 'desktop/src/**'
+      - 'desktop/src-tauri/**'
+      - 'desktop/tailwind.config.js'
+      - 'desktop/public/**'
+      - 'desktop/src-tauri/**'
+      - 'desktop/tailwind.config.js'
+      - 'desktop/public/**'
       - 'desktop/package.json'
       - 'desktop/package-lock.json'
       - 'desktop/tsconfig.json'
