@@ -63,11 +63,12 @@ class Config:
 
         # NVIDIA
         nvidia_key = os.getenv("NVIDIA_API_KEY", "")
-        if nvidia_key:
+        nvidia_base_url = os.getenv("BIFANG_NVIDIA_BASE_URL", "").strip()
+        if nvidia_key or nvidia_base_url:
             providers["nvidia"] = ProviderConfig(
                 name="nvidia",
-                api_key=nvidia_key,
-                base_url=os.getenv("BIFANG_NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1").rstrip("/"),
+                api_key=nvidia_key or None,
+                base_url=(nvidia_base_url or "https://integrate.api.nvidia.com/v1").rstrip("/"),
                 default_model=os.getenv("BIFANG_NVIDIA_MODEL", "nvidia/nemotron-3-ultra-550b-a55b"),
             )
 

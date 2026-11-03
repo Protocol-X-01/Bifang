@@ -66,3 +66,36 @@ def test_config_wires_zai_and_huggingface_providers():
     )
 
     assert result.returncode == 0, result.stderr
+
+def test_config_loads_keyless_explicit_nim_endpoint():
+    environment = os.environ.copy()
+    for key in (
+        "NVIDIA_API_KEY", "NEBIUS_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY",
+        "OPENROUTER_API_KEY", "ZAI_API_KEY", "ZHIPU_API_KEY", "GLM_API_KEY",
+        "HF_TOKEN", "HUGGINGFACE_API_KEY", "BIFANG_NVIDIA_BASE_URL",
+    ):
+        environment.pop(key, None)
+    environment["BIFANG_NO_DOTENV"] = "1"
+    environment["BIFANG_DEFAULT_PROVIDER"] = "nvidia"
+    environment["BIFANG_NVIDIA_BASE_URL"] = "http://127.0.0.1:8000/v1/"
+    source = Path(__file__).resolve().parents[1] / "src"
+    environment["PYTHONPATH"] = os.pathsep.join(filter(None, [str(source), environment.get("PYTHONPATH", "")]))
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            ("from bifang.config import Config;\n"
+             "cfg = Config.load(); provider = cfg.providers['nvidia']\n"
+             "assert cfg.default_provider == 'nvidia'\n"
+             "assert provider.api_key is None\n"
+             "assert provider.base_url == 'http://127.0.0.1:8000/v1'\n"
+             "assert 'Authorization' not in provider.get_headers()"),
+        ],
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
