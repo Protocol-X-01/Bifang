@@ -96,6 +96,26 @@ def selected_uv(root: Path) -> Path:
     raise ValueError("Install uv before using the Python adapter")
 
 
+def selected_python(uv: Path, request: str, root: Path) -> Path:
+    common = ["python", "find", "--no-config", "--no-project", "--offline", "--no-python-downloads", "--resolve-links"]
+    last_error = None
+    for allow_managed in (False, True):
+        arguments = [str(uv), *common]
+        if not allow_managed:
+            arguments.append("--no-managed-python")
+        arguments.extend(("--", request))
+        try:
+            python = trusted_executable(Path(probe(arguments, root)))
+            if python.is_relative_to(root):
+                raise ValueError("Project interpreters are not trusted runtime probes")
+            return python
+        except ValueError as error:
+            last_error = error
+    if last_error is not None:
+        raise last_error
+    raise ValueError("Install a trusted Python runtime matching the project requirements")
+
+
 def next_environment(root: Path) -> int:
     for parent in (root / ".bifang", root / ".bifang/environments"):
         if parent.is_symlink() or (parent.exists() and not parent.is_dir()):
@@ -136,10 +156,7 @@ def python_profile(root: Path, inputs: dict, network: bool, registry: str, build
             raise ValueError("Select one installed Python version")
         request = str(Version(pins[0]))
     uv = selected_uv(root)
-    python = trusted_executable(Path(probe([str(uv), "python", "find", "--no-config", "--no-project", "--offline",
-                                          "--no-python-downloads", "--resolve-links", "--", request], root)))
-    if python.is_relative_to(root):
-        raise ValueError("Project interpreters are not trusted runtime probes")
+    python = selected_python(uv, request, root)
     runtime = json.loads(probe([str(python), "-I", "-S", "-c", "import json,sys; print(json.dumps({'prefix':sys.base_prefix,'version':sys.version.split()[0]}))"], root))
     library = Path(runtime["prefix"]) / "lib"
     if not library.is_absolute() or library == Path("/lib") or not library.is_dir():

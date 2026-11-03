@@ -20,7 +20,13 @@ from types import SimpleNamespace
 import pytest
 
 from bifang.package_setup import read_manifest, run_setup, setup_plan
-from bifang.setup_profiles import probe, safe_library_search_path, selected_uv, trusted_executable
+from bifang.setup_profiles import (
+    probe,
+    safe_library_search_path,
+    selected_python,
+    selected_uv,
+    trusted_executable,
+)
 
 
 @pytest.fixture
@@ -95,6 +101,29 @@ def test_executable_rejection_details_are_opt_in(tmp_path, monkeypatch):
         trusted_executable(executable)
     assert "world_writable=True" in str(error.value)
     assert "name=fixture-python" in str(error.value)
+
+
+def test_python_profile_prefers_safe_system_interpreter_then_uses_managed_fallback(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    system = tmp_path / "system-python"
+    managed = tmp_path / "managed-python"
+    attempts = []
+
+    def fake_probe(arguments, root):
+        attempts.append(arguments)
+        return str(system if "--no-managed-python" in arguments else managed)
+
+    def fake_trust(path):
+        if Path(path) == system:
+            raise ValueError("unsafe system interpreter")
+        return Path(path)
+
+    monkeypatch.setattr("bifang.setup_profiles.probe", fake_probe)
+    monkeypatch.setattr("bifang.setup_profiles.trusted_executable", fake_trust)
+    assert selected_python(Path("/usr/bin/uv"), ">=3.11,<3.12", workspace) == managed
+    assert "--no-managed-python" in attempts[0]
+    assert "--no-managed-python" not in attempts[1]
 
 
 @contextmanager
