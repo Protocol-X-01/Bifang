@@ -57,6 +57,21 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
+      - name: Tighten selected Python toolchain permissions
+        run: |
+          python - <<'PY'
+          import os
+          import stat
+          import sys
+
+          executable = os.path.realpath(sys.executable)
+          metadata = os.stat(executable)
+          os.chmod(executable, stat.S_IMODE(metadata.st_mode) & ~(stat.S_IWGRP | stat.S_IWOTH))
+          metadata = os.stat(executable)
+          if metadata.st_uid not in {0, os.getuid()} or metadata.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
+              raise SystemExit("The selected CI Python runtime is not owner-controlled")
+          print(f"Selected Python runtime permissions: {stat.S_IMODE(metadata.st_mode):04o}")
+          PY
       - uses: actions/setup-node@v4
         with:
           node-version: 22
