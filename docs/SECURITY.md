@@ -1,6 +1,8 @@
 # Security
 
-Bifang assumes model output is untrusted. File paths are resolved and constrained to the active workspace. Commands pass through deny rules, approval policy, time limits, environment filtering, and optional Bubblewrap namespaces. Git worktrees separate agent modifications from the developer checkout.
+Bifang assumes model output is untrusted. File paths are resolved and constrained to the active workspace. On the first workspace file list, read, search result, diff or saved-memory result in a chat, Manual and Auto modes ask before sharing that content with configured model endpoints; consent applies to workspace/model sharing for that chat. Restoring a saved conversation with tool results asks separately before its history is sent to a model. A memory write sent to a remote embedding endpoint has a per-write endpoint-aware approval, and memory-retrieval queries sent to a remote embedding endpoint have their own chat-scoped approval for that embedding configuration. Neither approval grants workspace/model sharing or authorizes a different embedding configuration. Built-in file tools block conventional credential paths, and recognized secret values are redacted from file, memory, diff and command output. Manual and Auto command prompts disclose that command output returns to the model. These checks are heuristic and do not detect every secret format.
+
+The generated-Python tool runs only in a temporary Bubblewrap workspace with the offline network filter and a bounded timeout. Missing or unsupported Bubblewrap stops execution; there is no host-Python fallback. Optional package requirements are restricted to names/specifiers, downloaded as binary wheels from PyPI without running source builds, and monitored against a 128 MiB temporary-data budget during acquisition, with a 60-second timeout. The downloader is stopped when the monitor observes an overrun, and the final wheelhouse is checked before installation. Monitoring is polled, so temporary aggregate usage can briefly exceed the threshold; POSIX hosts also enforce a per-file size limit. Wheels are installed inside the sandbox. The approval prompt shows the exact code and package list. Full mode skips prompts but does not disable the generated-Python sandbox. Recognized-value redaction is heuristic; command approval remains important for workspaces containing private material. Git worktrees separate agent modifications from the developer checkout.
 
 Current local source uses [offline command networking](NETWORK_ISOLATION.md),
 with a private network namespace and a seccomp transport filter. Use
@@ -36,8 +38,12 @@ parser or semantic safety policy; obfuscated/equivalent commands can evade
 pattern matching. Trusted mode removes normal approval prompts and should not
 be used for untrusted projects. MCP, plugins, network egress and every builtin
 need separate permission/abuse coverage before a general guardrail claim.
-Workspace confinement does not hide secrets already inside that workspace.
-Keep provider credentials outside projects and out of model-readable files.
+When Bubblewrap is active, the agent shell and package setup hide recognized
+credential paths and private Bifang session logs. Git metadata, dependency
+stores and build output remain visible and may contain historical secrets.
+Keep credentials outside projects and out of Git history. Setting
+`BIFANG_BWRAP=0` runs shell commands directly on the host and gives them access
+to workspace files; use that option only for trusted workspaces.
 
 The ordinary command runner previously fell back to the host shell when
 Bubblewrap was requested but its executable was missing. A new regression

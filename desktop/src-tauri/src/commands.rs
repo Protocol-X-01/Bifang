@@ -57,13 +57,14 @@ pub(crate) fn resolve_workspace_path(path: String) -> Result<String, String> {
 
 #[command]
 pub(crate) async fn get_file_tree(path: String) -> Result<String, String> {
-    let path = Path::new(&path);
-    if !path.exists() {
-        return Err("Path does not exist".to_string());
+    let root = fs::canonicalize(Path::new(&path))
+        .map_err(|_| "Path does not exist or is not accessible".to_string())?;
+    if !root.is_dir() {
+        return Err("Choose a directory, not a file".to_string());
     }
 
     let mut entries = Vec::new();
-    read_dir_recursive(path, path, &mut entries, 0)?;
+    read_dir_recursive(&root, &root, &mut entries, 0)?;
 
     serde_json::to_string(&entries).map_err(|e| e.to_string())
 }
@@ -82,6 +83,10 @@ fn read_dir_recursive(
 
     for entry in dir_entries {
         let entry = entry.map_err(|e| e.to_string())?;
+        let file_type = entry.file_type().map_err(|e| e.to_string())?;
+        if file_type.is_symlink() {
+            continue;
+        }
         let path = entry.path();
         let name = entry.file_name().to_string_lossy().to_string();
 
@@ -96,7 +101,7 @@ fn read_dir_recursive(
             continue;
         }
 
-        let is_dir = path.is_dir();
+        let is_dir = file_type.is_dir();
         let relative = path
             .strip_prefix(root)
             .map_err(|e| e.to_string())?
@@ -180,7 +185,10 @@ pub(crate) fn read_workspace_file(root: String, relative: String) -> Result<Stri
 
 #[cfg(test)]
 mod tests {
-    use super::{create_workspace_directory, read_workspace_file_contents, resolve_workspace_path, FileEntry};
+    use super::{
+        create_workspace_directory, read_dir_recursive, read_workspace_file_contents,
+        resolve_workspace_path, FileEntry,
+    };
     use std::path::Path;
 
     #[test]
@@ -315,5 +323,32 @@ mod tests {
         let value = serde_json::to_value(entry).unwrap();
         assert_eq!(value["type"], "directory");
         assert!(value.get("type_").is_none());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn file_tree_skips_symlinks_to_external_directories() {
+        use std::os::unix::fs::symlink;
+
+        let identity = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let parent = std::env::temp_dir().join(format!(
+            "bifang-tree-symlink-{}-{identity}",
+            std::process::id()
+        ));
+        let root = parent.join("workspace");
+        let outside = parent.join("outside");
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+        std::fs::write(outside.join("private-marker.txt"), "fixture").unwrap();
+        symlink(&outside, root.join("external")).unwrap();
+
+        let mut entries = Vec::new();
+        read_dir_recursive(&root, &root, &mut entries, 0).unwrap();
+        assert!(entries.is_empty());
+
+        std::fs::remove_dir_all(parent).unwrap();
     }
 }

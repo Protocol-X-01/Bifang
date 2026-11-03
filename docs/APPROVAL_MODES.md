@@ -7,14 +7,35 @@ of the **Model** selector's task-based routing.
 
 - **Off · manual review** is the default. Inspect proposed edits, commands,
   generated-code execution and external tools before allowing each action.
-  Local inspection and the agent's internal task checklist remain automatic.
+  The first workspace file list, read, search result, diff or saved-memory
+  result also asks before content is sent to the configured model endpoint;
+  that consent applies to workspace/model sharing for the current chat.
+  Restoring a saved conversation with prior tool results asks separately before
+  resending that history. A memory write sent to a remote embedding endpoint
+  asks separately for that write. Memory-retrieval queries sent to a remote
+  embedding endpoint also have a separate approval, scoped to that embedding
+  configuration for the chat; this does not grant workspace/model sharing or
+  authorize different embedding configurations. Built-in file
+  tools block conventional credential paths; when Bubblewrap is active, shell
+  agent shell commands and package setup also hide recognized credential paths
+  and private session logs when Bubblewrap is active. Git metadata, dependency
+  stores and build output remain visible and can contain secrets.
+  Recognized credential values are redacted from file, memory and command output.
 - **Auto · workspace edits** automatically permits ordinary source-file edits
   in a disposable Git worktree. Sensitive/hidden paths, dependency manifests,
-  unknown file types and large writes still ask. Direct edits to a checkout,
-  commands, generated code, memory writes and external tools also ask.
+  unknown file types and large writes still ask. Workspace-content sharing,
+  direct edits to a checkout, commands, generated code, memory writes and
+  external tools also ask.
 - **Full tool approval** requires an explicit confirmation. Enabled tools can
   proceed without repeated prompts, including commands, generated code, MCP
-  and plugins. Use it when you trust the project, task and enabled tools.
+  and plugins. Built-in file tools still block conventional credential paths.
+  When Bubblewrap is active, the agent shell and package setup hide recognized
+  credential paths and private session logs; disabling it gives shell commands
+  direct workspace access. Git metadata, dependencies and build output remain
+  visible and can contain secrets. Recognized credential values are redacted from file,
+  memory and command output. Workspace and memory content can be sent to configured model or
+  embedding endpoints without a separate per-chat prompt. Use it when
+  you trust the project, task and enabled tools.
 
 The choice stays visible and cannot be elevated while a turn is running.
 **Pause auto approvals** returns subsequent tool requests to manual review

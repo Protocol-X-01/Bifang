@@ -7,10 +7,16 @@ import json
 from collections.abc import AsyncIterator, Callable
 from contextlib import aclosing, asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from rich.prompt import Confirm
 
-from .approvals import INSPECTION_TOOLS, auto_approves_edit
+from .approvals import (
+    INSPECTION_TOOLS,
+    MODEL_EGRESS_TOOLS,
+    WorkspaceContentConsent,
+    auto_approves_edit,
+)
 from .audit import Audit
 from .config import Config
 from .context import ContextManager
@@ -21,6 +27,7 @@ from .plugins.catalog import plugin_directories
 from .policy import Policy
 from .provider import create_tiered_provider
 from .routing import TaskClassifier, TaskType
+from .secret_patterns import is_sensitive_workspace_path, redact_model_diff, redact_secrets
 from .tools import list_files, read_file, run_command, schemas, search
 from .tools.builtin import get_builtin_tool, get_builtin_tools
 from .tools.tasks import TaskPlan
@@ -37,6 +44,8 @@ class Agent:
         ws: Workspace,
         approve: Callable[[str], bool] | None = None,
         on_tool: Callable[[str], bool] | None = None,
+        content_consent: WorkspaceContentConsent | None = None,
+        restored_conversation: bool = False,
     ):
         self.cfg = cfg
         self.ws = ws
@@ -73,6 +82,8 @@ class Agent:
         self.audit = Audit(ws.root)
         self.approve = approve or (lambda text: Confirm.ask(text))
         self.on_tool = on_tool
+        self.content_consent = content_consent or WorkspaceContentConsent()
+        self._restore_consent_required = restored_conversation
         self.context.add_message({"role": "system", "content": SYSTEM})
         self.messages = self.context.get_messages()
         self._step_count = 0
@@ -85,6 +96,35 @@ class Agent:
             result = await result
         return bool(result)
 
+    def _configured_endpoint_summary(self) -> str:
+        endpoints = []
+        for provider_name, provider_config in sorted(self.cfg.providers.items()):
+            try:
+                host = urlsplit(provider_config.base_url).hostname
+            except ValueError:
+                host = None
+            endpoints.append(f"{provider_name} ({host})" if host else provider_name)
+        return ", ".join(endpoints) or self.cfg.default_provider
+
+    def _embedding_endpoint_summary(self) -> str:
+        provider_name = self.cfg.memory_embedding_provider or self.cfg.default_provider
+        provider_config = self.cfg.providers.get(provider_name)
+        if provider_config is None:
+            return provider_name
+        try:
+            host = urlsplit(provider_config.base_url).hostname
+        except ValueError:
+            host = None
+        return f"{provider_name} ({host})" if host else provider_name
+
+    def _memory_query_embedding_scope(self) -> str:
+        embedder = getattr(self.memory, "embedder", None)
+        identity = getattr(embedder, "embedding_space", None)
+        if not isinstance(identity, str) or not identity:
+            identity = self._embedding_endpoint_summary()
+        digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:16]
+        return f"memory_query_embedding:{digest}"
+
     async def _tool_approval(self, name: str, args: dict) -> bool:
         if self.cfg.approval_mode == "full":
             approved, source = True, "full"
@@ -96,15 +136,156 @@ class Agent:
             if name == "write_file":
                 prompt = f"Allow Bifang to write {args['path']}?"
             elif name == "run_command":
-                prompt = f"Run command?\n{args['command']}"
+                prompt = (
+                    "Run this command? Its output will be returned to the model endpoint receiving this chat.\n"
+                    f"{args['command']}"
+                )
             elif name == "code_execute":
-                prompt = "Allow Bifang to execute generated Python code?"
+                packages = json.dumps(args.get("packages") or [], ensure_ascii=False)
+                code = args.get("code", "")
+                prompt = (
+                    "Execute this exact Python source in an isolated, network-disabled Bubblewrap sandbox?\n"
+                    "Optional binary wheels are downloaded from PyPI on the host under a monitored 128 MiB temporary "
+                    "data budget and 60-second timeout; detected overruns stop the download before sandbox install.\n"
+                    f"Packages: {packages}\n\n--- Python source ---\n{code}"
+                )
+            elif name == "restore_workspace_history":
+                prompt = (
+                    "Allow this saved conversation history to be sent to a model endpoint again? It can include "
+                    "user prompts, assistant replies, tool requests/results and summaries.\n"
+                    f"Configured endpoints that may receive the history: {self._configured_endpoint_summary()}\n"
+                    "Recognized credential values are redacted before resending; detection is heuristic."
+                )
+            elif name == "memory_query_embedding":
+                query = args.get("query")
+                length = len(query) if isinstance(query, str) else 0
+                prompt = (
+                    "Allow memory retrieval queries to be sent to the configured embedding endpoint?\n"
+                    f"Embedding endpoint: {self._embedding_endpoint_summary()}\n"
+                    f"Query length: {length} characters. A query may contain workspace or personal details. "
+                    "This approval covers later memory_recall and memory_context queries using the same "
+                    "embedding configuration in this chat. It does not approve sending retrieved memory "
+                    "results to model endpoints. Secret detection is heuristic."
+                )
+            elif name in MODEL_EGRESS_TOOLS or (
+                name == "memory_store" and self.memory is not None
+                and getattr(self.memory, "embedder", None) is not None
+            ):
+                providers = self._configured_endpoint_summary()
+                if name == "list_files":
+                    detail = f"List up to {args.get('limit', 500)} workspace file paths."
+                elif name == "read_file":
+                    detail = f"File: {args.get('path', '')}\nLines: {args.get('start', 1)}-{args.get('end', 400)}"
+                elif name == "search":
+                    detail = f"Search query: {args.get('query', '')}"
+                elif name == "memory_recall":
+                    detail = (
+                        f"Recall up to {args.get('limit', 5)} saved memory entries for query: "
+                        f"{args.get('query', '')}"
+                    )
+                elif name == "memory_context":
+                    detail = (
+                        f"Retrieve up to {args.get('max_tokens', 2000)} tokens of saved memory "
+                        f"for query: {args.get('query', '')}"
+                    )
+                elif name == "memory_store":
+                    content = args.get("content", "")
+                    length = len(content) if isinstance(content, str) else 0
+                    detail = (
+                        f"Store a {length}-character memory locally and send it to the configured embedding "
+                        f"endpoint {self._embedding_endpoint_summary()} for vectorization."
+                    )
+                else:
+                    detail = "The current workspace diff will be shared; review it in the Diff panel first."
+                if name == "memory_store":
+                    prompt = (
+                        "Allow this memory to be stored locally and sent to its configured embedding endpoint?\n"
+                        f"Embedding endpoint: {self._embedding_endpoint_summary()}\n"
+                        "The memory text is sent as supplied and may contain workspace or user information. "
+                        "Secret detection is heuristic; do not store credentials.\n"
+                        f"Requested operation: {detail}"
+                    )
+                else:
+                    prompt = (
+                        "Allow workspace content and saved memory content to be sent to a configured model endpoint?\n"
+                        f"Configured endpoints that may receive content, depending on model routing: {providers}\n"
+                        "Approval covers later file lists, reads, search matches, diffs and memory results for this chat. "
+                        "Built-in file tools block conventional credential paths; recognized credential values are "
+                        "redacted from file and memory results. Detection is heuristic.\n"
+                        f"First requested content:\n{detail}"
+                    )
             else:
                 prompt = f"Allow Bifang to use {name}?\n{json.dumps(args, ensure_ascii=False)}"
             approved, source = await self._approval_granted(prompt), "manual"
         self.audit.add("tool_approval", name=name, approval_mode=self.cfg.approval_mode,
                        source=source, approved=approved)
         return approved
+
+    async def _restore_workspace_history_consent(self) -> bool:
+        if not self._restore_consent_required:
+            return True
+        messages = self.context.get_messages()
+        if not any(message.get("role") != "system" for message in messages):
+            self._restore_consent_required = False
+            return True
+
+        self._sanitize_restored_tool_history(messages)
+        async with self.content_consent.lock:
+            scope = "restored_conversation_history"
+            if scope not in self.content_consent.granted_scopes:
+                if not await self._tool_approval("restore_workspace_history", {}):
+                    return False
+                self.content_consent.granted_scopes.add(scope)
+                self.audit.add(
+                    "workspace_content_consent", scope=scope,
+                    approved=True, first_tool="restore_history",
+                )
+            self._restore_consent_required = False
+        return True
+
+    @staticmethod
+    def _sanitize_restored_tool_history(messages: list[dict]) -> None:
+        tool_calls = {}
+        for message in messages:
+            if message.get("role") != "assistant":
+                continue
+            for call in message.get("tool_calls") or []:
+                function = call.get("function") or {}
+                arguments = function.get("arguments")
+                if isinstance(arguments, str):
+                    function["arguments"] = redact_secrets(arguments)
+                    try:
+                        arguments = json.loads(arguments)
+                    except (TypeError, json.JSONDecodeError):
+                        arguments = None
+                tool_calls[call.get("id")] = (function.get("name"), arguments)
+        for message in messages:
+            role = message.get("role")
+            if role in {"user", "assistant"} and isinstance(message.get("content"), str):
+                message["content"] = redact_model_diff(message["content"])
+            if role != "tool" or not isinstance(message.get("content"), str):
+                continue
+            content = message["content"]
+            tool_name, arguments = tool_calls.get(message.get("tool_call_id"), (None, None))
+            if tool_name == "list_files":
+                content = "\n".join(
+                    line for line in content.splitlines()
+                    if not is_sensitive_workspace_path(line.strip())
+                )
+            elif tool_name == "read_file":
+                path = arguments.get("path") if isinstance(arguments, dict) else None
+                if not isinstance(path, str) or is_sensitive_workspace_path(path):
+                    content = "[Sensitive or unverifiable prior file result omitted on restore]"
+            elif tool_name == "search":
+                safe_lines = []
+                for line in content.splitlines():
+                    path, separator, remainder = line.partition(":")
+                    line_number, second_separator, _ = remainder.partition(":")
+                    if (separator and second_separator and line_number.isdigit()
+                            and not is_sensitive_workspace_path(path.strip())):
+                        safe_lines.append(line)
+                content = "\n".join(safe_lines) or "No matches"
+            message["content"] = redact_model_diff(content)
 
     async def tool(self, name: str, args: dict) -> str:
         with self.tracer.span(
@@ -120,6 +301,19 @@ class Agent:
             self.on_tool(name, args)
 
         inspection = name in INSPECTION_TOOLS and not self.plugins.get_tool(name)
+        model_content = name in MODEL_EGRESS_TOOLS and not self.plugins.get_tool(name)
+        builtin_memory_query = name in {"memory_recall", "memory_context"} and not self.plugins.get_tool(name)
+        if builtin_memory_query and self.memory is not None:
+            parameter = "limit" if name == "memory_recall" else "max_tokens"
+            default = 5 if name == "memory_recall" else 2000
+            if type(args.get(parameter, default)) is not int:
+                return f"DENIED: {name} {parameter} must be an integer"
+
+        remote_memory_query = (
+            builtin_memory_query
+            and self.memory is not None
+            and getattr(self.memory, "embedder", None) is not None
+        )
         if not inspection:
             if self.cfg.mode == "observe":
                 return "DENIED: observe mode"
@@ -129,8 +323,46 @@ class Agent:
                 decision = self.policy.command(args["command"])
                 if not decision.allowed:
                     return f"DENIED: {decision.reason}"
-            if not await self._tool_approval(name, args):
-                return "DENIED by user"
+
+        if remote_memory_query:
+            query = args.get("query")
+            if not isinstance(query, str):
+                return "DENIED: memory query must be text"
+            limit = args.get("limit", 5)
+            max_tokens = args.get("max_tokens", 2000)
+            query_will_embed = bool(query.strip()) and (
+                (name == "memory_recall" and type(limit) is int and limit > 0)
+                or (name == "memory_context" and type(max_tokens) is int and max_tokens > 0)
+            )
+            if query_will_embed:
+                async with self.content_consent.lock:
+                    scope = self._memory_query_embedding_scope()
+                    if scope not in self.content_consent.granted_scopes:
+                        if not await self._tool_approval("memory_query_embedding", args):
+                            return "DENIED: memory-query embedding was not approved"
+                        self.content_consent.granted_scopes.add(scope)
+                        self.audit.add(
+                            "workspace_content_consent", scope=scope,
+                            approved=True, first_tool=name,
+                        )
+
+        if model_content:
+            if name == "read_file":
+                self.policy.read_path(args["path"])
+            if name == "search":
+                query = args.get("query")
+                if not isinstance(query, str) or not query.strip() or len(query) > 512:
+                    return "DENIED: provide a search query from 1 to 512 characters"
+            async with self.content_consent.lock:
+                scope = "workspace_content_to_model_endpoints"
+                if scope not in self.content_consent.granted_scopes:
+                    if not await self._tool_approval(name, args):
+                        return "DENIED: workspace-content sharing was not approved"
+                    self.content_consent.granted_scopes.add(scope)
+                    self.audit.add("workspace_content_consent", scope=scope, approved=True, first_tool=name)
+
+        if not inspection and not await self._tool_approval(name, args):
+            return "DENIED by user"
 
         if name.startswith("mcp_"):
             try:
@@ -161,9 +393,11 @@ class Agent:
             if not self.memory:
                 return "Memory not enabled"
             query = args.get("query", "")
+            if isinstance(query, str):
+                query = redact_secrets(query)
             limit = args.get("limit", 5)
             memories = await self.memory.recall(query, limit=limit)
-            return "\n".join([f"- {m.content}" for m in memories])
+            return redact_secrets("\n".join([f"- {m.content}" for m in memories]))
 
         if name == "memory_store":
             if not self.memory:
@@ -178,9 +412,11 @@ class Agent:
             if not self.memory:
                 return "Memory not enabled"
             query = args.get("query", "")
+            if isinstance(query, str):
+                query = redact_secrets(query)
             max_tokens = args.get("max_tokens", 2000)
             context = await self.memory.get_context(query, max_tokens=max_tokens)
-            return context
+            return redact_secrets(context)
 
         builtin_tool = get_builtin_tool(name)
         if builtin_tool:
@@ -205,7 +441,7 @@ class Agent:
         elif name == "search":
             result = search(self.ws.root, args["query"])
         elif name == "git_diff":
-            result = self.ws.diff() or "No changes"
+            result = redact_model_diff(self.ws.diff() or "No changes")
         elif name == "write_file":
             p = self.policy.path(args["path"])
             p.parent.mkdir(parents=True, exist_ok=True)
@@ -216,7 +452,12 @@ class Agent:
             if not d.allowed:
                 result = f"DENIED: {d.reason}"
             else:
-                result = json.dumps(await run_command(self.policy, args["command"], args.get("timeout", self.cfg.timeout), self.cfg.use_bwrap))
+                output = await run_command(
+                    self.policy, args["command"], args.get("timeout", self.cfg.timeout), self.cfg.use_bwrap
+                )
+                output["stdout"] = redact_model_diff(output.get("stdout", ""))
+                output["stderr"] = redact_model_diff(output.get("stderr", ""))
+                result = json.dumps(output)
         else:
             result = "Unknown tool"
 
@@ -322,6 +563,8 @@ class Agent:
     async def _ask(self, prompt: str, on_text: Callable[[str], None] | None = None, task_type: TaskType | None = None,
                    selection: dict | None = None) -> str:
         """Ask the agent a question (non-streaming)."""
+        if not await self._restore_workspace_history_consent():
+            return "DENIED: saved conversation history was not approved for resending to the model"
         await self._ensure_services_started()
 
         self.audit.add("user", content=prompt)
@@ -399,6 +642,9 @@ class Agent:
         task_type: TaskType | None = None,
     ) -> AsyncIterator[str]:
         """Ask the agent a question with streaming response."""
+        if not await self._restore_workspace_history_consent():
+            yield "DENIED: saved conversation history was not approved for resending to the model"
+            return
         await self._ensure_services_started()
 
         self.audit.add("user", content=prompt)

@@ -148,9 +148,9 @@ async def amain(a):
 
     if a.cmd == "chat":
         from .tui import BifangApp
-        agent = Agent(cfg, ws)
+        identity = getattr(a, "session", None)
+        agent = Agent(cfg, ws, restored_conversation=bool(identity))
         try:
-            identity = getattr(a, "session", None)
             if identity:
                 if not agent.context.conversation_cache:
                     raise RuntimeError("Conversation history is disabled")

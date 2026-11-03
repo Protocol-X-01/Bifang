@@ -399,7 +399,8 @@ async def create_session(req: SessionCreate):
             session.approval_future = None
 
     try:
-        session.agent = Agent(cfg, ws, approve=approve)
+        session.agent = Agent(cfg, ws, approve=approve,
+                              restored_conversation=bool(req.conversation_id))
         if req.conversation_id:
             if not cfg.enable_conversation_history:
                 raise HTTPException(400, "Conversation history is disabled")
