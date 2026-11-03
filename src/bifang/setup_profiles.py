@@ -40,6 +40,22 @@ def probe(arguments: list[str], root: Path) -> str:
         if candidate.is_absolute() and candidate.is_dir() and not candidate.resolve().is_relative_to(root):
             directories.append(str(candidate))
     environment = {"HOME": str(Path.home()), "PATH": os.pathsep.join(directories), "LANG": "C.UTF-8", "RUSTUP_AUTO_INSTALL": "0"}
+    library_directories = []
+    for entry in os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep):
+        candidate = Path(entry)
+        if not entry or not candidate.is_absolute():
+            continue
+        try:
+            resolved = candidate.resolve(strict=True)
+            metadata = resolved.stat()
+        except OSError:
+            continue
+        if (not resolved.is_dir() or resolved.is_relative_to(root)
+                or metadata.st_uid not in {0, os.getuid()} or metadata.st_mode & stat.S_IWOTH):
+            continue
+        library_directories.append(str(resolved))
+    if library_directories:
+        environment["LD_LIBRARY_PATH"] = os.pathsep.join(library_directories)
     for key in ("RUSTUP_HOME", "UV_PYTHON_INSTALL_DIR", "XDG_DATA_HOME"):
         if key in os.environ and Path(os.environ[key]).is_absolute() and not Path(os.environ[key]).resolve().is_relative_to(root):
             environment[key] = os.environ[key]

@@ -4,6 +4,7 @@ import csv
 import hashlib
 import io
 import json
+import os
 import platform
 import re
 import subprocess
@@ -14,11 +15,12 @@ import zipfile
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from bifang.package_setup import read_manifest, run_setup, setup_plan
-from bifang.setup_profiles import selected_uv
+from bifang.setup_profiles import probe, selected_uv
 
 
 @pytest.fixture
@@ -49,6 +51,33 @@ def rust_project(root):
     (root / "src").mkdir()
     (root / "src/lib.rs").write_text('pub fn answer() -> u32 { 42 }\n')
     (root / "build.rs").write_text('fn main() { std::fs::write("BUILD_EXECUTED", "allowed").unwrap(); }\n')
+
+
+def test_probe_preserves_only_safe_host_library_paths(tmp_path, monkeypatch):
+    root = tmp_path / "workspace"
+    root.mkdir()
+    host_library = tmp_path / "python" / "lib"
+    host_library.mkdir(parents=True)
+    project_library = root / "lib"
+    project_library.mkdir()
+    writable_library = tmp_path / "writable"
+    writable_library.mkdir()
+    writable_library.chmod(0o777)
+    monkeypatch.setenv(
+        "LD_LIBRARY_PATH",
+        os.pathsep.join((str(host_library), str(project_library), str(writable_library), "relative")),
+    )
+    monkeypatch.setenv("LD_PRELOAD", "/tmp/untrusted.so")
+    captured = {}
+
+    def capture_environment(*args, **kwargs):
+        captured.update(kwargs["env"])
+        return SimpleNamespace(returncode=0, stdout="ok")
+
+    monkeypatch.setattr("bifang.setup_profiles.subprocess.run", capture_environment)
+    assert probe(["/usr/bin/true"], root) == "ok"
+    assert captured["LD_LIBRARY_PATH"] == str(host_library)
+    assert "LD_PRELOAD" not in captured
 
 
 @contextmanager
