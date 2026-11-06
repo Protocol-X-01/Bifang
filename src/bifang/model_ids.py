@@ -5,7 +5,7 @@ TOKEN_FACTORY_ROLES = {
 }
 
 NVIDIA_INTEGRATE_ROLES = {
-    "fast": "nvidia/nemotron-3-nano-30b-a3b",
+    "fast": "nvidia/nemotron-3.5-bolt-e4b",
     "balanced": "nvidia/nemotron-3-super-120b-a12b",
     "reasoning": "nvidia/nemotron-3-ultra-550b-a55b",
 }

@@ -92,6 +92,7 @@ class SubAgentManager:
             cfg=subagent_cfg,
             ws=self.workspace,
             approve=self.main_agent.approve,
+            content_consent=self.main_agent.content_consent,
         )
         subagent.messages[0] = {"role": "system", "content": SYSTEM + "\n\n" + config.system_prompt}
         allowed_tools = frozenset(config.allowed_tools)

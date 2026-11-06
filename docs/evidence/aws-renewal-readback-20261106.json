@@ -1,0 +1,23 @@
+{
+  "checked_at": "2026-11-06T10:57:22.990897+00:00",
+  "method": "Read-only Systems Manager service inspection",
+  "status": "Success",
+  "response_code": 0,
+  "unit_properties": [
+    "NextElapseUSecRealtime=Fri 2026-11-06 12:26:04 UTC",
+    "LastTriggerUSec=Fri 2026-11-06 00:05:40 UTC",
+    "Id=bifang-renew-https.timer",
+    "ActiveState=active",
+    "SubState=waiting",
+    "UnitFileState=enabled",
+    "Id=bifang-remote.service",
+    "ActiveState=active",
+    "SubState=running",
+    "Id=bifang-executor.service",
+    "ActiveState=active",
+    "SubState=running"
+  ],
+  "remote_configuration_changed": false,
+  "model_requests": 0,
+  "scope": "Point-in-time timer and service state; not a future-renewal guarantee."
+}

@@ -3,9 +3,9 @@ import { ChevronDown, ShieldCheck, Zap, AlertTriangle } from 'lucide-react';
 import type { ApprovalMode } from '../api/approvals';
 
 const descriptions = {
-  manual: 'Review edits, commands and external tool requests before they run.',
-  auto: 'Auto-approve ordinary source edits in disposable worktrees. Commands, sensitive files and external tools still ask.',
-  full: 'Tool requests are automatically approved. Existing path, command and sandbox restrictions still apply.',
+  manual: 'Review workspace sharing, edits, commands and external tool requests before they run.',
+  auto: 'Auto-approve ordinary source edits in disposable worktrees. Workspace sharing, commands, sensitive actions and external tools still ask.',
+  full: 'Tools run without repeat prompts. Workspace and memory content can reach configured endpoints. Bubblewrap hides common secret paths and private session logs from agent commands; Git history and build/dependency files may still contain secrets. Disabling it gives shell commands direct workspace access.',
 };
 
 export function ApprovalPicker({ mode, busy, onChange, onPause, pausing }: {
@@ -48,7 +48,7 @@ export function ApprovalPicker({ mode, busy, onChange, onPause, pausing }: {
       )}
       <dialog ref={confirmation} aria-labelledby="full-approval-title" className="m-auto max-w-lg rounded-2xl border-bifang-brand-red/30 bg-bifang-panel p-6 text-bifang-text-primary shadow-2xl glass-strong">
         <h2 id="full-approval-title" className="text-h4 text-bifang-text-primary flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-bifang-brand-red" />Enable full tool approval?</h2>
-        <p className="mt-4 text-body-sm text-bifang-text-secondary">Bifang can run commands and use external tools without asking each time. These tools use their existing permissions and may change data, contact services or consume credits. Choose this for work you trust.</p>
+        <p className="mt-4 text-body-sm text-bifang-text-secondary">Bifang can run tools without asking each time. Workspace and memory content can be sent to configured model or embedding endpoints, and tools may change data, contact services or consume credits. Choose this for work you trust.</p>
         <p className="mt-3 text-body-sm text-bifang-text-muted">Reviewing and applying the final patch stays separate. This choice resets for a new chat, workspace, restored conversation or page reload.</p>
         <div className="mt-6 flex justify-end gap-3">
           <button type="button" className="btn-secondary" autoFocus onClick={() => confirmation.current?.close()}>Keep current mode</button>

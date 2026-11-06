@@ -31,9 +31,13 @@ inspect the returned target and remove unintended preliminary deployments.
 
 After approval, configure separate `NEBIUS_API_KEY` and cryptographically random
 `BIFANG_JUDGE_TOKEN` secrets server-side, never in source or public variables.
-Unset/missing credentials make app initialization fail closed. No credentials
-are included in this bundle; `.env` files must remain outside it. The relay
-exposes no agent-execution, file-upload or training endpoints.
+Also set `BIFANG_JUDGE_TOKEN_EXPIRES_AT` as an RFC 3339 UTC timestamp; for the
+Nebius x NVIDIA hackathon judging window, use `2026-12-23T20:00:00Z`. The relay
+fails closed if credentials or a valid future expiry are missing and rejects
+judge authorization at or after the expiry. Keep the token valid throughout
+the authorized evaluation window, then rotate or revoke it. No credentials are
+included in this bundle; `.env` files must remain outside it. The relay exposes
+no agent-execution, file-upload or training endpoints.
 
 Validate dependencies from `uv.lock` in the chosen interpreter, then check
 authentication, live model catalog, actual desktop coding, streaming and cleanup

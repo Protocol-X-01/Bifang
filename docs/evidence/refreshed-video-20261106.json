@@ -1,0 +1,18 @@
+{
+  "confirmed_at_utc": "2026-11-06T11:11:43.943694+00:00",
+  "video_url": "https://youtu.be/Eg8Gcyj5ORM",
+  "video_id": "Eg8Gcyj5ORM",
+  "title": "Bifang \u2014 Build. Run. Verify. | AI Coding Agent Demo",
+  "visibility": "public",
+  "source_sha256": "7969d4ce1323a310f6fe2cf6f197f54290c3f9923d35a552bc21efccc9e276a7",
+  "source_duration_seconds": 164.602667,
+  "youtube_display_duration": "2:45",
+  "captions": "English (United States) by you; timed SRT uploaded and saved",
+  "thumbnail": "Auto-generated thumbnail 1, visually verified branded opening frame",
+  "synthetic_narration_disclosed": true,
+  "youtube_copyright_check": "No issues found at publication",
+  "studio_confirmation": "Video published",
+  "devpost_entry_edited": false,
+  "old_video_changed": false,
+  "scope": "Public visibility selected and Studio publication confirmed. Remote encoded bytes and anonymous playback were not independently checked."
+}

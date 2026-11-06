@@ -96,7 +96,15 @@ def test_untrusted_repository_text_cannot_expand_worker_tools(tmp_path, monkeypa
     async def scenario():
         config = Config(enable_memory=False, enable_conversation_history=False, enable_summarization=False)
         workspace = Workspace(tmp_path, tmp_path)
-        parent = Agent(config, workspace, approve=lambda prompt: pytest.fail("Read-only worker requested side effects"))
+        content_prompts = []
+
+        def approve(prompt):
+            if "Allow workspace content" in prompt:
+                content_prompts.append(prompt)
+                return True
+            pytest.fail("Read-only worker requested side effects")
+
+        parent = Agent(config, workspace, approve=approve)
         manager = SubAgentManager(config, workspace, parent)
         try:
             identity = manager.register_subagent(SubAgentConfig(
@@ -106,6 +114,7 @@ def test_untrusted_repository_text_cannot_expand_worker_tools(tmp_path, monkeypa
             worker.provider = ScriptedProvider()
             assert await worker.ask("Review README.md") == "Review finished"
             assert worker.provider.calls == 3
+            assert len(content_prompts) == 1
             assert not (tmp_path / "sentinel.txt").exists()
         finally:
             await manager.shutdown()

@@ -34,6 +34,32 @@ tokens). The provider and judge keys remain sensitive server-side variables;
 the same judge bearer token is required. AWS was unchanged. This deployment
 repair is separate from the GitHub Actions account/billing lock.
 
+## Judging-window credential expiry — 2026-11-06
+
+The production alias now points to READY deployment `dpl_AsKKXBMwzCt3rv71sqhQBAy2iYJe`,
+built from the allowlisted relay-only snapshot and the existing server-side
+provider and judge credentials. The deployment adds the required
+`BIFANG_JUDGE_TOKEN_EXPIRES_AT` setting, configured as
+`2026-12-23T20:00:00Z`, matching the official judging-period end. The relay
+requires a future UTC expiry at startup and rejects the judge bearer at or
+after that timestamp. Preview and production use the same expiry setting.
+
+The exact snapshot passed a synthetic Python 3.12.13 ASGI check for
+fail-closed configuration, model catalog filtering, completion, streaming and
+the exact expiry boundary. Preview and production HTTPS checks returned health
+200, missing-credential 401 and invalid-bearer 401. TLS verification succeeded
+on the production alias. The current valid judge bearer was not re-tested after
+this deployment because Vercel does not permit the CLI to retrieve its stored
+secret values; no credential value was displayed. The preceding production
+deployment had a successful authenticated completion, but that is not a fresh
+positive-auth check for this build.
+
+The active Vercel firewall rule remains enabled at 120 completion requests per
+IP per 60 seconds in log-only mode. Blocking remains off so the relay retains
+the required judge access. This observes bursts but does not provide a global
+usage cap. The expiry prevents the shared token from remaining valid after the
+judging window; it does not restrict access before then.
+
 ## Earlier verified preview — 2026-10-24
 
 The creator approved a relay-only preview and server-side Token Factory key

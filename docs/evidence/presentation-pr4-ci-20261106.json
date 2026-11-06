@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "path": "README.md",
+      "additions": 12,
+      "deletions": 10,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "docs/DEMO_EVIDENCE.md",
+      "additions": 29,
+      "deletions": 11,
+      "changeType": "MODIFIED"
+    },
+    {
+      "path": "docs/assets/bifang-desktop-ide.png",
+      "additions": 0,
+      "deletions": 0,
+      "changeType": "ADDED"
+    },
+    {
+      "path": "docs/evidence/submitted-video-20261106.json",
+      "additions": 17,
+      "deletions": 0,
+      "changeType": "ADDED"
+    }
+  ],
+  "headRefOid": "251a2e0af9efa4ca64e1b77484c0887caf719c17",
+  "state": "OPEN",
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:18:56Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209140557/job/127863161771",
+      "name": "test",
+      "startedAt": "2026-11-06T11:17:31Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:19:05Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209131458/job/127863132008",
+      "name": "test",
+      "startedAt": "2026-11-06T11:17:27Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:17:56Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209140557/job/127863161466",
+      "name": "desktop",
+      "startedAt": "2026-11-06T11:17:31Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:18:07Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209131458/job/127863132552",
+      "name": "desktop",
+      "startedAt": "2026-11-06T11:17:26Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:24:28Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209140557/job/127863161793",
+      "name": "desktop-native",
+      "startedAt": "2026-11-06T11:17:30Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:23:38Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209131458/job/127863132457",
+      "name": "desktop-native",
+      "startedAt": "2026-11-06T11:17:26Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:19:32Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209140557/job/127863766283",
+      "name": "build",
+      "startedAt": "2026-11-06T11:18:59Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:19:41Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Protocol-X-01/Bifang/actions/runs/42209131458/job/127863825272",
+      "name": "build",
+      "startedAt": "2026-11-06T11:19:08Z",
+      "status": "COMPLETED",
+      "workflowName": "ci"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "Vercel",
+      "startedAt": "2026-11-06T11:17:37Z",
+      "state": "SUCCESS",
+      "targetUrl": "https://vercel.com/protocol-x/bifang-judge-relay/CkykaeCSG2SnG1LcW7oFCcinUTq7"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-11-06T11:17:38Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://vercel.com/github",
+      "name": "Vercel Preview Comments",
+      "startedAt": "2026-11-06T11:17:38Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ],
+  "url": "https://github.com/Protocol-X-01/Bifang/pull/4"
+}

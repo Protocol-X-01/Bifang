@@ -1,3 +1,5 @@
+import asyncio
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -5,10 +7,21 @@ ApprovalMode = Literal["manual", "auto", "full"]
 APPROVAL_MODES = {"manual", "auto", "full"}
 INSPECTION_TOOLS = {"list_files", "read_file", "search", "git_diff", "memory_recall",
                     "memory_context", "todo_read", "todo_write"}
+MODEL_EGRESS_TOOLS = {
+    "list_files", "read_file", "search", "git_diff", "memory_recall", "memory_context",
+}
 SOURCE_SUFFIXES = {".py", ".js", ".jsx", ".ts", ".tsx", ".rs", ".go", ".java", ".c",
                    ".cpp", ".h", ".css", ".html", ".md", ".txt", ".json", ".yaml", ".yml"}
 REVIEW_FILES = {"package.json", "package-lock.json", "pyproject.toml", "uv.lock", "cargo.toml",
                 "cargo.lock", "dockerfile", "makefile", "requirements.txt", "setup.py", "setup.cfg"}
+
+
+@dataclass
+class WorkspaceContentConsent:
+    """In-memory, purpose-scoped approvals shared by agents in a chat session."""
+
+    granted_scopes: set[str] = field(default_factory=set)
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
 
 
 def auto_approves_edit(root: Path, source: Path, isolated: bool, arguments: dict) -> bool:

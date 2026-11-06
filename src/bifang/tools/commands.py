@@ -7,6 +7,7 @@ from pathlib import Path
 
 from ..policy import Policy
 from ..sandbox_network import SandboxUnavailableError, attach_filter, offline_filter
+from ..workspace_privacy import private_workspace_mount_args
 
 
 def bwrap_argv(root: Path, command: str) -> list[str]:
@@ -40,6 +41,7 @@ def bwrap_argv(root: Path, command: str) -> list[str]:
         "--bind",
         str(root),
         "/workspace",
+        *private_workspace_mount_args(root),
         "--chdir",
         "/workspace",
         "--setenv",

@@ -49,7 +49,7 @@ def test_agent_completes_model_tool_model_cycle(tmp_path, monkeypatch, compact_h
         })
 
     async def scenario():
-        agent = Agent(cfg, Workspace(tmp_path, tmp_path))
+        agent = Agent(cfg, Workspace(tmp_path, tmp_path), approve=lambda _: True)
         if compact_history:
             agent.context.summarizer = HeuristicSummarizer()
             for index in range(20):

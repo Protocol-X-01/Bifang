@@ -17,6 +17,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 
 from .sandbox_network import SandboxUnavailableError, attach_filter, offline_filter
+from .workspace_privacy import private_workspace_mount_args
 
 MAX_MANIFEST = 8_000_000
 MAX_OUTPUT = 1_000_000
@@ -174,7 +175,7 @@ def setup_plan(workspace: Path, *, network: bool = False, registry: str | None =
         "scripts": "disabled", "timeout_seconds": TIMEOUT_SECONDS, "output_limit_bytes": MAX_OUTPUT,
         "writes": ["selected project, including replacement of node_modules", "private per-project npm cache", "temporary isolated home"],
         "isolation": "Linux Bubblewrap; no host fallback; host network only with separate consent",
-        "warning": "Downloads are not a package safety audit. Host-network mode can reach local and remote services. Project files are visible inside the sandbox.",
+        "warning": "Downloads are not a package safety audit. Host-network mode can reach local and remote services. Recognized credential paths and private session logs are hidden; Git history, dependencies and build output remain visible.",
     }
     plan["sha256"] = hashlib.sha256(json.dumps(plan, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return plan
@@ -192,14 +193,23 @@ def sandbox_argv(plan: dict, executable: str = "/usr/bin/bwrap") -> list[str]:
         if Path(source).exists():
             arguments.extend(["--ro-bind", source, source])
     arguments.extend(["--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp",
-                      "--bind", plan["workspace"], "/workspace", "--chdir", "/workspace",
+                      "--bind", plan["workspace"], "/workspace"])
+    allowed_subtrees = []
+    if plan["profile"] == "python-uv" and plan.get("environment_path"):
+        allowed_subtrees.append(Path(plan["environment_path"]).relative_to(Path(plan["workspace"])))
+    arguments.extend(private_workspace_mount_args(Path(plan["workspace"]), allow_subtrees=allowed_subtrees))
+    arguments.extend(["--chdir", "/workspace",
                       "--bind", plan["cache_path"], "/cache",
                       "--setenv", "PATH", "/usr/bin:/bin", "--setenv", "HOME", "/tmp",
                       "--setenv", "LANG", "C.UTF-8",
                       "--setenv", "npm_config_update_notifier", "false"])
     if plan["profile"] != "javascript-npm":
         arguments.extend(["--dir", "/bifang-tools"])
-        arguments.extend(["--bind", plan["workspace"], plan["workspace"], "--chdir", plan["workspace"]])
+        arguments.extend(["--bind", plan["workspace"], plan["workspace"]])
+        arguments.extend(private_workspace_mount_args(
+            Path(plan["workspace"]), plan["workspace"], allow_subtrees=allowed_subtrees
+        ))
+        arguments.extend(["--chdir", plan["workspace"]])
         for source in plan["runtime_mounts"]:
             if not Path(source).is_relative_to("/usr"):
                 arguments.extend(["--ro-bind", source, source])
@@ -255,6 +265,7 @@ async def _run_setup(workspace: Path, fingerprint: str, *, network: bool,
     process = None
     stopped = False
     status = "failed"
+    validation_error = None
 
     async def drain(stream, label):
         nonlocal output_size
@@ -311,6 +322,11 @@ async def _run_setup(workspace: Path, fingerprint: str, *, network: bool,
         try:
             await asyncio.wait_for(asyncio.gather(*tasks), plan["timeout_seconds"])
             status = "succeeded" if process.returncode == 0 else "failed"
+            if status == "succeeded" and profile == "python-uv":
+                python = Path(plan["environment_path"]) / "bin/python"
+                if not python.is_file() or not os.access(python, os.X_OK):
+                    status = "failed"
+                    validation_error = "Python setup reported success without creating a usable managed interpreter."
         finally:
             await stop()
             for task in tasks:
@@ -340,4 +356,5 @@ async def _run_setup(workspace: Path, fingerprint: str, *, network: bool,
             "returncode": process.returncode if process else None, "started_at": started,
             "elapsed_seconds": round(time.monotonic() - clock, 3), "output_bytes": output_size,
             "output_sha256": digest.hexdigest(), "inputs_unchanged": unchanged,
+            "validation_error": validation_error,
             "rollback": "not performed; inspect project after failure or cancellation"}

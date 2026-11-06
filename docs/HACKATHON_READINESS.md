@@ -1,6 +1,73 @@
-# Hackathon readiness — 2026-10-30
+# Hackathon readiness — November 6, 2026
 
-## Current delivery checkpoint
+## Current delivery
+
+Bifang's entry is the Track 1 coding workflow: inspect a project, propose a
+change, approve actions, run checks and review the patch before Apply.
+The retained native task used Nemotron Ultra through Nebius Token Factory,
+changed only `receipts.py` and passed all five original checks
+([task receipt](evidence/native-vercel-relay.json)).
+
+| Deliverable | Latest checked evidence | Next check |
+| --- | --- | --- |
+| Public source | Apache-2.0 repository; main `1a467218`; the four presentation files are published in [PR #4](https://github.com/Protocol-X-01/Bifang/pull/4) | Review and merge the presentation PR separately from this local readiness candidate |
+| Linux desktop | v0.3.2 supplemental `a479d91` Debian, RPM and AppImage packages; extracted CI payload checks target GLIBC 2.35 | Fresh installed-GUI acceptance for those exact supplemental packages |
+| Windows and macOS | Supplemental desktop and Companion installers are in the v0.3.2 release; sidecar authentication and independent-instance CI checks passed | Installed-GUI acceptance and distribution signing |
+| Android and iOS | Android Companion v0.3.1 package and retained Xiaomi 12T testing; iOS unsigned build archive | iOS signing and device acceptance |
+| Public video | [Refreshed demo](https://youtu.be/Eg8Gcyj5ORM), public and 2:45, with timed captions; [publication receipt](evidence/refreshed-video-20261106.json). The submitted 170-second video remains available separately | Organizer permission before changing the submitted entry's video link |
+| AWS hosted workflow | November 6 authenticated Nano proposal, exact patch review, independent checks, staging and Apply passed; five original fixture checks preserved; 780 reported tokens; HTTPS renewal timer enabled and active | Continue checking service and provider availability through judging |
+| Vercel relay | Production HTTPS relay; required access expiry configured through December 23 at 20:00 UTC | Fresh positive authenticated check and coordinated replacement of exposed judge access |
+| Submission | Owner-confirmed receipt: October 30, 16:59 GMT; public entry at [Devpost](https://devpost.com/software/bifang) | Owner/organizer review of any requested submitted-entry correction |
+
+The [release audit](evidence/public-release-audit-20261106.json) identifies
+the package set precisely. Prefer filenames containing `a479d91` for the
+supplemental desktop builds. The v0.3.2 tag remains at `8c9a2472`; its
+supplemental packages were built from `a479d91`. The TUI retains its separate
+runtime requirement. CI build checks and installed application checks cover
+different artifacts and are recorded separately.
+
+The [hosted status receipt](evidence/hosted-status-20261106.json) is a
+point-in-time availability check. Provider funding, authenticated access and
+continued service through judging still need operator verification.
+
+The [AWS renewal receipt](evidence/aws-renewal-readback-20261106.json) records
+the November 6 read-only service inspection. It verifies the timer's enabled
+state and scheduled trigger; it does not establish every future renewal.
+The [authenticated metadata check](evidence/aws-authenticated-metadata-20261106.json)
+used the existing owner credential without recording its value and made no
+inference request.
+The separate [hosted coding run](evidence/aws-hosted-coding-20261106.json)
+used one synthetic project and a real Nebius Nemotron Nano proposal. The
+expected patch was inspected before approval, the independent checks passed,
+and the hosted original changed only after separate Apply. This verifies the
+existing hosted service; it does not deploy the newer local privacy repairs.
+The latest presentation PR passed its Python, frontend, native Linux package
+and container checks ([CI receipt](evidence/presentation-pr4-ci-20261106.json)).
+
+## Local privacy repairs
+
+A November 6 review of the fixed source range `1a467218..1b82dfc3` reproduced
+four privacy-control gaps with synthetic fixtures: reused saved tool IDs,
+punctuation in unquoted credentials, private-key body lines in search results,
+and sensitive diff paths containing spaces. The follow-up source adds focused
+regression coverage for those exact cases. The repaired source passed
+1,170 backend tests with four skips and non-mutating maintained CI lint
+([validation receipt](evidence/privacy-regressions-20261106.json)). This
+validation is separate from the earlier released installers and submitted entry.
+
+The [official rules](https://nebiusglobalaihackathon.devpost.com/rules), checked
+November 6, set judging for December 9–23 and require free testing access
+through December 23 at noon Pacific. They allow Token Factory inference for
+the Nebius runtime requirement. Submitted-entry corrections after the deadline
+require the organizer's permission. Continue product development separately
+from changes to the submitted entry.
+
+KV-cache optimization and GPU-serving experiments remain deferred research.
+The delivered coding path uses managed inference; the NIM compatibility tests
+exercise an OpenAI-compatible endpoint contract. The public video preserves
+the recorded version and task evidence.
+
+## October 30 delivery checkpoint (historical)
 
 October 30: v0.3.1 was followed by v0.3.2 the same day. The release set —
 Android companion 0.3.1 (version code 3001), Debian desktop 0.3.2 with the
@@ -253,7 +320,8 @@ require a working app using an NVIDIA open model on Token Factory or Nebius AI
 Cloud, a public code repository with an open-source license and setup README, a
 working demo, hosted app, or test-build URL, and a public YouTube demo of no
 more than three minutes. Testing access must remain free and unrestricted
-through the judging period ending December 15. The
+through the current judging period ending December 23, 2026 at noon Pacific.
+This supersedes the December 15 date in earlier local notes. The
 submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Verified implementation

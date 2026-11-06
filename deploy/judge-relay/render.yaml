@@ -13,3 +13,5 @@ services:
         sync: false
       - key: BIFANG_JUDGE_TOKEN
         generateValue: true
+      - key: BIFANG_JUDGE_TOKEN_EXPIRES_AT
+        value: "2026-12-23T20:00:00Z"
