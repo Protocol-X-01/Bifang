@@ -27,7 +27,7 @@ the actual application, using live Nebius Token Factory inference from
 5. Verify the source checkout: only `receipts.py` changed, the original test
    file remained byte-identical, and all five checks passed.
 
-![Actual desktop after successful apply](assets/bifang-desktop.png)
+![Bifang IDE v0.3.2 — workspace and chat view](assets/bifang-desktop-ide.png)
 
 ![Actual action approval dialog](assets/bifang-approval.png)
 

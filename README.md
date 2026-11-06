@@ -30,7 +30,7 @@ https://github.com/Protocol-X-01/Bifang/releases/download/v0.3.1/bifang-live-dem
 **Flow:** failing baseline → agent fix proposed in the TUI → write/command approvals → live diff → apply → all 5 checks pass  
 **Outcome:** All 5 original checks pass, parser fixed  
 
-**Evidence:** [`evidence/native-vercel-relay.json`](evidence/native-vercel-relay.json) · [`docs/DEMO_EVIDENCE.md`](docs/DEMO_EVIDENCE.md)
+**Evidence:** [`native-vercel-relay.json`](docs/evidence/native-vercel-relay.json) · [`docs/DEMO_EVIDENCE.md`](docs/DEMO_EVIDENCE.md)
 
 </details>
 
@@ -172,13 +172,13 @@ Built for **Track 1 · Coding and Agentic Engineering** at the Nebius × NVIDIA 
 The [receipt-parser demo](docs/DEMO.md) starts with two broken CSV cases. Nemotron Ultra fixes the parser through Bifang's tools, leaving the original checks intact. The release-profile desktop app completed the live task, approval dialogs, diff review, and patch application. All five original checks passed in the source checkout afterward.
 
 <details>
-<summary><strong>Screenshots · desktop, terminal and mobile companion (v0.3.1)</strong></summary>
+<summary><strong>Screenshots · desktop, terminal and mobile companion</strong></summary>
 
-These captures are from the shipping v0.3.1 build: the desktop companion, the
-terminal UI and the Android companion, all connected to isolated sessions and
-reliable approvals.
+These captures show Bifang across the desktop, terminal and Android companion.
+The desktop image is from v0.3.2; the other screenshots show their recorded
+coding, approval and terminal workflows.
 
-![Bifang desktop v0.3.1 — workspaces, server control, model selection and chat.](docs/assets/bifang-desktop.png)
+![Bifang IDE v0.3.2 — workspaces, server control, model selection and chat.](docs/assets/bifang-desktop-ide.png)
 
 ![Bifang TUI — chat turn with a live diff and connected status line.](docs/assets/bifang-tui-chat.png)
 

@@ -15,14 +15,24 @@ install TensorRT or TensorRT-LLM. Optional modules such as
 when those local GPU features are used; they are not required to call Nebius
 Token Factory or an NVIDIA NIM endpoint.
 
-NVIDIA's TensorRT 11.4 tar-install guide lists matching Python wheels for
-CPython 3.10 through 3.14. That rules out a blanket claim that TensorRT 11.4
-itself requires Python `<3.12`. The Debian package path is different: its
-Python bindings target the distribution's default Python, while a non-default
-Python needs a matching wheel from the tar package. Bifang remains constrained
-to Python 3.11 by its own package declaration. See NVIDIA's [11.4 tar
-installation guide](https://docs.nvidia.com/deeplearning/tensorrt/11.4.1/installing-tensorrt/install-tar.html)
-and [11.4 Debian package guide](https://docs.nvidia.com/deeplearning/tensorrt/11.4.0/installing-tensorrt/install-debian.html).
+NVIDIA's TensorRT 11.4 documentation lists Python wheels for CPython 3.10
+through 3.14, so TensorRT 11.4 does not have a blanket Python `<3.12` limit.
+The Debian binding package can have a narrower, package-specific range. For
+example, the TensorRT 11.4.0 Debian 12 / CUDA 13.4 package
+`python3-libnvinfer_11.4.0.106-1+cuda13.4_amd64.deb` declares dependencies
+`python3 (>= 3.11)` and `python3 (< 3.12)` and installs into
+`/usr/lib/python3.11/dist-packages`. That package therefore fits Bifang's
+Python 3.11 pin, but cannot be imported by a Python 3.14 interpreter. A
+matching TensorRT wheel or a supported Python 3.11 environment is needed when
+using those bindings. NVIDIA's local-repository `.deb` only configures the apt
+source; the `tensorrt` runtime is a separate package installation. TensorRT
+11.4.0 Debian, tar and zip packages are built for CUDA 13.4 update 1; Python
+ABI compatibility alone does not establish CUDA compatibility. NVIDIA's
+[TensorRT 11.4.1 support matrix](https://docs.nvidia.com/deeplearning/tensorrt/11.4.1/getting-started/support-matrix.html)
+and [tar installation guide](https://docs.nvidia.com/deeplearning/tensorrt/11.4.1/installing-tensorrt/install-tar.html)
+document the Python wheel versions. The current
+[Debian package guide](https://docs.nvidia.com/deeplearning/tensorrt/latest/installing-tensorrt/install-debian.html)
+explains that repository setup and runtime installation are separate steps.
 
 The installed TensorRT release alone does not establish TensorRT-LLM support
 for a Python version, GPU, CUDA runtime or model. Check the exact
@@ -44,6 +54,13 @@ Therefore, an API Catalog completion is evidence of hosted API access, not a
 local NIM deployment. Likewise, an NGC API key is for registry access when the
 chosen image or artifact requires it; it does not authenticate inference calls
 to the hosted API.
+
+NVIDIA's current LLM/VLM NIM guide says an NGC Personal API key is not needed
+for most public NIM containers and models. It is required for Production Branch
+artifacts, NIM releases older than 2.0.10, and private or gated images or model
+artifacts. Container access also requires NVIDIA Developer Program membership
+or an NVIDIA AI Enterprise license. Check the exact artifact before adding
+registry credentials.
 
 ## Local NIM configuration
 
@@ -67,12 +84,15 @@ without a placeholder credential.
 
 ## Self-hosted requirements and evidence boundary
 
-NIM requirements vary by container version, model and profile. The current
-NVIDIA prerequisites specify Docker, the NVIDIA Container Toolkit, a supported
-driver/CUDA combination and model-specific GPU memory. For example, the current
-page lists 24 GB for Llama 3.1 8B; this is an example, not a universal minimum
-for all NIM models. Consult the selected release's [installation guide](https://docs.nvidia.com/nim/large-language-models/latest/get-started/installation.html)
-and [prerequisites](https://docs.nvidia.com/nim/large-language-models/latest/get-started/prerequisites.html).
+NIM requirements vary by container version, model and profile. As of
+2026-11-06, NVIDIA's LLM/VLM prerequisites list Docker 24.0+, NVIDIA Container
+Toolkit 1.14.0+, CUDA SDK 12.9+, and driver 580+; Ubuntu 22.04 LTS or later is
+recommended, while other distributions are not officially validated. GPU
+memory is model-specific: the prerequisites list 24 GB for Llama 3.1 8B, an
+example rather than a universal NIM minimum. Check the selected release's
+[installation guide](https://docs.nvidia.com/nim/large-language-models/latest/get-started/installation.html),
+[prerequisites](https://docs.nvidia.com/nim/large-language-models/latest/get-started/prerequisites.html),
+and [model/profile support matrix](https://docs.nvidia.com/nim/large-language-models/latest/reference/support-matrix.html).
 
 The local repository/bootstrap package name alone is not evidence that the
 TensorRT shared libraries, Python bindings, `trtexec`, TensorRT-LLM, a compatible
