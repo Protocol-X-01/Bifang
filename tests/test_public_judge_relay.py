@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from bifang.judge_access import check_access
-from bifang.judge_quota import PublicQuotaExceeded, PublicQuotaUnavailable
+from bifang.judge_quota import PublicQuotaExceeded, PublicQuotaExhausted, PublicQuotaUnavailable
 from bifang.judge_relay import create_app, public_access_enabled
 from bifang.model_ids import TOKEN_FACTORY_ROLES
 from bifang.providers.base import ChatMessage
@@ -155,10 +155,69 @@ def test_public_guard_failure_never_reaches_provider(failure, status):
                 if status == 429:
                     assert int(response.headers["retry-after"]) > 0
                 assert "synthetic-provider" not in response.text
-                assert reservations == [{"output_tokens": 4096, "body_bytes": len(response.request.content)}]
+                assert reservations == [{"client_ip": "127.0.0.1", "output_tokens": 4096,
+                                         "body_bytes": len(response.request.content)}]
                 assert not calls
                 assert (await client.get("/health")).status_code == 200
                 assert (await client.get("/")).status_code == 200
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("reason", ["global_budget", "client_budget", "client_daily_budget"])
+def test_exhausted_allowance_does_not_offer_an_automatic_retry(reason):
+    class Guard(GrantedQuota):
+        async def reserve(self, **reservation):
+            raise PublicQuotaExhausted(reason=reason)
+
+    async def scenario():
+        def respond(request):
+            pytest.fail("Exhausted reservations must not call the inference provider")
+
+        async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as upstream:
+            app = create_app(PROVIDER_KEY, "", public_access=True, public_quota=Guard(),
+                             token_expires_at=EXPIRY, client=upstream)
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="https://relay") as client:
+                response = await client.post("/v1/chat/completions", json=PAYLOAD)
+                assert response.status_code == 403
+                assert "allowance" in response.json()["detail"]
+                assert "retry-after" not in response.headers
+                if reason == "client_daily_budget":
+                    assert "00:00 UTC" in response.json()["detail"]
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize(("trusted", "headers", "expected_ip", "expected_status"), [
+    (False, {"x-forwarded-for": "198.51.100.44", "x-real-ip": "198.51.100.45"}, "127.0.0.1", 200),
+    (True, {"x-forwarded-for": "198.51.100.44", "x-real-ip": "198.51.100.45"}, "198.51.100.44", 200),
+    (True, {"x-forwarded-for": "2001:db8:1234:5678::99"}, "2001:db8:1234:5678::99", 200),
+    (True, {}, None, 503),
+    (True, {"x-forwarded-for": "198.51.100.44, 198.51.100.45"}, None, 503),
+    (True, [("x-forwarded-for", "198.51.100.44"), ("x-forwarded-for", "198.51.100.45")], None, 503),
+    (True, {"x-forwarded-for": "x" * 65}, None, 503),
+])
+def test_only_explicitly_trusted_vercel_headers_select_the_client(trusted, headers, expected_ip, expected_status):
+    calls, reservations = [], []
+
+    class Guard(GrantedQuota):
+        async def reserve(self, **reservation):
+            reservations.append(reservation)
+
+    async def scenario():
+        def respond(request):
+            calls.append(request)
+            return httpx.Response(200, json={"choices": [{"message": {"content": "Synthetic response"}}]})
+
+        async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as upstream:
+            app = create_app(PROVIDER_KEY, "", public_access=True, public_quota=Guard(),
+                             token_expires_at=EXPIRY, client=upstream, trust_vercel_headers=trusted)
+            async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="https://relay") as client:
+                response = await client.post("/v1/chat/completions", json=PAYLOAD, headers=headers)
+                assert response.status_code == expected_status
+                assert len(calls) == len(reservations) == (1 if expected_status == 200 else 0)
+                if reservations:
+                    assert reservations[0]["client_ip"] == expected_ip
 
     asyncio.run(scenario())
 

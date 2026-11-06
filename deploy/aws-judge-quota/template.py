@@ -5,7 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
-NAME = "bifang-public-demo-quota"
+NAME = "bifang-public-demo-quota-v2"
 
 
 def render_template(source: str) -> dict:
@@ -15,20 +15,31 @@ def render_template(source: str) -> dict:
         "AWSTemplateFormatVersion": "2010-09-09",
         "Description": "Bifang public-demo reservation counter; no inference credentials or prompts",
         "Parameters": {
+            "BudgetTableName": {"Type": "String", "Default": "bifang-public-demo-quota"},
+            "CreateBudgetTable": {"Type": "String", "Default": "true", "AllowedValues": ["true", "false"]},
             "QuotaSecret": {"Type": "String", "NoEcho": True, "MinLength": 48},
             "ExpiresAt": {"Type": "String", "Default": "2026-12-23T20:00:00Z"},
             "RequestLimit": {"Type": "Number", "Default": 1000, "MinValue": 1},
             "OutputLimit": {"Type": "Number", "Default": 4000000, "MinValue": 1},
             "InputBytesLimit": {"Type": "Number", "Default": 16777216, "MinValue": 1},
             "PerMinute": {"Type": "Number", "Default": 60, "MinValue": 1},
+            "ClientRequestLimit": {"Type": "Number", "Default": 250, "MinValue": 1},
+            "ClientOutputLimit": {"Type": "Number", "Default": 1000000, "MinValue": 1},
+            "ClientInputBytesLimit": {"Type": "Number", "Default": 4194304, "MinValue": 1},
+            "ClientDailyRequestLimit": {"Type": "Number", "Default": 100, "MinValue": 1},
+            "ClientDailyOutputLimit": {"Type": "Number", "Default": 262144, "MinValue": 1},
+            "ClientDailyInputBytesLimit": {"Type": "Number", "Default": 2097152, "MinValue": 1},
+            "ClientPerMinute": {"Type": "Number", "Default": 10, "MinValue": 1},
         },
+        "Conditions": {"CreateBudgetTable": {"Fn::Equals": [ref("CreateBudgetTable"), "true"]}},
         "Resources": {
             "BudgetTable": {
                 "Type": "AWS::DynamoDB::Table",
+                "Condition": "CreateBudgetTable",
                 "DeletionPolicy": "Retain",
                 "UpdateReplacePolicy": "Retain",
                 "Properties": {
-                    "TableName": NAME,
+                    "TableName": ref("BudgetTableName"),
                     "BillingMode": "PAY_PER_REQUEST",
                     "AttributeDefinitions": [{"AttributeName": "pk", "AttributeType": "S"}],
                     "KeySchema": [{"AttributeName": "pk", "KeyType": "HASH"}],
@@ -55,7 +66,7 @@ def render_template(source: str) -> dict:
                         "Version": "2012-10-17",
                         "Statement": [
                             {"Effect": "Allow", "Action": "dynamodb:UpdateItem",
-                             "Resource": {"Fn::GetAtt": ["BudgetTable", "Arn"]},
+                             "Resource": {"Fn::Sub": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${BudgetTableName}"},
                              "Condition": {"ForAnyValue:StringEquals": {
                                  "dynamodb:EnclosingOperation": ["TransactWriteItems"]}}},
                             {"Effect": "Allow", "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
@@ -73,12 +84,19 @@ def render_template(source: str) -> dict:
                     "Code": {"ZipFile": source}, "MemorySize": 128, "Timeout": 10,
                     "Environment": {"Variables": {
                         "BIFANG_QUOTA_SECRET": ref("QuotaSecret"),
-                        "BIFANG_QUOTA_TABLE": ref("BudgetTable"),
+                        "BIFANG_QUOTA_TABLE": {"Fn::If": ["CreateBudgetTable", ref("BudgetTable"), ref("BudgetTableName")]},
                         "BIFANG_QUOTA_EXPIRES_AT": ref("ExpiresAt"),
                         "BIFANG_QUOTA_REQUEST_LIMIT": ref("RequestLimit"),
                         "BIFANG_QUOTA_OUTPUT_LIMIT": ref("OutputLimit"),
                         "BIFANG_QUOTA_INPUT_BYTES_LIMIT": ref("InputBytesLimit"),
                         "BIFANG_QUOTA_PER_MINUTE": ref("PerMinute"),
+                        "BIFANG_QUOTA_CLIENT_REQUEST_LIMIT": ref("ClientRequestLimit"),
+                        "BIFANG_QUOTA_CLIENT_OUTPUT_LIMIT": ref("ClientOutputLimit"),
+                        "BIFANG_QUOTA_CLIENT_INPUT_BYTES_LIMIT": ref("ClientInputBytesLimit"),
+                        "BIFANG_QUOTA_CLIENT_DAILY_REQUEST_LIMIT": ref("ClientDailyRequestLimit"),
+                        "BIFANG_QUOTA_CLIENT_DAILY_OUTPUT_LIMIT": ref("ClientDailyOutputLimit"),
+                        "BIFANG_QUOTA_CLIENT_DAILY_INPUT_BYTES_LIMIT": ref("ClientDailyInputBytesLimit"),
+                        "BIFANG_QUOTA_CLIENT_PER_MINUTE": ref("ClientPerMinute"),
                     }},
                     "Tags": [{"Key": "Project", "Value": "Bifang"}],
                 },
@@ -99,7 +117,7 @@ def render_template(source: str) -> dict:
             },
         },
         "Outputs": {"QuotaUrl": {"Value": {"Fn::GetAtt": ["QuotaUrl", "FunctionUrl"]}},
-                    "TableName": {"Value": ref("BudgetTable")}},
+                    "TableName": {"Value": {"Fn::If": ["CreateBudgetTable", ref("BudgetTable"), ref("BudgetTableName")]}}},
     }
 
 

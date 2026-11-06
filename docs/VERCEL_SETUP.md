@@ -51,10 +51,10 @@ and live deployment identity. Vercel Standard Protection restricts generated
 deployment URLs; share the stable production domain for judge access.
 
 The Git-connected project's **Ignored Build Step** also prevents an automatic
-production build from older source lacking the guard:
+production build from older source lacking the protocol-2 guard:
 
 ```sh
-if [ "$VERCEL_ENV" = production ] && [ ! -f ../../src/bifang/judge_quota.py ]; then exit 0; else exit 1; fi
+if [ "$VERCEL_ENV" = production ] && ! grep -q '^QUOTA_PROTOCOL_VERSION = 2$' ../../src/bifang/judge_quota.py 2>/dev/null; then exit 0; else exit 1; fi
 ```
 
 Vercel interprets exit 0 as skip and exit 1 as build. This setting was read back

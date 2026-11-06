@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import ipaddress
 import json
 import os
 import re
@@ -13,6 +16,9 @@ import httpx
 MAX_OUTPUT_TOKENS = 8192
 MAX_BODY_BYTES = 32768
 MAX_RESPONSE_BYTES = 4096
+QUOTA_PROTOCOL_VERSION = 2
+_CLIENT_SCOPE = b"bifang-public-quota-client:v1:"
+_BUDGET_REASONS = {"global_budget", "client_budget", "client_daily_budget"}
 _CONFIG_ERROR = "Public quota configuration is invalid."
 _HOST = re.compile(r"[a-z0-9]{32}\.lambda-url\.[a-z]{2}(?:-[a-z]+)+-[0-9]+\.on\.aws")
 _TOKEN = re.compile(r"[\x21-\x7e]{1,512}")
@@ -27,6 +33,27 @@ class PublicQuotaExceeded(RuntimeError):
 class PublicQuotaUnavailable(RuntimeError):
     def __init__(self):
         super().__init__("Public demo quota is unavailable.")
+
+
+class PublicQuotaExhausted(RuntimeError):
+    def __init__(self, reason: str, reset_at: int | None = None):
+        if (
+            not isinstance(reason, str)
+            or reason not in _BUDGET_REASONS
+            or (
+                reset_at is not None
+                and (
+                    reason != "client_daily_budget"
+                    or type(reset_at) is not int
+                    or reset_at <= 0
+                    or reset_at % 86400
+                )
+            )
+        ):
+            raise ValueError("Invalid quota exhaustion.")
+        super().__init__("Public demo usage budget exhausted.")
+        self.reason = reason
+        self.reset_at = reset_at
 
 
 def _configuration_valid(url: str, secret: str) -> bool:
@@ -56,10 +83,51 @@ def _unique_object(pairs):
     return result
 
 
-def _retry_after(value: str) -> int:
-    if not value.isascii() or not value.isdecimal() or len(value) > 4:
-        return 60
-    return min(3600, max(1, int(value)))
+def _client_key(client_ip: str, secret: str) -> str:
+    if (
+        not isinstance(client_ip, str)
+        or not client_ip.isascii()
+        or any(char.isspace() for char in client_ip)
+        or "%" in client_ip
+        or "," in client_ip
+    ):
+        raise ValueError("Invalid quota client.")
+    address = ipaddress.ip_address(client_ip)
+    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped is not None:
+        address = address.ipv4_mapped
+    network = ipaddress.ip_network((address, 32 if address.version == 4 else 64), strict=False)
+    return hmac.new(
+        secret.encode(), _CLIENT_SCOPE + str(network).encode(), hashlib.sha256
+    ).hexdigest()
+
+
+def _decision(status: int, payload, headers) -> tuple[int, str | None, int | None] | None:
+    if type(payload) is not dict or type(payload.get("allowed")) is not bool:
+        return None
+    if status != 429 and "retry-after" in headers:
+        return None
+    if status == 200 and payload == {"allowed": True}:
+        return 200, None, None
+    if status == 429 and payload == {"allowed": False}:
+        value = headers.get("retry-after", "")
+        if value.isascii() and value.isdecimal() and 1 <= len(value) <= 2 and 1 <= int(value) <= 60:
+            return 429, None, int(value)
+    if status == 403 and payload["allowed"] is False:
+        reason = payload.get("reason")
+        if not isinstance(reason, str) or reason not in _BUDGET_REASONS:
+            return None
+        if reason == "client_daily_budget":
+            reset = payload.get("reset_at")
+            if (
+                set(payload) == {"allowed", "reason", "reset_at"}
+                and type(reset) is int
+                and 0 < reset <= 253402300800
+                and reset % 86400 == 0
+            ):
+                return 403, reason, reset
+        elif set(payload) == {"allowed", "reason"}:
+            return 403, reason, None
+    return None
 
 
 class HttpPublicQuota:
@@ -85,7 +153,7 @@ class HttpPublicQuota:
             )
         )
 
-    async def reserve(self, *, output_tokens: int, body_bytes: int) -> None:
+    async def reserve(self, *, client_ip: str, output_tokens: int, body_bytes: int) -> None:
         if (
             type(output_tokens) is not int
             or not 1 <= output_tokens <= MAX_OUTPUT_TOKENS
@@ -95,23 +163,36 @@ class HttpPublicQuota:
             raise PublicQuotaUnavailable()
         decision = None
         try:
-            decision = await self._request(output_tokens, body_bytes)
+            client_key = _client_key(client_ip, self._secret)
+            decision = await self._request(client_key, output_tokens, body_bytes)
         except Exception:  # noqa: BLE001 - transport exceptions may contain credentials.
             # Raise outside the except block: upstream exceptions may contain secrets.
             decision = None
         if decision is None:
             raise PublicQuotaUnavailable()
-        allowed, retry_after = decision
-        if not allowed:
-            raise PublicQuotaExceeded(retry_after)
+        status, reason, timing = decision
+        if status == 429:
+            raise PublicQuotaExceeded(timing)
+        if status == 403:
+            raise PublicQuotaExhausted(reason, timing)
 
-    async def _request(self, output_tokens: int, body_bytes: int) -> tuple[bool, int] | None:
+    async def _request(
+        self,
+        client_key: str,
+        output_tokens: int,
+        body_bytes: int,
+    ) -> tuple[int, str | None, int | None] | None:
         request = httpx.Request(
             "POST",
             self._url,
-            headers={"Authorization": "Bearer " + self._secret, "Accept-Encoding": "identity"},
+            headers={
+                "Authorization": "Bearer " + self._secret,
+                "Accept-Encoding": "identity",
+                "X-Bifang-Quota-Protocol": str(QUOTA_PROTOCOL_VERSION),
+            },
             json={
                 "request_id": str(uuid4()),
+                "client_key": client_key,
                 "output_tokens": output_tokens,
                 "body_bytes": body_bytes,
             },
@@ -119,7 +200,7 @@ class HttpPublicQuota:
         )
         response = await self._client.send(request, stream=True, auth=None, follow_redirects=False)
         try:
-            if response.status_code not in (200, 429):
+            if response.status_code not in (200, 403, 429):
                 return None
             if response.headers.get("content-encoding", "identity").lower() != "identity":
                 return None
@@ -129,13 +210,7 @@ class HttpPublicQuota:
                 if len(body) > MAX_RESPONSE_BYTES:
                     return None
             payload = json.loads(body, object_pairs_hook=_unique_object)
-            if type(payload) is not dict or set(payload) != {"allowed"}:
-                return None
-            if response.status_code == 200 and payload["allowed"] is True:
-                return True, 0
-            if response.status_code == 429 and payload["allowed"] is False:
-                return False, _retry_after(response.headers.get("retry-after", "60"))
-            return None
+            return _decision(response.status_code, payload, response.headers)
         finally:
             await response.aclose()
 

@@ -15,4 +15,5 @@ app = create_app(
     token_expires_at=os.environ.get(JUDGE_TOKEN_EXPIRES_ENV),
     public_access=public,
     public_quota=public_quota_from_env() if public else None,
+    trust_vercel_headers=os.environ.get("VERCEL") == "1",
 )

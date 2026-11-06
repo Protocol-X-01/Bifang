@@ -33,8 +33,9 @@ judge-token authentication. The expiry applies in both modes.
 Public mode requires the [shared usage counter](../deploy/aws-judge-quota/README.md).
 Set its `QuotaUrl` output as `BIFANG_PUBLIC_QUOTA_URL` and keep the matching
 `BIFANG_PUBLIC_QUOTA_TOKEN` in a Vercel server-side secret. The counter uses a
-single DynamoDB transaction for the global allowance and minute rate; it
-receives counts and sizes, not prompts or provider keys. Missing configuration
+single DynamoDB transaction for global, client lifetime, UTC-day and minute
+allowances; it receives counts, sizes and a keyed client digest, not raw IPs,
+prompts or provider keys. Missing configuration
 stops public-mode initialization. A failed reservation never calls Token Factory.
 
 The initial allowance is 1,000 reserved completions, 4,000,000 requested output
@@ -44,6 +45,15 @@ The browser requests 2,048. Reservations remain counted if a provider call fails
 or is cancelled; redeploying does not reset the allowance. Operators can review
 the counts and increase the allowance in the quota stack. These are request
 limits, not a currency-denominated spending guarantee.
+
+Protocol 2 adds a 250-request lifetime allowance per client group (1,000,000
+requested output tokens and 4 MiB input), a UTC-day allowance of 100 requests
+(262,144 requested output tokens and 2 MiB input), and 10 requests per minute.
+IPv4 addresses form individual groups; IPv6 addresses share their /64. The relay
+uses an HMAC digest so the counter receives no raw visitor address. Visitors on
+one network can share limits; these controls do not establish a person's identity.
+Minute limits return 429 with a short `Retry-After`. Exhausted allowances return
+403 without it, with a clear notice when the daily allowance resets at midnight UTC.
 
 Use the stable production domain above for public access. Vercel Standard
 Protection covers generated deployment and preview URLs, including old versions

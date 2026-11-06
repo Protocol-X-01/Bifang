@@ -3,6 +3,8 @@
 import asyncio
 import base64
 import copy
+import hashlib
+import hmac
 import importlib.util
 import json
 import re
@@ -20,8 +22,10 @@ import httpx
 import pytest
 
 from bifang.judge_quota import (
+    QUOTA_PROTOCOL_VERSION,
     HttpPublicQuota,
     PublicQuotaExceeded,
+    PublicQuotaExhausted,
     PublicQuotaUnavailable,
     public_quota_from_env,
 )
@@ -29,6 +33,8 @@ from bifang.judge_quota import (
 NOW = 1800000007
 EXPIRY = NOW + 86400
 SECRET = "synthetic-quota-secret-only"
+CLIENT_IP = "192.0.2.10"
+CLIENT_KEY = "c" * 64
 URL = "https://" + "a" * 32 + ".lambda-url.us-east-1.on.aws/"
 ENV = {
     "BIFANG_QUOTA_SECRET": SECRET,
@@ -56,13 +62,14 @@ def lambda_module(monkeypatch):
     return module
 
 
-def event(*, request_id=None, output_tokens=7, body_bytes=11):
+def event(*, request_id=None, client_key=CLIENT_KEY, output_tokens=7, body_bytes=11):
     return {
-        "headers": {"authorization": "Bearer " + SECRET},
+        "headers": {"authorization": "Bearer " + SECRET, "x-bifang-quota-protocol": "2"},
         "requestContext": {"http": {"method": "POST"}},
         "body": json.dumps(
             {
                 "request_id": request_id or str(uuid4()),
+                "client_key": client_key,
                 "output_tokens": output_tokens,
                 "body_bytes": body_bytes,
             }
@@ -195,7 +202,7 @@ class Expression:
 
 
 class AtomicDynamo:
-    """Shared, locked, all-or-nothing two-item SDK fake with token deduplication."""
+    """Shared, locked, all-or-nothing five-item SDK fake with token deduplication."""
 
     def __init__(self):
         self.items = {"budget": budget()}
@@ -206,7 +213,8 @@ class AtomicDynamo:
     def transact_write_items(self, *, TransactItems, ClientRequestToken):
         with self.lock:
             self.calls.append(copy.deepcopy(TransactItems))
-            assert len(TransactItems) == 2
+            assert len(TransactItems) == 5
+            assert len({row["Update"]["Key"]["pk"]["S"] for row in TransactItems}) == 5
             assert str(UUID(ClientRequestToken)) == ClientRequestToken
             if ClientRequestToken in self.tokens:
                 if self.tokens[ClientRequestToken] != TransactItems:
@@ -250,7 +258,21 @@ class AtomicDynamo:
 
 
 def status(response):
-    assert json.loads(response["body"]) == {"allowed": response["statusCode"] == 200}
+    body = json.loads(response["body"])
+    assert body["allowed"] is (response["statusCode"] == 200)
+    if response["statusCode"] == 403 and "reason" in body:
+        assert body["reason"] in {"global_budget", "client_budget", "client_daily_budget"}
+        assert set(body) == (
+            {"allowed", "reason", "reset_at"}
+            if body["reason"] == "client_daily_budget"
+            else {"allowed", "reason"}
+        )
+    else:
+        assert set(body) == {"allowed"}
+    if response["statusCode"] == 429:
+        assert 1 <= int(response["headers"]["retry-after"]) <= 60
+    else:
+        assert "retry-after" not in response["headers"]
     assert response["headers"]["cache-control"] == "no-store"
     assert SECRET not in json.dumps(response)
     return response["statusCode"]
@@ -278,9 +300,14 @@ def test_atomic_concurrency_across_handlers_never_exceeds_any_budget(lambda_modu
         for _ in range(8)
     ]
     with ThreadPoolExecutor(max_workers=16) as pool:
-        results = list(pool.map(lambda index: status(handlers[index % 8](event())), range(160)))
+        results = list(
+            pool.map(
+                lambda index: status(handlers[index % 8](event(client_key=f"{index:064x}"))),
+                range(160),
+            )
+        )
     assert results.count(200) == 13
-    assert results.count(429) == 147
+    assert results.count(429 if limiting == "minute" else 403) == 147
     assert store.items["budget"] == {
         **budget(),
         "requests": number(13),
@@ -321,7 +348,7 @@ def test_time_changed_replay_fails_closed_without_a_second_reservation(lambda_mo
         )
         assert status(handle(request)) == expected
     assert store.items["budget"]["requests"] == number(1)
-    assert len(store.items) == 2
+    assert len(store.items) == 5
 
 
 def test_rate_reset_and_redeployment_never_reset_global_counters(lambda_module):
@@ -330,9 +357,9 @@ def test_rate_reset_and_redeployment_never_reset_global_counters(lambda_module):
     first = lambda_module.create_handler(dynamodb=store, environ=env, clock=lambda: NOW)
     assert [status(first(event())) for _ in range(3)] == [200, 200, 429]
     second = lambda_module.create_handler(dynamodb=store, environ=env, clock=lambda: NOW + 60)
-    assert [status(second(event())) for _ in range(2)] == [200, 429]
+    assert [status(second(event())) for _ in range(2)] == [200, 403]
     third = lambda_module.create_handler(dynamodb=store, environ=env, clock=lambda: NOW + 120)
-    assert status(third(event())) == 429
+    assert status(third(event())) == 403
     assert store.items["budget"]["requests"] == number(3)
     assert f"minute:{NOW // 60 + 2}" not in store.items
 
@@ -342,7 +369,7 @@ def test_raising_limit_preserves_consumed_budget(lambda_module):
     first = lambda_module.create_handler(
         dynamodb=store, clock=lambda: NOW, environ={**ENV, "BIFANG_QUOTA_REQUEST_LIMIT": "2"}
     )
-    assert [status(first(event())) for _ in range(3)] == [200, 200, 429]
+    assert [status(first(event())) for _ in range(3)] == [200, 200, 403]
     second = lambda_module.create_handler(
         dynamodb=store,
         clock=lambda: NOW + 60,
@@ -370,7 +397,7 @@ def test_fractional_number_cannot_allow_one_request_to_cross_a_cap(lambda_module
         clock=lambda: NOW,
         environ={**ENV, "BIFANG_QUOTA_REQUEST_LIMIT": "2", "BIFANG_QUOTA_PER_MINUTE": "2"},
     )
-    assert status(handle(event())) == 429
+    assert status(handle(event())) == (403 if counter == "budget" else 429)
     assert store.items == before
 
 
@@ -413,9 +440,10 @@ def test_absent_budget_expiry_drift_and_global_ttl_fail_closed(lambda_module, mo
         ("ttl", number(NOW)),
     ],
 )
-def test_existing_malformed_minute_is_never_reset(lambda_module, field, bad):
+@pytest.mark.parametrize("client_bucket", [False, True])
+def test_existing_malformed_minute_is_never_reset(lambda_module, field, bad, client_bucket):
     store = AtomicDynamo()
-    key = f"minute:{NOW // 60}"
+    key = f"client-minute:{NOW // 60}:{CLIENT_KEY}" if client_bucket else f"minute:{NOW // 60}"
     store.items[key] = {
         "pk": {"S": key},
         "count": number(0),
@@ -461,6 +489,13 @@ def test_auth_and_expiry_precede_even_sdk_creation(lambda_module, monkeypatch):
         ("BIFANG_QUOTA_OUTPUT_LIMIT", "-1"),
         ("BIFANG_QUOTA_INPUT_BYTES_LIMIT", "NaN"),
         ("BIFANG_QUOTA_PER_MINUTE", " 60"),
+        ("BIFANG_QUOTA_CLIENT_REQUEST_LIMIT", "0"),
+        ("BIFANG_QUOTA_CLIENT_OUTPUT_LIMIT", "-1"),
+        ("BIFANG_QUOTA_CLIENT_INPUT_BYTES_LIMIT", "NaN"),
+        ("BIFANG_QUOTA_CLIENT_DAILY_REQUEST_LIMIT", "0"),
+        ("BIFANG_QUOTA_CLIENT_DAILY_OUTPUT_LIMIT", "-1"),
+        ("BIFANG_QUOTA_CLIENT_DAILY_INPUT_BYTES_LIMIT", "Infinity"),
+        ("BIFANG_QUOTA_CLIENT_PER_MINUTE", " 10"),
     ],
 )
 def test_bad_configuration_never_contacts_dynamo(lambda_module, name, value):
@@ -477,6 +512,12 @@ def test_bad_configuration_never_contacts_dynamo(lambda_module, name, value):
     [
         ("request_id", "not-a-uuid"),
         ("request_id", ""),
+        ("client_key", None),
+        ("client_key", "A" * 64),
+        ("client_key", "g" * 64),
+        ("client_key", "a" * 63),
+        ("client_key", "a" * 65),
+        ("client_key", CLIENT_IP),
         ("output_tokens", True),
         ("output_tokens", 0),
         ("output_tokens", 8193),
@@ -527,7 +568,7 @@ def test_cost_larger_than_configured_cap_is_refused_without_a_transaction(lambda
         clock=lambda: NOW,
         environ={**ENV, "BIFANG_QUOTA_OUTPUT_LIMIT": "6", "BIFANG_QUOTA_INPUT_BYTES_LIMIT": "10"},
     )
-    assert status(handle(event())) == 429
+    assert status(handle(event())) == 403
     assert not store.calls
     assert store.items == {"budget": budget()}
 
@@ -578,7 +619,10 @@ def test_http_client_round_trip_sends_only_costs_and_internal_uuid(lambda_module
     def respond(request):
         requests.append(request)
         payload = json.loads(request.content)
-        assert set(payload) == {"request_id", "output_tokens", "body_bytes"}
+        assert set(payload) == {"request_id", "client_key", "output_tokens", "body_bytes"}
+        assert re.fullmatch(r"[0-9a-f]{64}", payload["client_key"])
+        assert CLIENT_IP.encode() not in request.content
+        assert request.headers["x-bifang-quota-protocol"] == str(QUOTA_PROTOCOL_VERSION) == "2"
         assert UUID(payload["request_id"]).version == 4
         assert request.headers["authorization"] == "Bearer " + SECRET
         assert "x-api-key" not in request.headers and "cookie" not in request.headers
@@ -589,8 +633,8 @@ def test_http_client_round_trip_sends_only_costs_and_internal_uuid(lambda_module
         )
 
     async def scenario(quota, client):
-        assert await quota.reserve(output_tokens=7, body_bytes=11) is None
-        assert await quota.reserve(output_tokens=7, body_bytes=11) is None
+        assert await quota.reserve(client_ip=CLIENT_IP, output_tokens=7, body_bytes=11) is None
+        assert await quota.reserve(client_ip=CLIENT_IP, output_tokens=7, body_bytes=11) is None
         assert (
             json.loads(requests[0].content)["request_id"]
             != json.loads(requests[1].content)["request_id"]
@@ -621,7 +665,7 @@ def test_uncertain_write_is_consumed_and_is_never_retried(lambda_module):
 
     async def scenario(quota, client):
         with pytest.raises(PublicQuotaUnavailable) as caught:
-            await quota.reserve(output_tokens=7, body_bytes=11)
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=7, body_bytes=11)
         assert caught.value.__cause__ is None and caught.value.__context__ is None
         assert SECRET not in "".join(traceback.format_exception(caught.value))
 
@@ -641,7 +685,7 @@ def test_redirects_are_refused_even_with_an_injected_redirecting_client(code, de
 
     async def scenario(quota, client):
         with pytest.raises(PublicQuotaUnavailable):
-            await quota.reserve(output_tokens=1, body_bytes=1)
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=1, body_bytes=1)
 
     run_with_transport(respond, scenario, follow_redirects=True)
     assert len(requests) == 1
@@ -668,7 +712,7 @@ def test_redirects_are_refused_even_with_an_injected_redirecting_client(code, de
 def test_http_failures_and_malformed_decisions_are_redacted(code, body, headers):
     async def scenario(quota, client):
         with pytest.raises(PublicQuotaUnavailable) as caught:
-            await quota.reserve(output_tokens=1, body_bytes=1)
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=1, body_bytes=1)
         assert SECRET not in "".join(traceback.format_exception(caught.value))
         assert caught.value.__context__ is None
 
@@ -683,12 +727,12 @@ def test_http_failures_and_malformed_decisions_are_redacted(code, body, headers)
 
 @pytest.mark.parametrize(
     "header,expected",
-    [("17", 17), ("0", 1), ("9999", 3600), (SECRET, 60), ("-1", 60), ("99999999", 60)],
+    [("1", 1), ("17", 17), ("60", 60)],
 )
 def test_quota_exceeded_has_safe_bounded_retry_after(header, expected):
     async def scenario(quota, client):
         with pytest.raises(PublicQuotaExceeded) as caught:
-            await quota.reserve(output_tokens=1, body_bytes=1)
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=1, body_bytes=1)
         assert caught.value.retry_after == expected
         assert SECRET not in str(caught.value)
 
@@ -719,7 +763,7 @@ def test_response_read_is_bounded_and_stream_closed():
 
     async def scenario(quota, client):
         with pytest.raises(PublicQuotaUnavailable):
-            await quota.reserve(output_tokens=1, body_bytes=1)
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=1, body_bytes=1)
 
     run_with_transport(lambda request: httpx.Response(200, stream=stream), scenario)
     assert stream.chunks_read <= 9
@@ -768,7 +812,9 @@ def test_invalid_client_costs_fail_before_http(output_tokens, body_bytes):
 
     async def scenario(quota, client):
         with pytest.raises(PublicQuotaUnavailable):
-            await quota.reserve(output_tokens=output_tokens, body_bytes=body_bytes)
+            await quota.reserve(
+                client_ip=CLIENT_IP, output_tokens=output_tokens, body_bytes=body_bytes
+            )
 
     run_with_transport(lambda request: calls.append(request), scenario)
     assert not calls
@@ -797,7 +843,9 @@ def test_env_factory_owned_client_ignores_proxy_env_disables_redirects_and_close
 
     async def scenario():
         quota = public_quota_from_env()
-        assert await quota.reserve(output_tokens=8192, body_bytes=32768) is None
+        assert (
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=8192, body_bytes=32768) is None
+        )
         await quota.aclose()
         assert created[0].is_closed
 
@@ -806,3 +854,351 @@ def test_env_factory_owned_client_ignores_proxy_env_disables_redirects_and_close
     with pytest.raises(ValueError, match="^Public quota configuration is invalid\\.$"):
         public_quota_from_env()
     assert len(created) == 1
+
+
+@pytest.mark.parametrize(
+    "limiting",
+    [
+        "CLIENT_REQUEST_LIMIT",
+        "CLIENT_OUTPUT_LIMIT",
+        "CLIENT_INPUT_BYTES_LIMIT",
+        "CLIENT_DAILY_REQUEST_LIMIT",
+        "CLIENT_DAILY_OUTPUT_LIMIT",
+        "CLIENT_DAILY_INPUT_BYTES_LIMIT",
+        "CLIENT_PER_MINUTE",
+    ],
+)
+def test_concurrent_clients_have_independent_atomic_budgets(lambda_module, limiting):
+    store = AtomicDynamo()
+    value = (
+        "21" if limiting.endswith("OUTPUT_LIMIT") else "33" if "INPUT_BYTES" in limiting else "3"
+    )
+    env = {
+        **ENV,
+        "BIFANG_QUOTA_PER_MINUTE": "1000",
+        "BIFANG_QUOTA_CLIENT_PER_MINUTE": "1000",
+        "BIFANG_QUOTA_" + limiting: value,
+    }
+    handlers = [
+        lambda_module.create_handler(dynamodb=store, environ=env.copy(), clock=lambda: NOW)
+        for _ in range(6)
+    ]
+
+    def reserve(index):
+        client_key = f"{index % 3:064x}"
+        return handlers[index % 6](event(client_key=client_key))
+
+    with ThreadPoolExecutor(max_workers=16) as pool:
+        replies = list(pool.map(reserve, range(90)))
+    expected_reason = "client_daily_budget" if "DAILY" in limiting else "client_budget"
+    assert sum(status(reply) == 200 for reply in replies) == 9
+    for reply in replies:
+        if reply["statusCode"] != 200:
+            if limiting == "CLIENT_PER_MINUTE":
+                assert status(reply) == 429
+                assert reply["headers"]["retry-after"] == str(60 - NOW % 60)
+            else:
+                assert status(reply) == 403
+                assert json.loads(reply["body"])["reason"] == expected_reason
+    assert store.items["budget"] == {
+        **budget(),
+        "requests": number(9),
+        "output_tokens": number(63),
+        "input_bytes": number(99),
+    }
+    assert store.items[f"minute:{NOW // 60}"]["count"] == number(9)
+    for client in range(3):
+        client_key = f"{client:064x}"
+        lifetime = store.items[f"client:{client_key}"]
+        daily = store.items[f"client-day:{NOW // 86400}:{client_key}"]
+        minute = store.items[f"client-minute:{NOW // 60}:{client_key}"]
+        for row in (lifetime, daily):
+            assert row["requests"] == number(3)
+            assert row["output_tokens"] == number(21)
+            assert row["input_bytes"] == number(33)
+        assert lifetime["ttl"] == number(EXPIRY + 36 * 3600)
+        assert daily["expires_at"] == number((NOW // 86400 + 1) * 86400)
+        assert daily["ttl"] == number((NOW // 86400 + 1) * 86400 + 36 * 3600)
+        assert minute["count"] == number(3)
+        assert minute["ttl"] == number(NOW // 60 * 60 + 36 * 3600)
+
+
+def test_default_limits_prevent_one_client_draining_multiweek_global_budget(lambda_module):
+    store = AtomicDynamo()
+    expiry = NOW + 14 * 86400
+    store.items["budget"]["expires_at"] = number(expiry)
+    current = [NOW]
+    env = {**ENV, "BIFANG_QUOTA_EXPIRES_AT": datetime.fromtimestamp(expiry, UTC).isoformat()}
+    handle = lambda_module.create_handler(dynamodb=store, environ=env, clock=lambda: current[0])
+    first_day = NOW // 86400 + 1
+    allowed = 0
+    for day in range(3):
+        for minute in range(101):
+            current[0] = (first_day + day) * 86400 + minute * 60 + 1
+            reply = handle(event(output_tokens=1, body_bytes=1))
+            if status(reply) == 200:
+                allowed += 1
+            else:
+                body = json.loads(reply["body"])
+                assert body["reason"] == ("client_daily_budget" if day < 2 else "client_budget")
+                if day < 2:
+                    assert body["reset_at"] == (first_day + day + 1) * 86400
+    assert allowed == 250
+    assert store.items["budget"]["requests"] == number(250)
+    assert store.items[f"client:{CLIENT_KEY}"]["requests"] == number(250)
+    before = copy.deepcopy(store.items)
+    current[0] += 86400
+    redeployed = lambda_module.create_handler(
+        dynamodb=store, environ=env.copy(), clock=lambda: current[0]
+    )
+    assert status(redeployed(event(output_tokens=1, body_bytes=1))) == 403
+    assert store.items == before
+    assert status(redeployed(event(client_key="d" * 64, output_tokens=1, body_bytes=1))) == 200
+    assert store.items["budget"]["requests"] == number(251)
+
+
+@pytest.mark.parametrize("scope", ["client", "client-day"])
+@pytest.mark.parametrize("field", ["requests", "output_tokens", "input_bytes", "expires_at", "ttl"])
+@pytest.mark.parametrize("bad", [None, {"S": "0"}, {"N": "-1"}])
+def test_malformed_existing_client_budget_never_resets_or_partially_reserves(
+    lambda_module,
+    scope,
+    field,
+    bad,
+):
+    store = AtomicDynamo()
+    handle = lambda_module.create_handler(dynamodb=store, environ=ENV, clock=lambda: NOW)
+    assert status(handle(event())) == 200
+    key = f"client:{CLIENT_KEY}" if scope == "client" else f"client-day:{NOW // 86400}:{CLIENT_KEY}"
+    if bad is None:
+        del store.items[key][field]
+    else:
+        store.items[key][field] = bad
+    before = copy.deepcopy(store.items)
+    assert status(handle(event())) == 503
+    assert store.items == before
+
+
+def test_retained_existing_global_counter_and_client_rows_survive_redeployment(lambda_module):
+    store = AtomicDynamo()
+    store.items["budget"].update(
+        {"requests": number(4), "output_tokens": number(2760), "input_bytes": number(636)}
+    )
+    for _ in range(2):
+        handle = lambda_module.create_handler(dynamodb=store, environ=ENV.copy(), clock=lambda: NOW)
+        assert status(handle(event())) == 200
+    assert store.items["budget"] == {
+        **budget(),
+        "requests": number(6),
+        "output_tokens": number(2774),
+        "input_bytes": number(658),
+    }
+    assert store.items[f"client:{CLIENT_KEY}"]["requests"] == number(2)
+
+
+@pytest.mark.parametrize(
+    "reason,setting",
+    [
+        ("global_budget", "BIFANG_QUOTA_REQUEST_LIMIT"),
+        ("client_budget", "BIFANG_QUOTA_CLIENT_REQUEST_LIMIT"),
+        ("client_daily_budget", "BIFANG_QUOTA_CLIENT_DAILY_REQUEST_LIMIT"),
+    ],
+)
+def test_budget_exhaustion_precedes_simultaneous_minute_exhaustion(lambda_module, reason, setting):
+    store = AtomicDynamo()
+    env = {
+        **ENV,
+        setting: "1",
+        "BIFANG_QUOTA_PER_MINUTE": "1",
+        "BIFANG_QUOTA_CLIENT_PER_MINUTE": "1",
+    }
+    handle = lambda_module.create_handler(dynamodb=store, environ=env, clock=lambda: NOW)
+    assert status(handle(event())) == 200
+    before = copy.deepcopy(store.items)
+    reply = handle(event())
+    assert status(reply) == 403
+    assert json.loads(reply["body"])["reason"] == reason
+    assert store.items == before
+
+
+@pytest.mark.parametrize("setting", ["BIFANG_QUOTA_PER_MINUTE", "BIFANG_QUOTA_CLIENT_PER_MINUTE"])
+@pytest.mark.parametrize("second,retry_after", [(0, 60), (1, 59), (59, 1)])
+def test_only_minute_exhaustion_returns_accurate_retry_after(
+    lambda_module, setting, second, retry_after
+):
+    store = AtomicDynamo()
+    current = [NOW // 60 * 60 + second]
+    handle = lambda_module.create_handler(
+        dynamodb=store, environ={**ENV, setting: "1"}, clock=lambda: current[0]
+    )
+    assert status(handle(event())) == 200
+    reply = handle(event())
+    assert status(reply) == 429
+    assert reply["headers"]["retry-after"] == str(retry_after)
+    current[0] = NOW // 60 * 60 + 60
+    assert status(handle(event())) == 200
+    assert store.items["budget"]["requests"] == number(2)
+
+
+def test_protocol_two_is_mandatory_and_no_raw_ip_payload_is_accepted(lambda_module):
+    store = AtomicDynamo()
+    handle = lambda_module.create_handler(dynamodb=store, environ=ENV, clock=lambda: NOW)
+    for version in (None, "1", "3", " 2", "2,2"):
+        request = event()
+        if version is None:
+            del request["headers"]["x-bifang-quota-protocol"]
+        else:
+            request["headers"]["x-bifang-quota-protocol"] = version
+        assert status(handle(request)) == 503
+    for change in ("missing-key", "raw-ip"):
+        request = event()
+        payload = json.loads(request["body"])
+        if change == "missing-key":
+            del payload["client_key"]
+        else:
+            payload["client_ip"] = CLIENT_IP
+        request["body"] = json.dumps(payload)
+        assert status(handle(request)) == 503
+    assert QUOTA_PROTOCOL_VERSION == lambda_module.QUOTA_PROTOCOL_VERSION == 2
+    assert not store.calls
+
+
+def test_client_hmac_normalizes_networks_and_never_transfers_ip(capsys):
+    identities = [
+        (CLIENT_IP, "192.0.2.10/32"),
+        ("::ffff:192.0.2.10", "192.0.2.10/32"),
+        ("2001:db8:1:2::1", "2001:db8:1:2::/64"),
+        ("2001:0DB8:0001:0002:ffff:0:0:99", "2001:db8:1:2::/64"),
+        ("2001:db8:1:3::1", "2001:db8:1:3::/64"),
+    ]
+    keys = []
+
+    def respond(request):
+        payload = json.loads(request.content)
+        assert set(payload) == {"client_key", "request_id", "output_tokens", "body_bytes"}
+        assert request.headers["x-bifang-quota-protocol"] == "2"
+        for address, _ in identities:
+            assert address.encode() not in request.content
+            assert address not in str(request.url)
+            assert address not in str(request.headers)
+        keys.append(payload["client_key"])
+        return httpx.Response(200, json={"allowed": True})
+
+    async def scenario(quota, client):
+        for address, _ in identities:
+            await quota.reserve(client_ip=address, output_tokens=1, body_bytes=1)
+
+    run_with_transport(respond, scenario)
+    expected = [
+        hmac.new(
+            SECRET.encode(), b"bifang-public-quota-client:v1:" + network.encode(), hashlib.sha256
+        ).hexdigest()
+        for _, network in identities
+    ]
+    assert keys == expected
+    assert keys[0] == keys[1]
+    assert keys[2] == keys[3] and keys[3] != keys[4]
+    assert capsys.readouterr() == ("", "")
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        None,
+        3221225994,
+        b"192.0.2.10",
+        "",
+        "unknown",
+        "example.com",
+        "192.0.2.10, 198.51.100.1",
+        "for=192.0.2.10",
+        "192.0.2.10:443",
+        "[2001:db8::1]",
+        "fe80::1%eth0",
+        "fe80::1%2",
+        "192.168.001.1",
+        "192.0.2.10/32",
+        "2001:db8::/64",
+        " 192.0.2.10",
+        "192.0.2.10\n",
+        "\t2001:db8::1",
+        "0xc000020a",
+        "192.0.2",
+        "192.0.2.10\x00",
+    ],
+    ids=lambda value: type(value).__name__,
+)
+def test_malformed_or_spoof_style_client_ip_fails_before_rpc_and_is_redacted(value, capsys):
+    calls = []
+
+    async def scenario(quota, client):
+        with pytest.raises(PublicQuotaUnavailable) as caught:
+            await quota.reserve(client_ip=value, output_tokens=1, body_bytes=1)
+        rendered = "".join(traceback.format_exception(caught.value))
+        assert SECRET not in rendered
+        if isinstance(value, str) and value:
+            assert value not in rendered
+        assert caught.value.__context__ is None and caught.value.__cause__ is None
+
+    run_with_transport(lambda request: calls.append(request), scenario)
+    assert not calls
+    assert capsys.readouterr() == ("", "")
+
+
+@pytest.mark.parametrize("reason", ["global_budget", "client_budget", "client_daily_budget"])
+def test_client_exhaustion_exception_has_reason_and_daily_reset_only(reason):
+    payload = {"allowed": False, "reason": reason}
+    reset_at = (NOW // 86400 + 1) * 86400 if reason == "client_daily_budget" else None
+    if reset_at is not None:
+        payload["reset_at"] = reset_at
+
+    async def scenario(quota, client):
+        with pytest.raises(PublicQuotaExhausted) as caught:
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=1, body_bytes=1)
+        assert caught.value.reason == reason
+        assert caught.value.reset_at == reset_at
+        assert not hasattr(caught.value, "retry_after")
+        assert SECRET not in str(caught.value)
+
+    run_with_transport(lambda request: httpx.Response(403, json=payload), scenario)
+
+
+@pytest.mark.parametrize("value", [None, "0", "61", "-1", "9999", "1.0", "tomorrow", " 1", "1,2"])
+def test_client_refuses_missing_or_invalid_minute_retry_after(value):
+    headers = {} if value is None else {"retry-after": value}
+
+    async def scenario(quota, client):
+        with pytest.raises(PublicQuotaUnavailable):
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=1, body_bytes=1)
+
+    run_with_transport(
+        lambda request: httpx.Response(429, json={"allowed": False}, headers=headers), scenario
+    )
+
+
+@pytest.mark.parametrize(
+    "payload,headers",
+    [
+        ({"allowed": False, "reason": "unknown"}, {}),
+        ({"allowed": True, "reason": "global_budget"}, {}),
+        ({"allowed": False, "reason": "global_budget", "reset_at": 86400}, {}),
+        ({"allowed": False, "reason": "client_budget", "reset_at": 86400}, {}),
+        ({"allowed": False, "reason": "client_daily_budget"}, {}),
+        ({"allowed": False, "reason": "client_daily_budget", "reset_at": True}, {}),
+        ({"allowed": False, "reason": "client_daily_budget", "reset_at": "86400"}, {}),
+        ({"allowed": False, "reason": "client_daily_budget", "reset_at": 86400.0}, {}),
+        ({"allowed": False, "reason": "client_daily_budget", "reset_at": -86400}, {}),
+        ({"allowed": False, "reason": "client_daily_budget", "reset_at": NOW}, {}),
+        ({"allowed": False, "reason": "client_daily_budget", "reset_at": 10**30}, {}),
+        ({"allowed": False, "reason": "client_budget"}, {"retry-after": "60"}),
+        ({"allowed": False, "reason": "global_budget", "detail": SECRET}, {}),
+    ],
+)
+def test_client_rejects_malformed_budget_denials_and_false_retry_after(payload, headers):
+    async def scenario(quota, client):
+        with pytest.raises(PublicQuotaUnavailable) as caught:
+            await quota.reserve(client_ip=CLIENT_IP, output_tokens=1, body_bytes=1)
+        assert SECRET not in "".join(traceback.format_exception(caught.value))
+        assert caught.value.__context__ is None
+
+    run_with_transport(lambda request: httpx.Response(403, json=payload, headers=headers), scenario)

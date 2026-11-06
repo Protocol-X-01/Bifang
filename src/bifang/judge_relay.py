@@ -13,7 +13,12 @@ from fastapi import FastAPI, HTTPException, Request
 from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
 from .judge_demo import PUBLIC_DEMO_CSP, PUBLIC_DEMO_HTML
-from .judge_quota import PublicQuotaExceeded, PublicQuotaUnavailable, public_quota_from_env
+from .judge_quota import (
+    PublicQuotaExceeded,
+    PublicQuotaExhausted,
+    PublicQuotaUnavailable,
+    public_quota_from_env,
+)
 from .model_ids import TOKEN_FACTORY_ROLES
 
 UPSTREAM = "https://api.tokenfactory.nebius.com/v1"
@@ -62,9 +67,12 @@ def create_app(
     clock: Callable[[], datetime] | None = None,
     public_access: bool = False,
     public_quota=None,
+    trust_vercel_headers: bool = False,
 ):
     if type(public_access) is not bool:
         raise TypeError("public_access must be a boolean")
+    if type(trust_vercel_headers) is not bool:
+        raise TypeError("trust_vercel_headers must be a boolean")
     if len(provider_key) < 16 or (not public_access and len(judge_token) < 32) or provider_key == judge_token:
         raise ValueError("Configure separate provider credentials and a strong judge-only token")
     if token_expires_at is None:
@@ -190,10 +198,24 @@ def create_app(
             raise HTTPException(400, "stream must be a boolean")
         if public_access:
             try:
-                await public_quota.reserve(output_tokens=maximum, body_bytes=len(body))
+                if trust_vercel_headers:
+                    addresses = request.headers.getlist("x-forwarded-for")
+                    if len(addresses) != 1 or len(addresses[0]) > 64 or "," in addresses[0]:
+                        raise PublicQuotaUnavailable()
+                    address = addresses[0]
+                else:
+                    address = request.client.host if request.client else None
+                await public_quota.reserve(client_ip=address, output_tokens=maximum, body_bytes=len(body))
             except PublicQuotaExceeded as error:
                 raise HTTPException(429, "Public demo usage limit reached; please retry later",
                                     headers={"Retry-After": str(error.retry_after)}) from None
+            except PublicQuotaExhausted as error:
+                messages = {
+                    "global_budget": "The public demo allowance has been reached. The project owner can replenish it.",
+                    "client_budget": "This connection's demo allowance has been reached. The project owner can replenish it.",
+                    "client_daily_budget": "This connection's daily demo allowance has been reached. It resets at 00:00 UTC.",
+                }
+                raise HTTPException(403, messages.get(error.reason, "The public demo allowance has been reached")) from None
             except PublicQuotaUnavailable:
                 raise HTTPException(503, "Public demo usage guard temporarily unavailable") from None
         response = await send("POST", "/chat/completions", payload, stream=streaming)
@@ -227,6 +249,7 @@ def main():
         token_expires_at=os.environ.get(JUDGE_TOKEN_EXPIRES_ENV),
         public_access=public,
         public_quota=public_quota_from_env() if public else None,
+        trust_vercel_headers=os.environ.get("VERCEL") == "1",
     )
     uvicorn.run(app, host=os.environ.get("BIFANG_JUDGE_HOST", "127.0.0.1"),
                 port=int(os.environ.get("BIFANG_JUDGE_PORT", os.environ.get("PORT", "8010"))),

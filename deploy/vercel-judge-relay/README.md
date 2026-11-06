@@ -51,9 +51,12 @@ Token Factory credits. The configured access expiry still applies.
 Public mode also requires `BIFANG_PUBLIC_QUOTA_URL` and the server-side
 `BIFANG_PUBLIC_QUOTA_TOKEN`. Every valid completion reserves its request,
 requested output tokens and input-body bytes through the shared AWS counter
-before contacting Token Factory. The counter atomically enforces total and
-minute limits across deployments. Unavailable guard returns 503; exhausted
-allowance returns 429. Public requests accept at most 32 KiB and 8,192 output
+before contacting Token Factory. The protocol-2 counter atomically enforces
+global, per-client lifetime/day and minute limits across deployments. The relay
+sends a keyed digest of the platform client IP group, never the raw address.
+Unavailable guard returns 503; minute limits return 429 with `Retry-After`;
+exhausted allowances return 403 without an automatic-retry instruction. The
+daily allowance resets at 00:00 UTC. Public requests accept at most 32 KiB and 8,192 output
 tokens. Private mode retains its existing request limits and authentication.
 
 Only the demo, model catalog and chat-completion routes are public. Other
