@@ -6,6 +6,7 @@ import pytest
 
 from bifang.agent import Agent
 from bifang.config import Config
+from bifang.providers.types import ProviderConfig
 from bifang.review_workflow import ReviewWorkflow
 from bifang.workspace import Workspace
 
@@ -18,7 +19,12 @@ from bifang.workspace import Workspace
         ("Partial review", "length", "stopped", "output_limit"),
         ("", "length", "stopped", "output_limit"),
         ("Partial review", "max_tokens", "stopped", "output_limit"),
+        ("Partial review", "model_context_window_exceeded", "stopped", "output_limit"),
+        ("", "model_context_window_exceeded", "stopped", "output_limit"),
         ("Partial review", "content_filter", "stopped", "provider_filter"),
+        ("I cannot complete this review.", "refusal", "stopped", "provider_filter"),
+        ("", "refusal", "stopped", "provider_filter"),
+        ("Inspected the requested evidence.", "end_turn", "completed", None),
         ("Inspected the requested evidence.", "stop", "completed", None),
         ("Inspected the requested evidence.", None, "completed", None),
     ],
@@ -50,6 +56,63 @@ def test_review_requires_a_finished_nonempty_answer(tmp_path, monkeypatch, conte
                 if expected == "completed":
                     assert worker["analysis"] == content
                     assert "error" not in worker
+                else:
+                    assert worker["analysis"] == (content or "")
+                    assert worker["error"]
+        finally:
+            await parent.close()
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize(
+    ("stop_reason", "reason", "error"),
+    [
+        ("refusal", "provider_filter", "The provider stopped the review before a final answer."),
+        ("model_context_window_exceeded", "output_limit",
+         "The model reached its response limit before finishing the review."),
+    ],
+)
+def test_anthropic_stop_reason_reaches_review_completion(
+    tmp_path, monkeypatch, stop_reason, reason, error,
+):
+    content = "Partial review from Anthropic"
+    requests = []
+    client_type = httpx.AsyncClient
+
+    def respond(request):
+        assert request.method == "POST"
+        assert request.url.host == "fixture.invalid"
+        requests.append(request)
+        return httpx.Response(200, json={
+            "content": [{"type": "text", "text": content}], "stop_reason": stop_reason,
+        })
+
+    monkeypatch.setattr(
+        "bifang.providers.anthropic.httpx.AsyncClient",
+        lambda **kwargs: client_type(transport=httpx.MockTransport(respond), **kwargs),
+    )
+
+    async def scenario():
+        config = Config(
+            default_provider="anthropic", enable_memory=False, enable_conversation_history=False,
+            providers={"anthropic": ProviderConfig(
+                name="anthropic", base_url="https://fixture.invalid/v1", default_model="fixture",
+            )},
+        )
+        parent = Agent(config, Workspace(tmp_path, tmp_path))
+        try:
+            workflow = ReviewWorkflow(parent, "Review the supplied evidence")
+            await workflow.run()
+            result = workflow.snapshot()
+            assert result["status"] == "failed"
+            assert len(requests) == 2
+            for worker in result["workers"]:
+                assert worker["status"] == "stopped"
+                assert worker["stop_reason"] == reason
+                assert worker["error"] == error
+                assert worker["analysis"] == content
+                assert worker["routing"][0]["provider"] == "anthropic"
         finally:
             await parent.close()
 

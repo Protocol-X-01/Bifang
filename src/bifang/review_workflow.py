@@ -73,10 +73,10 @@ class ReviewWorkflow:
                 if last.get("role") != "assistant" or last.get("tool_calls"):
                     row["stop_reason"] = "step_limit"
                     row["error"] = "The review reached its step limit before a final answer."
-                elif last.get("finish_reason") in {"length", "max_tokens"}:
+                elif last.get("finish_reason") in {"length", "max_tokens", "model_context_window_exceeded"}:
                     row["stop_reason"] = "output_limit"
                     row["error"] = "The model reached its response limit before finishing the review."
-                elif last.get("finish_reason") == "content_filter":
+                elif last.get("finish_reason") in {"content_filter", "refusal"}:
                     row["stop_reason"] = "provider_filter"
                     row["error"] = "The provider stopped the review before a final answer."
                 elif not row["analysis"].strip():
