@@ -106,7 +106,7 @@ def test_agent_trace_contains_actual_tool_execution_and_no_content(tmp_path, mon
         async def scenario():
             agent = Agent(Config(enable_memory=False, enable_conversation_history=False,
                                  enable_tracing=True, tracing_endpoint=endpoint),
-                          Workspace(tmp_path, tmp_path))
+                          Workspace(tmp_path, tmp_path), approve=lambda _: True)
             calls = []
 
             async def complete(messages, **kwargs):

@@ -2,6 +2,7 @@ import asyncio
 from types import SimpleNamespace
 
 import bifang.server as server_module
+from bifang.model_ids import NVIDIA_INTEGRATE_ROLES
 
 
 def _stub_config(default_provider="nebius", providers=("nebius", "zai")):
@@ -102,6 +103,29 @@ def test_selectable_models_falls_back_when_live_catalog_fails(monkeypatch):
     assert result["providers"]["nebius"]["models"] == ["Nemotron-3-Nano"]
     assert result["providers"]["zai"]["live"] is False
     assert "zai::glm-5.3" in result["models"]
+
+
+def test_nvidia_role_models_match_live_catalog(monkeypatch):
+    cfg = _stub_config(default_provider="nvidia", providers=("nvidia",))
+    cfg.routing_models = {}
+    manager = FakeManager(catalogs={
+        "nvidia": {
+            "nvidia/nemotron-3.5-bolt-e4b",
+            "nvidia/nemotron-3-super-120b-a12b",
+            "nvidia/nemotron-3-ultra-550b-a55b",
+        },
+    })
+
+    result = _run_selectable(
+        monkeypatch,
+        cfg,
+        manager,
+        {"nvidia": NVIDIA_INTEGRATE_ROLES},
+    )
+
+    assert result["providers"]["nvidia"]["live"] is True
+    assert result["providers"]["nvidia"]["auto_available"] is True
+    assert result["roles"] == NVIDIA_INTEGRATE_ROLES
 
 
 def test_selectable_models_without_any_provider(monkeypatch):

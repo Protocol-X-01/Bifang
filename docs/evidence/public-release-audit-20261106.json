@@ -1,0 +1,27 @@
+{
+  "checked_on": "2026-11-06",
+  "release_url": "https://github.com/Protocol-X-01/Bifang/releases/tag/v0.3.2",
+  "published_at": "2026-10-30T18:41:08Z",
+  "tag_commit": "8c9a2472b218afcce6c68a3083dce6a2c67e4144",
+  "supplemental_source_commit": "a479d91ecc979f1f9bf62bd803c26a81c57833fb",
+  "binary_asset_count": 16,
+  "all_metadata_digests_match_correct_checksum_sets": true,
+  "supplemental_desktop_filename_marker": "a479d91",
+  "linux_workflow": "https://github.com/Protocol-X-01/Bifang/actions/runs/41561441846",
+  "windows_macos_workflow": "https://github.com/Protocol-X-01/Bifang/actions/runs/41561441960",
+  "linux_extracted_ci_glibc_symbol_ceiling": "2.35",
+  "native_gui_acceptance_of_supplemental_packages_verified": false,
+  "signing_and_notarization_verified": false,
+  "payload_downloaded_during_metadata_audit": false,
+  "earlier_published_native_package": {
+    "release_url": "https://github.com/Protocol-X-01/Bifang/releases/tag/v0.2.0-preview.3",
+    "published_at": "2026-10-24T11:47:02Z",
+    "sha256": "160eb03fff45c5b5a562f2f05b7f0d90a6088c4f6533379b5c8cbcbb2152e024",
+    "matching_existing_receipts": [
+      "approval-native.json",
+      "ubuntu-native-sandbox.json"
+    ],
+    "scope": "Native approval controls and fresh Ubuntu installation with synthetic responses and harmless commands."
+  },
+  "scope": "GitHub-provided asset digests compared with the two published checksum sets. Supplemental build checks are separate from installed GUI acceptance and submission-time publication."
+}

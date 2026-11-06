@@ -56,6 +56,48 @@ def test_cli_patch_uses_existing_box_without_creating_another_or_mutating_index(
     assert (project / "code.py").read_text() == "before\n"
 
 
+def test_cli_resumed_chat_enables_saved_history_consent(tmp_path, monkeypatch):
+    workspace = tmp_path / "project"
+    workspace.mkdir()
+    cfg = Config(enable_memory=False, enable_conversation_history=True, use_worktree=False)
+    monkeypatch.setattr("bifang.cli.Config.load", lambda: cfg)
+    captured = {}
+
+    class FakeContext:
+        def __init__(self):
+            self.conversation_cache = SimpleNamespace(
+                cache=SimpleNamespace(get_session=lambda identity: object())
+            )
+
+        async def initialize(self):
+            pass
+
+        async def start_session(self, identity):
+            captured["session"] = identity
+
+    class FakeAgent:
+        def __init__(self, config, active_workspace, **kwargs):
+            captured["restored_conversation"] = kwargs.get("restored_conversation")
+            self.context = FakeContext()
+
+        async def close(self):
+            pass
+
+    class FakeApp:
+        def __init__(self, agent):
+            pass
+
+        async def run_async(self):
+            pass
+
+    monkeypatch.setattr("bifang.cli.Agent", FakeAgent)
+    monkeypatch.setattr("bifang.tui.BifangApp", FakeApp)
+
+    asyncio.run(amain(arguments(workspace, "chat", session="saved-session")))
+
+    assert captured == {"restored_conversation": True, "session": "saved-session"}
+
+
 def test_missing_box_patch_does_not_create_one(project):
     before = git(project, "worktree", "list", "--porcelain")
     with pytest.raises(RuntimeError, match="No matching"):

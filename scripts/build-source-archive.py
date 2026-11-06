@@ -11,7 +11,7 @@ from pathlib import Path
 
 TREES = ("src", "tests", "scripts", "docs", "desktop", "companion", "tui", "deploy", "examples", "evaluations", ".github", "bifang-brand-kit", "demo-output")
 ROOT_FILES = ("LICENSE", "README.md", "pyproject.toml", "uv.lock", "Dockerfile", ".dockerignore", ".gitignore", ".env.example")
-OPTIONAL_ROOT_FILES = ("CONTRIBUTING.md", "SECURITY.md", "CODEOWNERS", "bifang-design-tokens.json")
+OPTIONAL_ROOT_FILES = ("CONTRIBUTING.md", "SECURITY.md", "CODEOWNERS", "bifang-design-tokens.json", "build-tui.sh")
 EXCLUDED_DIRS = {"node_modules", "target", "dist", "build", "__pycache__", ".git", ".venv", ".bifang", ".arca"}
 EXTENSIONS = {".py", ".ts", ".tsx", ".js", ".mjs", ".cjs", ".rs", ".toml", ".json", ".jsonl", ".yml", ".yaml",
               ".md", ".txt", ".sh", ".html", ".css", ".sql", ".svg", ".png", ".jpg", ".jpeg", ".webp", ".ico",
@@ -108,7 +108,7 @@ def build_archive(root: Path, output: Path, max_file_bytes: int = 16_777_216, ma
     names = {name for name, _, _ in payload}
     required = REQUIRED | ANDROID_REQUIRED if (root / ANDROID_ROOT).is_dir() else REQUIRED
     if (root / "tui").is_dir():
-        required = required | {"tui/Cargo.toml", "tui/Cargo.lock", "tui/src/main.rs", "tui/src/lib.rs"}
+        required = required | {"build-tui.sh", "tui/Cargo.toml", "tui/Cargo.lock", "tui/src/main.rs", "tui/src/lib.rs"}
     missing = sorted(required - names)
     if missing:
         raise ValueError("Missing required build inputs: " + ", ".join(missing))

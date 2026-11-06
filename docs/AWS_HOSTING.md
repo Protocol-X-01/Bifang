@@ -117,6 +117,13 @@ or $51.76 with a 50% buffer. This excludes inference, traffic, logs, object
 storage, taxes and other account workloads. Private account credit metadata
 was checked separately; credit expiry and service eligibility remain unverified.
 
+The current official judging end is December 23, 2026 at 20:00 UTC. Extending
+the October 28 run-rate projection by eight days adds about $5.72, for an
+illustrative $40.23 base / $60.35 with a 50% buffer. This is an extrapolation
+from the October 28 regional rates, not a current price quote or a live AWS
+balance check. Recheck actual prices, credits and service state before relying
+on it; the exclusions above still apply.
+
 [Public IPv4 pricing](https://aws.amazon.com/vpc/pricing/),
 [EBS pricing](https://aws.amazon.com/ebs/pricing/),
 [Free Tier plan metadata](https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_freetier_GetAccountPlanState.html).

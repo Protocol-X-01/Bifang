@@ -4,15 +4,140 @@ import asyncio
 import hashlib
 import json
 import os
+import shlex
+import shutil
+import signal
 import subprocess
 import tempfile
+import threading
+import time
 from pathlib import Path
 from typing import Any, Callable, Optional
 
 import httpx
+from packaging.requirements import InvalidRequirement, Requirement
 
+from ..policy import Policy
+from ..secret_patterns import redact_secrets
+from .commands import SandboxUnavailableError, run_command
 from .tasks import TaskPlan
 from .tavily import tavily_extract, tavily_search
+
+PACKAGE_DOWNLOAD_MAX_BYTES = 128 * 1024 * 1024
+PACKAGE_DOWNLOAD_TIMEOUT_SECONDS = 60
+PACKAGE_DOWNLOAD_POLL_SECONDS = 0.05
+PACKAGE_DOWNLOAD_STDERR_CAPTURE_BYTES = 16 * 1024
+
+
+def _directory_size_bytes(directory: Path, max_bytes: int = PACKAGE_DOWNLOAD_MAX_BYTES) -> int:
+    """Return bytes in a temporary download tree, failing closed on inspection errors."""
+    total = 0
+    try:
+        for current, _, filenames in os.walk(directory, followlinks=False):
+            for filename in filenames:
+                path = Path(current) / filename
+                try:
+                    if not path.is_symlink():
+                        total += path.stat().st_size
+                except FileNotFoundError:
+                    continue
+                except OSError:
+                    return max_bytes + 1
+    except OSError:
+        return max_bytes + 1
+    return total
+
+
+def _drain_capped_stderr(stream, captured: bytearray) -> None:
+    while True:
+        chunk = stream.read(8192)
+        if not chunk:
+            return
+        remaining = PACKAGE_DOWNLOAD_STDERR_CAPTURE_BYTES - len(captured)
+        if remaining > 0:
+            captured.extend(chunk[:remaining])
+
+
+def _stop_download_process(process: subprocess.Popen) -> None:
+    if os.name == "posix":
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        except OSError:
+            process.kill()
+    else:
+        process.kill()
+
+
+def _file_size_limited_command(command: list[str], max_bytes: int) -> list[str]:
+    if os.name != "posix":
+        return command
+    runner = (
+        "import os, resource, sys; "
+        "limit = int(sys.argv[1]); "
+        "resource.setrlimit(resource.RLIMIT_FSIZE, (limit, limit)); "
+        "args = sys.argv[2:]; os.execvp(args[0], args)"
+    )
+    return [command[0], "-c", runner, str(max_bytes), *command]
+
+
+def _run_bounded_package_download(
+    command: list[str],
+    *,
+    cwd: str,
+    env: dict[str, str],
+    download_dir: Path,
+    max_bytes: int = PACKAGE_DOWNLOAD_MAX_BYTES,
+    timeout: float = PACKAGE_DOWNLOAD_TIMEOUT_SECONDS,
+    poll_interval: float = PACKAGE_DOWNLOAD_POLL_SECONDS,
+) -> tuple[subprocess.CompletedProcess | None, str | None]:
+    """Stop pip after the monitor detects that its temporary tree exceeds the byte budget."""
+    if _directory_size_bytes(download_dir, max_bytes) > max_bytes:
+        return None, "size"
+    process = subprocess.Popen(
+        _file_size_limited_command(command, max_bytes),
+        cwd=cwd,
+        env=env,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        start_new_session=(os.name == "posix"),
+    )
+    captured_stderr = bytearray()
+    stderr_reader = threading.Thread(
+        target=_drain_capped_stderr,
+        args=(process.stderr, captured_stderr),
+        name="bifang-package-download-stderr",
+        daemon=True,
+    )
+    stderr_reader.start()
+    deadline = time.monotonic() + timeout
+    failure = None
+
+    while process.poll() is None:
+        if _directory_size_bytes(download_dir, max_bytes) > max_bytes:
+            failure = "size"
+            _stop_download_process(process)
+            break
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            failure = "timeout"
+            _stop_download_process(process)
+            break
+        time.sleep(min(poll_interval, remaining))
+
+    returncode = process.wait()
+    stderr_reader.join()
+    stderr = captured_stderr.decode("utf-8", errors="replace")
+    final_size = _directory_size_bytes(download_dir, max_bytes)
+    if failure is None and final_size > max_bytes:
+        failure = "size"
+    if failure is None and os.name == "posix" and returncode != 0 and final_size >= max_bytes:
+        failure = "size"
+    if failure is not None:
+        return None, failure
+    return subprocess.CompletedProcess(command, returncode, "", stderr), None
 
 
 class ToolRegistry:
@@ -100,63 +225,153 @@ async def web_extract(url: str) -> str:
     "type": "function",
     "function": {
         "name": "code_execute",
-        "description": "Execute code in a sandboxed environment",
+        "description": "Execute Python in a temporary Bubblewrap sandbox with network disabled. Optional PyPI binary wheels are downloaded under a monitored 128 MiB temporary-data budget and 60-second timeout; detected overruns stop pip, and the final wheelhouse is checked before sandbox install.",
         "parameters": {
             "type": "object",
             "properties": {
-                "code": {"type": "string", "description": "Python code to execute"},
-                "timeout": {"type": "integer", "description": "Timeout in seconds", "default": 30},
-                "packages": {"type": "array", "items": {"type": "string"}, "description": "Additional packages to install"},
+                "code": {"type": "string", "maxLength": 100000, "description": "Python code to execute"},
+                "timeout": {"type": "integer", "minimum": 1, "maximum": 120, "description": "Execution timeout in seconds", "default": 30},
+                "packages": {"type": "array", "maxItems": 10, "items": {"type": "string", "maxLength": 200}, "description": "PyPI package requirements by name/specifier; URLs and pip options are not accepted"},
             },
             "required": ["code"],
+            "additionalProperties": False,
         },
     },
 })
+def _validated_package_requirements(packages: list[str] | None) -> list[str]:
+    if packages is None:
+        return []
+    if not isinstance(packages, list) or len(packages) > 10:
+        raise ValueError("Provide at most 10 package requirements")
+    requirements = []
+    for package in packages:
+        if not isinstance(package, str) or not package or len(package) > 200:
+            raise ValueError("Each package requirement must be a nonempty string of at most 200 characters")
+        try:
+            requirement = Requirement(package)
+        except InvalidRequirement as error:
+            raise ValueError("Use package names and version specifiers only; pip options and URLs are not accepted") from error
+        if requirement.url:
+            raise ValueError("Direct package URLs are not accepted")
+        requirements.append(str(requirement))
+    return requirements
+
+
+def _format_code_result(result: dict[str, Any]) -> str:
+    output = result.get("stdout", "")
+    if result.get("stderr"):
+        output += f"\n[stderr]: {result['stderr']}"
+    if result.get("returncode") != 0:
+        output += f"\n[exit code: {result.get('returncode')} ]"
+    return redact_secrets(output)[:50000]
+
+
 async def code_execute(code: str, timeout: int = 30, packages: list[str] | None = None) -> str:
-    """Execute Python code in a temporary environment."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        script_path = Path(tmpdir) / "script.py"
-        script_path.write_text(code)
+    """Execute Python only in a temporary, network-isolated Bubblewrap workspace."""
+    if not isinstance(code, str) or len(code.encode("utf-8")) > 100_000:
+        return "Execution rejected: Python source must be at most 100 KB"
+    if isinstance(timeout, bool) or not isinstance(timeout, int) or not 1 <= timeout <= 120:
+        return "Execution rejected: timeout must be an integer from 1 to 120 seconds"
+    try:
+        requirements = _validated_package_requirements(packages)
+    except ValueError as error:
+        return f"Execution rejected: {error}"
+    if not shutil.which("bwrap"):
+        return "Execution unavailable: Bubblewrap is missing. No unsandboxed fallback was used."
 
-        env = {key: value for key, value in os.environ.items() if key in {"PATH", "LANG", "LC_ALL", "TERM", "USER"}}
-        env["PYTHONPATH"] = tmpdir
-
-        cmd = ["python3", str(script_path)]
-        if packages:
-            # Install packages first
-            install_cmd = ["pip", "install", "--quiet"] + packages
-            result = await asyncio.to_thread(
-                subprocess.run,
-                install_cmd,
-                cwd=tmpdir,
-                capture_output=True,
-                text=True,
-                timeout=60,
-                env=env,
-            )
-            if result.returncode != 0:
-                return f"Package install failed: {result.stderr}"
+    if requirements:
+        from ..sandbox_diagnostics import inspect_sandbox
 
         try:
-            result = await asyncio.to_thread(
-                subprocess.run,
-                cmd,
-                cwd=tmpdir,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-                env=env,
+            sandbox_report = await inspect_sandbox()
+        except Exception as error:
+            return (
+                "Package installation unavailable: Bubblewrap preflight failed; "
+                f"no package download was run. {redact_secrets(str(error))[:500]}"
             )
-            output = result.stdout
-            if result.stderr:
-                output += f"\n[stderr]: {result.stderr}"
-            if result.returncode != 0:
-                output += f"\n[exit code: {result.returncode}]"
-            return output[:50000]
-        except subprocess.TimeoutExpired:
-            return f"Execution timed out after {timeout}s"
-        except Exception as e:
-            return f"Execution failed: {e}"
+        if not sandbox_report.get("ready"):
+            return "Package installation unavailable: Bubblewrap preflight failed; no package download was run"
+
+    with tempfile.TemporaryDirectory(prefix="bifang-code-") as tmpdir:
+        root = Path(tmpdir)
+        script_path = root / "script.py"
+        script_path.write_text(code, encoding="utf-8")
+
+        if requirements:
+            download_root = root / "package-download"
+            wheelhouse = download_root / "wheelhouse"
+            download_root.mkdir(exist_ok=True)
+            wheelhouse.mkdir()
+            env = {key: value for key, value in os.environ.items()
+                   if key in {"PATH", "LANG", "LC_ALL", "TERM", "USER"}}
+            env.update({
+                "HOME": str(download_root),
+                "TMPDIR": str(download_root),
+                "TEMP": str(download_root),
+                "TMP": str(download_root),
+                "PIP_CONFIG_FILE": os.devnull,
+                "PIP_INDEX_URL": "https://pypi.org/simple",
+                "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+                "PIP_NO_INPUT": "1",
+                "PIP_ONLY_BINARY": ":all:",
+            })
+            sandbox_python = shutil.which("python3", path="/usr/local/bin:/usr/bin:/bin")
+            if not sandbox_python:
+                return "Package installation unavailable: the isolated Python runtime is missing"
+            download = [
+                sandbox_python, "-m", "pip", "download", "--no-cache-dir",
+                "--disable-pip-version-check", "--timeout=15", "--retries=1",
+                "--only-binary=:all:", "--index-url", "https://pypi.org/simple",
+                "--dest", str(wheelhouse), "pip", *requirements,
+            ]
+            try:
+                downloaded, download_failure = await asyncio.to_thread(
+                    _run_bounded_package_download,
+                    download,
+                    cwd=tmpdir,
+                    env=env,
+                    download_dir=download_root,
+                )
+            except Exception as error:
+                return f"Package download failed: {redact_secrets(str(error))[:2000]}"
+            if download_failure == "size":
+                return "Package download stopped after the monitored temporary-data budget exceeded 128 MiB; no package code was run"
+            if download_failure == "timeout":
+                return "Package download timed out; no package code was run"
+            if downloaded.returncode != 0:
+                return "Package download failed: " + redact_secrets(downloaded.stderr or "PyPI wheel download failed")[:4000]
+
+            wheels = [path for path in wheelhouse.iterdir() if path.is_file() and path.suffix == ".whl"]
+            total_size = sum(path.stat().st_size for path in wheels)
+            if not wheels or total_size > PACKAGE_DOWNLOAD_MAX_BYTES:
+                return "Package download rejected: the final wheelhouse is empty or exceeds 128 MiB"
+            pip_wheels = [path for path in wheels if path.name.casefold().startswith("pip-")]
+            if len(pip_wheels) != 1:
+                return "Package download failed: an isolated pip wheel was not resolved"
+
+            install = (
+                "PYTHONPATH=" + shlex.quote(f"/workspace/package-download/wheelhouse/{pip_wheels[0].name}")
+                + " python3 -m pip install --isolated --no-index --no-cache-dir "
+                "--find-links=/workspace/package-download/wheelhouse --target=/workspace/site-packages "
+                + shlex.join(requirements)
+            )
+            try:
+                installed = await run_command(Policy(root), install, timeout=60, use_bwrap=True)
+            except SandboxUnavailableError as error:
+                return f"Execution unavailable: {error}. No unsandboxed fallback was used."
+            except Exception as error:
+                return f"Package install failed inside the sandbox: {redact_secrets(str(error))[:2000]}"
+            if installed["returncode"] != 0:
+                return "Package install failed inside the sandbox: " + redact_secrets(installed["stderr"] or "pip failed")[:4000]
+
+        command = "PYTHONPATH=/workspace/site-packages python3 script.py" if requirements else "python3 script.py"
+        try:
+            result = await run_command(Policy(root), command, timeout=timeout, use_bwrap=True)
+            return _format_code_result(result)
+        except SandboxUnavailableError as error:
+            return f"Execution unavailable: {error}. No unsandboxed fallback was used."
+        except Exception as error:
+            return f"Execution failed inside the sandbox: {redact_secrets(str(error))[:2000]}"
 
 
 @register_tool("http_request", {

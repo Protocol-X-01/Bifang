@@ -94,7 +94,7 @@ def test_real_streaming_adapter_agent_tool_cycle_and_durable_receipts(tmp_path, 
     (tmp_path / "fixture.txt").write_text("synthetic stream fixture")
     config = Config(enable_memory=False, mode="observe", max_steps=3, providers={"nebius": ProviderConfig(
         name="nebius", api_key="synthetic", default_model="requested-model", base_url="https://fixture.invalid/v1")})
-    agent = Agent(config, Workspace(tmp_path, tmp_path))
+    agent = Agent(config, Workspace(tmp_path, tmp_path), approve=lambda _: True)
     requests = []
     tools = []
 

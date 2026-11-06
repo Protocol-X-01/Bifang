@@ -9,6 +9,7 @@ import sys
 import tarfile
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from itertools import pairwise
 from pathlib import Path
 
 import pytest
@@ -60,6 +61,62 @@ def test_plan_binds_bytes_paths_network_and_exact_command_without_running_hooks(
     assert not (npm_project / "HOOK_EXECUTED").exists()
     (npm_project / "package.json").write_text('{"name":"changed"}')
     assert setup_plan(npm_project)["sha256"] != plan["sha256"]
+
+
+def test_setup_sandbox_hides_common_private_workspace_paths(npm_project):
+    (npm_project / ".env").write_text("synthetic private fixture")
+    (npm_project / ".bifang" / "sessions").mkdir(parents=True)
+    (npm_project / ".bifang" / "sessions" / "chat.jsonl").write_text("synthetic transcript")
+    arguments = sandbox_argv(setup_plan(npm_project))
+
+    assert ("--ro-bind", "/dev/null", "/workspace/.env") in list(zip(arguments, arguments[1:], arguments[2:]))
+    assert ("--tmpfs", "/workspace/.bifang") in list(pairwise(arguments))
+
+
+def test_profile_setup_masks_each_workspace_mount(tmp_path):
+    workspace = tmp_path / "workspace with spaces"
+    workspace.mkdir()
+    (workspace / ".env").write_text("synthetic fixture")
+    environment = workspace / ".bifang" / "environments" / "python-0000"
+    environment.mkdir(parents=True)
+    cache = tmp_path / "setup-cache"
+    cache.mkdir()
+    plan = {
+        "network": "offline-v1", "workspace": str(workspace), "profile": "python-uv",
+        "cache_path": str(cache), "runtime_mounts": [], "executable": "/usr/bin/true",
+        "sandbox_env": {}, "argv": ["/usr/bin/true"], "environment_path": str(environment),
+    }
+
+    arguments = sandbox_argv(plan)
+    triples = list(zip(arguments, arguments[1:], arguments[2:]))
+
+    assert ("--ro-bind", "/dev/null", "/workspace/.env") in triples
+    assert ("--ro-bind", "/dev/null", str(workspace / ".env")) in triples
+
+
+def test_python_setup_exposes_only_its_fresh_environment_inside_private_bifang_state(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / ".bifang" / "sessions").mkdir(parents=True)
+    (root / ".bifang" / "sessions" / "private.jsonl").write_text("private fixture")
+    environment = root / ".bifang" / "environments" / "python-0000"
+    environment.mkdir(parents=True)
+    plan = {
+        "network": "offline-v1", "workspace": str(root), "profile": "python-uv",
+        "cache_path": str(tmp_path / "cache"), "runtime_mounts": [],
+        "executable": "/usr/bin/true", "sandbox_env": {}, "argv": ["/usr/bin/true"],
+        "environment_path": str(environment),
+    }
+
+    arguments = sandbox_argv(plan)
+    pairs = list(pairwise(arguments))
+
+    assert ("--tmpfs", "/workspace/.bifang/sessions") in pairs
+    assert ("--tmpfs", str(root / ".bifang" / "sessions")) in pairs
+    assert ("--tmpfs", "/workspace/.bifang") not in pairs
+    assert ("--tmpfs", str(root / ".bifang")) not in pairs
+    assert ("--tmpfs", "/workspace/.bifang/environments/python-0000") not in pairs
+    assert ("--tmpfs", str(environment)) not in pairs
 
 
 @pytest.mark.parametrize("filename", [".npmrc", "npm-shrinkwrap.json", "pnpm-lock.yaml", "yarn.lock", "bun.lock"])

@@ -3,7 +3,9 @@ from __future__ import annotations
 import hmac
 import json
 import os
+from collections.abc import Callable
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
 
 import httpx
 from anyio import CancelScope
@@ -14,6 +16,7 @@ from .model_ids import TOKEN_FACTORY_ROLES
 
 UPSTREAM = "https://api.tokenfactory.nebius.com/v1"
 MAX_BODY_BYTES = 2_000_000
+JUDGE_TOKEN_EXPIRES_ENV = "BIFANG_JUDGE_TOKEN_EXPIRES_AT"
 REQUEST_FIELDS = {"model", "messages", "tools", "tool_choice", "temperature",
                   "max_tokens", "stream", "stream_options"}
 
@@ -22,9 +25,40 @@ def reject_nonfinite(value):
     raise ValueError("Nonfinite numbers are not JSON")
 
 
-def create_app(provider_key: str, judge_token: str, *, client: httpx.AsyncClient | None = None):
+def _parse_judge_expiry(value: str | datetime) -> datetime:
+    if isinstance(value, datetime):
+        expiry = value
+    elif isinstance(value, str):
+        try:
+            expiry = datetime.fromisoformat(value.strip())
+        except ValueError as error:
+            raise ValueError(f"{JUDGE_TOKEN_EXPIRES_ENV} must be an RFC 3339 UTC timestamp") from error
+    else:
+        raise TypeError(f"Configure {JUDGE_TOKEN_EXPIRES_ENV} as an RFC 3339 UTC timestamp")
+
+    if expiry.tzinfo is None or expiry.utcoffset() != timedelta(0):
+        raise ValueError(f"{JUDGE_TOKEN_EXPIRES_ENV} must include a UTC timezone")
+    return expiry.astimezone(UTC)
+
+
+def create_app(
+    provider_key: str,
+    judge_token: str,
+    *,
+    token_expires_at: str | datetime | None = None,
+    client: httpx.AsyncClient | None = None,
+    clock: Callable[[], datetime] | None = None,
+):
     if len(provider_key) < 16 or len(judge_token) < 32 or provider_key == judge_token:
         raise ValueError("Configure separate provider credentials and a strong judge-only token")
+    if token_expires_at is None:
+        raise ValueError(f"Configure {JUDGE_TOKEN_EXPIRES_ENV} before starting the judge relay")
+    expires_at = _parse_judge_expiry(token_expires_at)
+    now = clock or (lambda: datetime.now(UTC))
+    startup_time = now()
+    if startup_time.tzinfo is None or startup_time.astimezone(UTC) >= expires_at:
+        raise ValueError(f"{JUDGE_TOKEN_EXPIRES_ENV} must be in the future")
+
     upstream = client or httpx.AsyncClient(timeout=120, trust_env=False, follow_redirects=False)
     owns_client = client is None
     allowed_models = frozenset(TOKEN_FACTORY_ROLES.values())
@@ -42,6 +76,9 @@ def create_app(provider_key: str, judge_token: str, *, client: httpx.AsyncClient
     @app.middleware("http")
     async def authenticate(request: Request, call_next):
         if request.url.path != "/health":
+            current_time = now()
+            if current_time.tzinfo is None or current_time.astimezone(UTC) >= expires_at:
+                return JSONResponse({"detail": "Judge authorization required"}, status_code=401)
             supplied = request.headers.get("authorization", "").encode()
             expected = ("Bearer " + judge_token).encode()
             if not hmac.compare_digest(supplied, expected):
@@ -129,7 +166,11 @@ def create_app(provider_key: str, judge_token: str, *, client: httpx.AsyncClient
 def main():
     import uvicorn
 
-    app = create_app(os.environ.get("NEBIUS_API_KEY", ""), os.environ.get("BIFANG_JUDGE_TOKEN", ""))
+    app = create_app(
+        os.environ.get("NEBIUS_API_KEY", ""),
+        os.environ.get("BIFANG_JUDGE_TOKEN", ""),
+        token_expires_at=os.environ.get(JUDGE_TOKEN_EXPIRES_ENV),
+    )
     uvicorn.run(app, host=os.environ.get("BIFANG_JUDGE_HOST", "127.0.0.1"),
                 port=int(os.environ.get("BIFANG_JUDGE_PORT", os.environ.get("PORT", "8010"))),
                 access_log=False)

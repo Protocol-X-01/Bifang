@@ -4,6 +4,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from .secret_patterns import is_sensitive_workspace_path
+
 BLOCKED=[
  (r"(^|\s)sudo(\s|$)","privilege escalation"),
  (r"(^|\s)(su|shutdown|reboot|mkfs|fdisk)(\s|$)","host administration"),
@@ -20,6 +22,11 @@ class Policy:
  def path(self,value:str|Path)->Path:
   p=Path(value); p=(self.root/p).resolve() if not p.is_absolute() else p.resolve()
   if p!=self.root and self.root not in p.parents: raise PermissionError(f"Path escapes Arca: {value}")
+  return p
+ def read_path(self,value:str|Path)->Path:
+  p=self.path(value)
+  if is_sensitive_workspace_path(p.relative_to(self.root)):
+   raise PermissionError("Sensitive credential and internal-state paths are not available to model read tools")
   return p
  def command(self,cmd:str,mutating=True)->Decision:
   if self.mode=="observe": return Decision(False,False,"observe mode")

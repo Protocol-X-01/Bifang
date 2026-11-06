@@ -1,0 +1,17 @@
+{
+  "checked_on": "2026-11-06",
+  "video_url": "https://www.youtube.com/watch?v=gwAAJcWplf0",
+  "video_id": "gwAAJcWplf0",
+  "title": "Bifang narrated demo",
+  "channel": "Protocol X",
+  "upload_date": "2026-10-30",
+  "duration_seconds": 170,
+  "availability": "public",
+  "live_status": "not_live",
+  "under_three_minutes": true,
+  "owner_confirmed_submitted_link": true,
+  "link_observed_in_devpost_page": true,
+  "devpost_page_http_status": 200,
+  "method": "Public YouTube playback metadata plus bounded Devpost link extraction; no media download",
+  "scope": "Confirms public metadata and the submitted URL. The remote video file hash was not compared with a local render."
+}

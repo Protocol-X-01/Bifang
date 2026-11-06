@@ -96,8 +96,25 @@ def test_api_lists_and_resumes_only_the_selected_projects_history(tmp_path, monk
                 assert agent.messages[0] == {"role": "system", "content": SYSTEM}
                 assert agent.messages[-1]["content"] == "retained answer"
                 agent.provider.complete = complete
-                assert (await client.post(f"/sessions/{restored_id}/chat", json={"prompt": "follow-up"})).status_code == 200
+                follow_up = asyncio.create_task(
+                    client.post(f"/sessions/{restored_id}/chat", json={"prompt": "follow-up"})
+                )
+                approval = None
+                for _ in range(100):
+                    pending = (await client.get(f"/sessions/{restored_id}/approval")).json()
+                    if pending.get("approval_id"):
+                        approval = pending
+                        break
+                    await asyncio.sleep(0.01)
+                assert approval is not None
+                resolved = await client.post(
+                    f"/sessions/{restored_id}/approval",
+                    json={"approval_id": approval["approval_id"], "approved": True},
+                )
+                assert resolved.status_code == 200
+                assert (await follow_up).status_code == 200
                 assert len((await client.get(f"/sessions/{restored_id}/history")).json()) == 2
+                assert len(calls) == 2
             finally:
                 await client.delete(f"/sessions/{restored_id}")
         assert server.sessions == {}

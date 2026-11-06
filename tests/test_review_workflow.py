@@ -55,7 +55,8 @@ def test_read_only_workflow_runs_two_workers_but_does_not_verify_model_claims(tm
     monkeypatch.setattr("bifang.agent.create_tiered_provider", lambda config: Provider())
 
     async def scenario():
-        parent = Agent(Config(enable_memory=False, enable_conversation_history=False), Workspace(tmp_path, tmp_path))
+        parent = Agent(Config(enable_memory=False, enable_conversation_history=False), Workspace(tmp_path, tmp_path),
+                       approve=lambda _: True)
         workflow = ReviewWorkflow(parent, "Investigate and review README.md")
         try:
             await workflow.run()

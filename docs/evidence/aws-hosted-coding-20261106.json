@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-11-06T12:21:02.341305+00:00",
+  "origin": "https://184.195.233.161",
+  "scope": "Existing AWS hosted service; one synthetic owner coding project. Not a native-client or new-source deployment test.",
+  "requested_jobs": 1,
+  "requested_provider": "nebius",
+  "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+  "generation": {
+    "provider": "nebius",
+    "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "reported_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "usage": {
+      "completion_tokens": 432,
+      "prompt_tokens": 348,
+      "total_tokens": 780
+    }
+  },
+  "check_receipt": {
+    "passed": true,
+    "exit_code": 0,
+    "timed_out": false,
+    "candidate_sha256": "16cc76108ec2acd8f3dfb09078cf9e0775f25b2f953364e6068bf43f5a76d130",
+    "command": [
+      "python",
+      "-B",
+      "-m",
+      "unittest",
+      "discover",
+      "-v"
+    ],
+    "output_sha256": "8543210c4ae25e454428b98dac2cba5598c83f29e18a7e1056844a9363f9fe1b"
+  },
+  "candidate_sha256": "16cc76108ec2acd8f3dfb09078cf9e0775f25b2f953364e6068bf43f5a76d130",
+  "immutable_tests_sha256": "11d446f47e81eac04a7b30d48a2f4ba594b8e0a849c0970a8fe56a117a2c7d08",
+  "fixture_test_count": 5,
+  "proposal_ast_reviewed": true,
+  "owner_isolation_status": 404,
+  "idempotency_passed": true,
+  "early_apply_rejected": true,
+  "original_unchanged_until_apply": true,
+  "hosted_apply_completed": true,
+  "production_configuration_changed": false,
+  "local_project_files_sent": false,
+  "credentials_recorded": false
+}
