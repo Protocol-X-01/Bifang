@@ -5,6 +5,14 @@ schedule jobs or change credentials. The retained native package completed a
 real task through the relay (`evidence/native-vercel-relay.json`). Availability
 through judging remains an open gate.
 
+## Public access
+
+The [public demo](https://bifang-judge-relay.vercel.app) now works without a
+judge credential. Follow the [public judge demo guide](PUBLIC_JUDGE_DEMO.md)
+and the checker's `--public` mode. The [November 6 receipt](evidence/vercel-public-demo-20261106.json)
+records the deployed source, anonymous metadata checks and live Nano completion.
+The token-based checks below apply to private relay mode.
+
 ## Access checks without inference
 
 From the locked Python 3.11 source environment:
@@ -71,7 +79,7 @@ Before distributing judge access, the owner must confirm:
   and billing identifiers private.
 - Hosting/provider capacity covers ordinary judging, with an incident contact
   and a way to restore access. One successful task is not an uptime guarantee.
-- The approved endpoint, private judge credential and current downloadable
+- The approved endpoint, any private-mode judge credential and current downloadable
   build work from a clean judge machine. Do not expose the local agent API.
 - Planned checks and usage review have a named owner. This document creates
   no recurring automation; scheduling requires separate authorization.

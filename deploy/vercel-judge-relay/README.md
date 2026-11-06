@@ -1,8 +1,8 @@
 # Bifang inference-only relay bundle
 
 Local preparation, not deployment authorization. This directory is a template;
-use `scripts/build-vercel-judge-bundle.py` to assemble its three reviewed Bifang
-modules and metadata into a fresh directory outside the main repository.
+use `scripts/build-vercel-judge-bundle.py` to assemble its reviewed Bifang
+five modules and metadata into a fresh directory outside the main repository.
 Do not deploy the full desktop repository or its Python 3.11-only metadata.
 
 The generated bundle explicitly selects managed Python 3.12 with FastAPI in
@@ -39,8 +39,34 @@ the authorized evaluation window, then rotate or revoke it. No credentials are
 included in this bundle; `.env` files must remain outside it. The relay exposes
 no agent-execution, file-upload or training endpoints.
 
+## Public demo access
+
+Set the non-secret production variable `BIFANG_JUDGE_PUBLIC_ACCESS=1` to enable
+the public demo page at `/` and anonymous access to the model catalog and chat
+completion API. Provider credentials remain server-side. No judge token is
+required in this mode; clients that require a key field can use the non-secret
+placeholder `bifang-public-demo`. Public inference consumes the project's
+Token Factory credits. The configured access expiry still applies.
+
+Public mode also requires `BIFANG_PUBLIC_QUOTA_URL` and the server-side
+`BIFANG_PUBLIC_QUOTA_TOKEN`. Every valid completion reserves its request,
+requested output tokens and input-body bytes through the shared AWS counter
+before contacting Token Factory. The protocol-2 counter atomically enforces
+global, per-client lifetime/day and minute limits across deployments. The relay
+sends a keyed digest of the platform client IP group, never the raw address.
+Unavailable guard returns 503; minute limits return 429 with `Retry-After`;
+exhausted allowances return 403 without an automatic-retry instruction. The
+daily allowance resets at 00:00 UTC. Public requests accept at most 32 KiB and 8,192 output
+tokens. Private mode retains its existing request limits and authentication.
+
+Only the demo, model catalog and chat-completion routes are public. Other
+routes return 404. JSON requests from the demo's own browser origin and normal
+API clients are accepted. The default remains private access; values other
+than `0` or `1` for the public-access setting stop initialization.
+
 Validate dependencies from `uv.lock` in the chosen interpreter, then check
 authentication, live model catalog, actual desktop coding, streaming and cleanup
 at the hosted HTTPS URL. Confirm abuse controls and availability for judging.
-The relay has no shared quota system, no optional embedding API and no uptime
-proof. Health alone does not prove upstream inference or free judge access.
+Public completions require the configured shared counter. Embedding routes are
+not part of this relay. Health alone does not prove upstream inference or
+continued judge capacity.

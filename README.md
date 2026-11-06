@@ -15,6 +15,8 @@
 
 <p align="center"><a href="#one-workspace-three-ways-in">Explore Bifang</a> · <a href="#see-the-coding-loop">Coding walkthrough</a> · <a href="#quickstart">Get started</a> · <a href="docs/ARCHITECTURE.md">Architecture</a> · <a href="docs/HACKATHON_READINESS.md">Build status</a></p>
 
+[Try the public coding-model demo](https://bifang-judge-relay.vercel.app) — choose Nano, Super or Ultra without an account or API key. Download the IDE for workspace tools, checks and patch review. [Live access check](docs/evidence/vercel-public-demo-fair-use-20261106.json).
+
 ## Watch Bifang in Action
 
 [Watch the refreshed coding demo on YouTube · 2 min 45 sec](https://www.youtube.com/watch?v=Eg8Gcyj5ORM)

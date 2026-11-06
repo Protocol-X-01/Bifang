@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-06T17:25:08.747004+00:00",
+  "origin": "https://bifang-judge-relay.vercel.app",
+  "deployment_id": "dpl_FxEy5RFCQKGHmLKrQmj1Tt6nzQ4z",
+  "runtime_source_commit": "30eed9c259f39ca00879f74c25dffffed4e1ab79",
+  "target": "production",
+  "access": "public",
+  "provider": "Nebius Token Factory",
+  "provider_secret_location": "Vercel server-side secret; value withheld",
+  "access_expiry_utc": "2026-12-23T20:00:00Z",
+  "metadata_checks": [
+    {
+      "name": "health",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "public_demo",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "catalog",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200,
+      "model_count": 3,
+      "enabled_models": [
+        "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+        "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "nvidia/nemotron-3-super-120b-a12b"
+      ]
+    },
+    {
+      "name": "no_agent_route",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "no_file_route",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "source_not_served",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "environment_not_served",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    }
+  ],
+  "metadata_get_requests": 7,
+  "production_browser_completion": {
+    "requested_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "status": "Complete \u00b7 Nano \u00b7 fast \u00b7 258 reported tokens",
+    "reported_tokens": 258,
+    "authorization_required": false,
+    "fixture": "Synthetic integer addition; exact restricted AST matched before executing locally",
+    "independent_cases_passed": 5,
+    "horizontal_overflow": false
+  },
+  "staged_browser_completion": {
+    "reported_tokens": 761,
+    "completed": true,
+    "quality": "Initial response imposed unintended sign constraints; not counted as coding correctness"
+  },
+  "total_completion_requests": 2,
+  "total_reported_tokens": 1019,
+  "page_sha256": "3b24539b6da8247815ac81d55f5ef357f073a8ad1c556356e2dacd032af5063f",
+  "page_matches_source": true,
+  "scope": "Point-in-time public page, model catalog and Nano inference. Super/Ultra catalog presence is separate from a new completion check; no claim of sustained capacity, funding or complete IDE workflow in browser."
+}
