@@ -43,11 +43,11 @@ the current shared-usage guard and its deployment evidence. In this mode the
 browser page, catalog and completions need no judge token. Provider credentials
 stay server-side. The sections below retain the earlier private deployments.
 
-The current production runtime is `c51f410`. Its anonymous Nano stream and
-browser completion used the durable allowance and reported 475 tokens together.
-The [receipt](evidence/vercel-public-demo-guard-20261106.json) records the
-temporary two-request counter test, preserved counters after the stack update,
-and live deployment identity. Vercel Standard Protection restricts generated
+The current production runtime is `cb9ddcd`. Its staged Nano stream and anonymous
+browser completion used the protocol-2 allowance and reported 337 tokens together.
+The [receipt](evidence/vercel-public-demo-fair-use-20261106.json) records the
+temporary two-request client limit, a second client's continued access, preserved
+global counters, and live deployment identity. Vercel Standard Protection restricts generated
 deployment URLs; share the stable production domain for judge access.
 
 The Git-connected project's **Ignored Build Step** also prevents an automatic

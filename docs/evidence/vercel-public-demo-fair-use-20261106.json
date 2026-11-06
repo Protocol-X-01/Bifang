@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-06T19:11:02.524284+00:00",
+  "origin": "https://bifang-judge-relay.vercel.app",
+  "deployment_id": "dpl_BR2v2C7HpCvxB2bnuVMdawtSiVyw",
+  "runtime_source_commit": "cb9ddcd43f1e907e06119d44d3943f6e79d4b24f",
+  "access": "anonymous on stable production domain",
+  "provider": "Nebius Token Factory",
+  "quota_protocol": 2,
+  "quota_backend": "Dedicated Lambda function; five-item DynamoDB transaction using existing retained table",
+  "quota_handler_sha256": "a207309a6a1b0a87cfaf41d4ecfaeb6c1f3035ea82b54d27e802cb1a6ffd3bcc",
+  "live_service_boundary": {
+    "quota_protocol": 2,
+    "temporary_client_request_limit": 2,
+    "statuses": [
+      401,
+      503,
+      200,
+      200,
+      403,
+      200
+    ],
+    "client_a_allowed": 2,
+    "client_a_exhaustion_status": 403,
+    "exhaustion_has_retry_after": false,
+    "client_b_still_allowed": true,
+    "legacy_protocol_rejected": true,
+    "before": {
+      "requests": 4,
+      "output_tokens": 2760,
+      "input_bytes": 636,
+      "expires_at": 1798056000
+    },
+    "after": {
+      "requests": 7,
+      "output_tokens": 3060,
+      "input_bytes": 936,
+      "expires_at": 1798056000
+    },
+    "inference_requests": 0,
+    "provider_credentials_or_prompts_transferred": false,
+    "client_ips_or_digests_published": false
+  },
+  "counters_preserved_during_migration": true,
+  "normal_allowance": {
+    "global": {
+      "requests": 1000,
+      "requested_output_tokens": 4000000,
+      "input_body_bytes": 16777216,
+      "per_utc_minute": 60
+    },
+    "client_lifetime": {
+      "requests": 250,
+      "requested_output_tokens": 1000000,
+      "input_body_bytes": 4194304
+    },
+    "client_utc_day": {
+      "requests": 100,
+      "requested_output_tokens": 262144,
+      "input_body_bytes": 2097152
+    },
+    "client_per_utc_minute": 10
+  },
+  "client_identity": "HMAC-SHA256 of IPv4 /32 or IPv6 /64 using internal quota secret; raw IP never sent to counter",
+  "client_limit_scope": "Fair use per network group, not personal identity or resistance to multiple networks",
+  "browser_completion": {
+    "reported_tokens": 245,
+    "independent_addition_cases_passed": 5,
+    "horizontal_overflow": false,
+    "before": {
+      "requests": 8,
+      "output_tokens": 3572,
+      "input_bytes": 1139,
+      "expires_at": 1798056000
+    },
+    "after": {
+      "requests": 9,
+      "output_tokens": 5620,
+      "input_bytes": 1388,
+      "expires_at": 1798056000
+    },
+    "input_body_bytes_reserved": 249
+  },
+  "staged_stream": {
+    "status": 200,
+    "authentication": "Vercel CLI protection bypass; application in public mode",
+    "reported_tokens": 92,
+    "finish_reason": "stop",
+    "fixture_reply": "READY",
+    "before": {
+      "requests": 7,
+      "output_tokens": 3060,
+      "input_bytes": 936,
+      "expires_at": 1798056000
+    },
+    "after": {
+      "requests": 8,
+      "output_tokens": 3572,
+      "input_bytes": 1139,
+      "expires_at": 1798056000
+    }
+  },
+  "new_provider_requests": 2,
+  "new_reported_tokens": 337,
+  "page_matches_source": true,
+  "page_sha256": "3b24539b6da8247815ac81d55f5ef357f073a8ad1c556356e2dacd032af5063f",
+  "generated_deployment_url_protection": [
+    {
+      "host": "bifang-judge-relay-jmwmwpgw8-protocol-x.vercel.app",
+      "catalog_status": 302,
+      "completion_status": 401
+    },
+    {
+      "host": "bifang-judge-relay-b5k66ci1u-protocol-x.vercel.app",
+      "catalog_status": 302,
+      "completion_status": 401
+    },
+    {
+      "host": "bifang-judge-relay-gfis8zozz-protocol-x.vercel.app",
+      "catalog_status": 302,
+      "completion_status": 401
+    }
+  ],
+  "metadata_checks": [
+    {
+      "name": "health",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "public_demo",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "catalog",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200,
+      "model_count": 3,
+      "enabled_models": [
+        "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+        "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "nvidia/nemotron-3-super-120b-a12b"
+      ]
+    },
+    {
+      "name": "no_agent_route",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "no_file_route",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "source_not_served",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "environment_not_served",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    }
+  ],
+  "metadata_get_requests": 7,
+  "provider_credentials_or_prompts_sent_to_counter": false,
+  "local_validation": {
+    "locked_python_3_11_suite_passed": 1436,
+    "skipped": 4,
+    "focused_tests_passed": 275,
+    "bundle_python_versions": [
+      "3.11.15",
+      "3.12.13"
+    ],
+    "relay_bundle_files": 15,
+    "maintained_ci_lint_passed": true,
+    "bounded_changed_source_secret_scan_files": 11,
+    "bounded_changed_source_secret_scan_findings": 0
+  },
+  "automatic_production_source_check": {
+    "required_protocol": 2,
+    "project_setting_readback_matched": true,
+    "local_fixture_cases_passed": 4,
+    "hosted_negative_build_exercised": false
+  },
+  "scope": "Point-in-time Nano inference, addition fixture, quota boundary and access checks. Super/Ultra inference, sustained load, future balance/availability and installed-client acceptance are not established."
+}

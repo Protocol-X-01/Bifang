@@ -3,10 +3,12 @@
 Open the [public demo](https://bifang-judge-relay.vercel.app). On November 6,
 the guarded production page, all seven anonymous metadata checks, Nano streaming
 and a browser completion passed. The returned addition fixture passed five
-independent input cases. The [guarded deployment receipt](evidence/vercel-public-demo-guard-20261106.json)
-identifies the exact source, durable reservations and 475 reported tokens across
-the two guarded requests. The [initial public demo receipt](evidence/vercel-public-demo-20261106.json)
-retains the preceding deployment separately.
+independent input cases. The [current deployment receipt](evidence/vercel-public-demo-fair-use-20261106.json)
+identifies source `cb9ddcd`, the live per-client boundary check, preserved counters
+and 337 reported tokens across the new staged and production requests. The
+[earlier shared guard](evidence/vercel-public-demo-guard-20261106.json) and
+[initial public demo](evidence/vercel-public-demo-20261106.json) receipts retain
+the preceding deployments separately.
 
 Public access is an explicit relay setting. With `BIFANG_JUDGE_PUBLIC_ACCESS=1`,
 visitors can open the demo, choose Nano, Super or Ultra, and send a coding request
