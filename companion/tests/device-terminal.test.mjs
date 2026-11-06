@@ -114,6 +114,55 @@ test('device shell starts only on explicit input and uses its native project dir
   view.unmount();
 });
 
+test('storage permission is requested only by Connect; refresh reports denial and recovery', async () => {
+  const calls = [];
+  let granted = false;
+  const view = harness(async (command, args) => {
+    calls.push({ command, action: args.request.action });
+    return { host: 'bifang', enabled: true, permission: granted,
+      state: granted ? 'ready' : 'permission_needed', aliases: granted ? { shared: '/storage/emulated/0' } : {} };
+  });
+  view.elements();
+  assert.deepEqual(calls, []);
+  view.button('Check/refresh').props.onClick();
+  await settle();
+  assert.equal(calls[0].action, 'device_storage_refresh');
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && /permission is off/.test(node.props.children)));
+  view.button('Connect shared storage').props.onClick();
+  await settle();
+  assert.equal(calls[1].action, 'device_storage_connect');
+  granted = true;
+  view.button('Check/refresh').props.onClick();
+  await settle();
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && node.props.children === 'Available: shared.'));
+  granted = false;
+  view.button('Check/refresh').props.onClick();
+  await settle();
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && /permission is off/.test(node.props.children)));
+  assert.equal(calls.filter(call => call.action === 'device_storage_connect').length, 1);
+  view.unmount();
+});
+
+test('manual Termux storage setup offers the plain command and never claims connection', async () => {
+  const calls = [];
+  const view = harness(async (command, args) => {
+    calls.push(args.request.action);
+    return { host: 'termux', enabled: true, state: 'manual_setup' };
+  });
+  view.elements().find(node => node.type === 'select').props.onChange({ target: { value: 'debian' } });
+  assert.deepEqual(calls, []);
+  view.button('Connect shared storage').props.onClick();
+  await settle();
+  assert.deepEqual(calls, ['termux_storage_connect']);
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && /Open Termux and run termux-setup-storage/.test(node.props.children)));
+  assert.ok(view.button('Open Termux'));
+  assert.equal(view.elements().some(node => node.props?.role === 'status' && /Available:/.test(node.props.children)), false);
+  view.button('Open Termux').props.onClick();
+  await settle();
+  assert.deepEqual(calls, ['termux_storage_connect', 'termux_open']);
+  view.unmount();
+});
+
 test('leaving the app while the directory request is pending never starts a shell', async () => {
   const calls = [];
   let finishDirectory;

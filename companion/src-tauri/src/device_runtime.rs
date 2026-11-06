@@ -42,6 +42,11 @@ pub async fn device_runtime_request(window: WebviewWindow, request: Value) -> Re
     }
     #[cfg(target_os = "android")]
     {
+        let mut request = request;
+        if request.get("action").and_then(Value::as_str)
+            .is_some_and(|action| action.starts_with("device_storage_")) {
+            request["terminal_home"] = serde_json::json!(crate::device_terminal::terminal_home(&window)?);
+        }
         let app = window.app_handle().clone();
         tauri::async_runtime::spawn_blocking(move || {
             let method = if request.get("action").and_then(Value::as_str) == Some("permission") { "runtimePermission" } else { "runtimeRequest" };

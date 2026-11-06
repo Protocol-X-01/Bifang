@@ -9,6 +9,22 @@ import { LocalTerminal, type TerminalOpened, type TerminalInvoke } from '../../d
 interface Distribution { id: string; name: string; installed: boolean; packages: string }
 interface RuntimeCatalog { version: string; environments: Distribution[] }
 interface RuntimeStatus { installed: boolean; permission: boolean; command_api?: boolean }
+interface StorageStatus {
+  host: 'bifang' | 'termux'; state: string; enabled: boolean; permission?: boolean;
+  aliases?: Record<string, string>; conflicts?: string[];
+}
+
+function storageDescription(status: StorageStatus): string {
+  if (status.state === 'setup_dispatched') return 'Finish setup in Termux, then return and check/refresh. Answer any existing-storage prompt yourself.';
+  if (status.state === 'manual_setup') return 'Open Termux and run termux-setup-storage, then return and check/refresh. Answer any existing-storage prompt yourself.';
+  if (status.state === 'runtime_disconnected') return 'Connect the distribution runtime, then check/refresh.';
+  if (status.state === 'not_connected') return 'Shared storage is not connected.';
+  if (status.state === 'permission_needed') return 'Storage permission is off. Connect shared storage to allow it in Android Settings, then check/refresh.';
+  const names = Object.keys(status.aliases ?? {});
+  if (names.length) return `${status.enabled ? 'Available' : 'Found · connect to use'}: ${names.join(', ')}.${status.state === 'partial' ? ' Some folders are unavailable.' : ''}`;
+  if (status.state === 'conflict') return 'Existing storage paths were kept. Resolve the conflicts below, then check/refresh.';
+  return status.host === 'termux' ? 'Termux storage is unavailable. Run termux-setup-storage in Termux, then check/refresh.' : 'Shared folders are unavailable. Check access in Android Settings, then check/refresh.';
+}
 interface HardwareReport {
   cpu: { available_threads: number; workers_started: number; passed: boolean };
   gpu: { renderer: string; api: string; values_checked: number; passed: boolean } | null;
@@ -39,6 +55,10 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
   const [confirmingUninstall, setConfirmingUninstall] = useState(false);
   const [hardware, setHardware] = useState<HardwareReport | null>(null);
   const [hardwareBusy, setHardwareBusy] = useState(false);
+  const [storage, setStorage] = useState<StorageStatus | null>(null);
+  const [storageBusy, setStorageBusy] = useState(false);
+  const storageHost = environment === 'android' ? 'bifang' : 'termux';
+  const currentStorage = storage?.host === storageHost ? storage : null;
   const chosenDistribution = catalog?.environments.find(item => item.id === environment);
 
   async function checkHardware() {
@@ -50,6 +70,20 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
       if (mounted.current) setHardware(report);
     } catch (reason) { if (mounted.current) setError(String(reason)); }
     finally { if (mounted.current) setHardwareBusy(false); }
+  }
+
+  async function storageAction(operation: 'connect' | 'refresh' | 'open') {
+    if (storageBusy) return;
+    setStorageBusy(true);
+    setError('');
+    setStorage(null);
+    const action = operation === 'open' ? 'termux_open' : storageHost === 'bifang'
+      ? `device_storage_${operation}` : operation === 'connect' ? 'termux_storage_connect' : 'termux_storage_status';
+    try {
+      const result = await invoke<StorageStatus>('device_runtime_request', { request: { action } });
+      if (mounted.current && operation !== 'open') setStorage(result);
+    } catch (reason) { if (mounted.current) setError(String(reason)); }
+    finally { if (mounted.current) setStorageBusy(false); }
   }
 
   async function refreshCatalog() {
@@ -264,6 +298,22 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
           <option value="android">{standalone ? 'Bifang local shell · ready' : 'Android system shell · ready'}</option>
           {[...distroCatalog.environments.map(item => [item.id === 'archlinux' ? 'arch' : item.id, item.name]), ['kali', 'Kali NetHunter Minimal'], ['blackarch', 'BlackArch on Arch Linux ARM']].map(([identity, name]) => <option key={identity} value={identity}>{name}{catalog?.environments.find(item => item.id === identity)?.installed ? ' · installed' : ''}</option>)}
         </select>
+        {(environment === 'android' || !standalone) && <details className="device-storage text-sm">
+          <summary>Device storage</summary>
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">{storageHost === 'bifang'
+              ? 'Connect shared files to this shell at ~/storage. Allow Bifang access in Android Settings, then check/refresh here.'
+              : 'Connect Termux shared files to new distribution shells at ~/storage and /sdcard. Termux needs its own storage permission.'}</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className="btn-secondary" disabled={storageBusy || starting || runtimeBusy} onClick={() => void storageAction('connect')}>Connect shared storage</button>
+              <button type="button" className="btn-secondary" disabled={storageBusy || starting || runtimeBusy} onClick={() => void storageAction('refresh')}>{storageBusy ? 'Checking…' : 'Check/refresh'}</button>
+              {storageHost === 'termux' && <button type="button" className="btn-secondary" disabled={storageBusy} onClick={() => void storageAction('open')}>Open Termux</button>}
+            </div>
+            {currentStorage && <p role="status" className="text-xs text-muted-foreground">{storageDescription(currentStorage)}</p>}
+            {!!currentStorage?.conflicts?.length && <p className="text-xs text-muted-foreground">Kept existing: {currentStorage.conflicts.join(', ')}.</p>}
+            {storageHost === 'termux' && <p className="text-xs text-muted-foreground">Manual setup in Termux: <code>termux-setup-storage</code>. Existing files and links stay under your control.</p>}
+          </div>
+        </details>}
         {environment === 'android' ? <>
           <p className="text-xs text-muted-foreground">Local system tools in private project storage.</p>
           <button type="button" className="btn-primary" disabled={starting} onClick={() => void start()}>{starting ? 'Starting…' : 'Start device shell'}</button>

@@ -63,6 +63,11 @@ Environments live under `~/.local/share/bifang-distros`, separate from existing
 Termux distributions. Kali uses apt; Arch and BlackArch use pacman. Tool suites
 are optional package installs. These catalogue entries currently target ARM64.
 
+Expand **Device storage → Connect shared storage** to make shared folders
+available at `~/storage` and in new distribution sessions. Bifang and Termux
+each use their own Android permission. [Storage setup and path handling](../docs/android-shared-storage.md)
+explain the explicit connection and refresh steps.
+
 On Android, first install/open Termux and set `allow-external-apps=true` in
 `~/.termux/termux.properties`, then run `termux-reload-settings`. In Bifang's
 **Runtime setup**, use **Allow Termux connection**, **Install runtime tools**,

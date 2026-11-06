@@ -18,10 +18,15 @@ pub(crate) fn local_window(window: &WebviewWindow) -> Result<(), String> {
     Ok(())
 }
 
+pub(crate) fn terminal_home(window: &WebviewWindow) -> Result<PathBuf, String> {
+    Ok(window.app_handle().path().app_data_dir()
+        .map_err(|_| "Application storage is unavailable")?.join("projects").join("terminal"))
+}
+
 fn directory(window: &WebviewWindow) -> Result<PathBuf, String> {
     let root = window.app_handle().path().app_data_dir()
         .map_err(|_| "Application storage is unavailable")?;
-    let projects = root.join("projects").join("terminal");
+    let projects = terminal_home(window)?;
     std::fs::create_dir_all(projects.join(".tmp"))
         .map_err(|_| "Could not prepare terminal project storage")?;
     let root = root.canonicalize().map_err(|_| "Application storage is unavailable")?;
