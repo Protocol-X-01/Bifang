@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const sidebar = await readFile(new URL('../src/components/Sidebar.tsx', import.meta.url), 'utf8');
 const native = await readFile(new URL('../src-tauri/src/commands.rs', import.meta.url), 'utf8');
+const productionNative = native.split('#[cfg(test)]', 1)[0];
 const main = await readFile(new URL('../src-tauri/src/main.rs', import.meta.url), 'utf8');
 
 test('workspace creation is a separate named action with parent selection and explicit submit', () => {
@@ -16,7 +17,7 @@ test('workspace creation is a separate named action with parent selection and ex
 
 test('native creation is origin checked and uses non-overwriting directory creation', () => {
   assert.match(main, /commands::create_workspace/);
-  assert.match(native, /crate::terminal::local_window\(&window\)\?/);
-  assert.match(native, /fs::create_dir\(&directory\)/);
-  assert.doesNotMatch(native, /create_dir_all|Command::new/);
+  assert.match(productionNative, /crate::terminal::local_window\(&window\)\?/);
+  assert.match(productionNative, /fs::create_dir\(&directory\)/);
+  assert.doesNotMatch(productionNative, /create_dir_all|Command::new/);
 });

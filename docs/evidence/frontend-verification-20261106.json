@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-11-06T12:53:02.902508+00:00",
+  "application_tree_base": "92e0edc0132a4634a132a4acace651a1d913d4ca",
+  "desktop_tests": 81,
+  "companion_tests": 9,
+  "production_builds": [
+    "desktop",
+    "companion"
+  ],
+  "verification": {
+    "desktop_test": {
+      "status": "passed",
+      "log_sha256": "6ca86f5be3697b50396534c1b32a4b69a2da29293a33255a9fe37b8a891f5185"
+    },
+    "desktop_build": {
+      "status": "passed",
+      "log_sha256": "73bfb81eb08954c3332091bfbd903bf6a7e88133c3b06b355de61cb6fe293f27"
+    },
+    "companion_test": {
+      "status": "passed",
+      "log_sha256": "64cd607099e5d67d495a1e2ea3f182de52193c53dc0a6543445099bac8f794d8"
+    },
+    "companion_build": {
+      "status": "passed",
+      "log_sha256": "cd7729a5fe76ad5dbb9eb5c1f59ddae565369860aea6413369e3c96642efba7b"
+    }
+  },
+  "check_repair": "Native workspace creation source check now excludes cfg(test) fixtures; production create_dir and command prohibitions remain enforced.",
+  "backend_source_unchanged_since_1170_test_run": true
+}
