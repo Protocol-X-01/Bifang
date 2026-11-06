@@ -1,0 +1,28 @@
+{
+  "checked_at": "2026-11-06T12:03:11.560608+00:00",
+  "origin": "https://184.195.233.161",
+  "auth_scope": "Existing owner token; value not recorded",
+  "default_tls_verification": true,
+  "redirects_allowed": false,
+  "results": [
+    {
+      "path": "/v1/schema",
+      "status": 200,
+      "json_received": true
+    },
+    {
+      "path": "/v1/coding/schema",
+      "status": 200,
+      "json_received": true
+    },
+    {
+      "path": "/v1/models/nebius",
+      "status": 200,
+      "json_received": true,
+      "model_count": 31
+    }
+  ],
+  "inference_requests": 0,
+  "remote_configuration_changed": false,
+  "scope": "Authenticated metadata/catalogue checks only; full coding workflow not yet exercised."
+}

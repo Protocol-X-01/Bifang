@@ -14,8 +14,8 @@ changed only `receipts.py` and passed all five original checks
 | Linux desktop | v0.3.2 supplemental `a479d91` Debian, RPM and AppImage packages; extracted CI payload checks target GLIBC 2.35 | Fresh installed-GUI acceptance for those exact supplemental packages |
 | Windows and macOS | Supplemental desktop and Companion installers are in the v0.3.2 release; sidecar authentication and independent-instance CI checks passed | Installed-GUI acceptance and distribution signing |
 | Android and iOS | Android Companion v0.3.1 package and retained Xiaomi 12T testing; iOS unsigned build archive | iOS signing and device acceptance |
-| Public video | [Submitted narrated demo](https://www.youtube.com/watch?v=gwAAJcWplf0), public and 170 seconds; [metadata receipt](evidence/submitted-video-20261106.json) | Owner review of the separate refreshed local edit |
-| AWS hosted workflow | November 6 HTTPS health 200; checked protected routes reject missing/invalid credentials; certificate renewed November 4 | Authenticated full workflow and renewal-timer inspection after AWS sign-in |
+| Public video | [Refreshed demo](https://youtu.be/Eg8Gcyj5ORM), public and 2:45, with timed captions; [publication receipt](evidence/refreshed-video-20261106.json). The submitted 170-second video remains available separately | Organizer permission before changing the submitted entry's video link |
+| AWS hosted workflow | November 6 authenticated Nano proposal, exact patch review, independent checks, staging and Apply passed; five original fixture checks preserved; 780 reported tokens; HTTPS renewal timer enabled and active | Continue checking service and provider availability through judging |
 | Vercel relay | Production HTTPS relay; required access expiry configured through December 23 at 20:00 UTC | Fresh positive authenticated check and coordinated replacement of exposed judge access |
 | Submission | Owner-confirmed receipt: October 30, 16:59 GMT; public entry at [Devpost](https://devpost.com/software/bifang) | Owner/organizer review of any requested submitted-entry correction |
 
@@ -29,6 +29,31 @@ different artifacts and are recorded separately.
 The [hosted status receipt](evidence/hosted-status-20261106.json) is a
 point-in-time availability check. Provider funding, authenticated access and
 continued service through judging still need operator verification.
+
+The [AWS renewal receipt](evidence/aws-renewal-readback-20261106.json) records
+the November 6 read-only service inspection. It verifies the timer's enabled
+state and scheduled trigger; it does not establish every future renewal.
+The [authenticated metadata check](evidence/aws-authenticated-metadata-20261106.json)
+used the existing owner credential without recording its value and made no
+inference request.
+The separate [hosted coding run](evidence/aws-hosted-coding-20261106.json)
+used one synthetic project and a real Nebius Nemotron Nano proposal. The
+expected patch was inspected before approval, the independent checks passed,
+and the hosted original changed only after separate Apply. This verifies the
+existing hosted service; it does not deploy the newer local privacy repairs.
+The latest presentation PR passed its Python, frontend, native Linux package
+and container checks ([CI receipt](evidence/presentation-pr4-ci-20261106.json)).
+
+## Local privacy repairs
+
+A November 6 review of the fixed source range `1a467218..1b82dfc3` reproduced
+four privacy-control gaps with synthetic fixtures: reused saved tool IDs,
+punctuation in unquoted credentials, private-key body lines in search results,
+and sensitive diff paths containing spaces. The follow-up source adds focused
+regression coverage for those exact cases. The repaired source passed
+1,170 backend tests with four skips and non-mutating maintained CI lint
+([validation receipt](evidence/privacy-regressions-20261106.json)). This
+validation is separate from the earlier released installers and submitted entry.
 
 The [official rules](https://nebiusglobalaihackathon.devpost.com/rules), checked
 November 6, set judging for December 9–23 and require free testing access

@@ -1,75 +1,48 @@
-# Security Policy
+# Security
 
-## 🔒 Supported Versions
+## Reporting a problem
 
-We provide security updates for the following versions:
+Please arrange a private channel with the maintainer before sharing exploit
+details, logs or credentials. GitHub private vulnerability reporting was not
+enabled when checked on November 6, 2026. To arrange contact, open a minimal
+[maintainer-contact request](https://github.com/Protocol-X-01/Bifang/issues/new)
+with the affected component and your preferred contact method, without the
+vulnerability details.
 
-| Version | Supported |
-|---------|-----------|
-| Latest release | ✅ |
-| Previous release | ⚠️ (Critical only) |
-| Older versions | ❌ |
+Include the exact Bifang version or source commit, platform, reproduction
+steps and observed impact in the private report. Use synthetic credentials
+and a disposable test project where possible. Maintainers will identify
+affected versions during triage.
 
-## 🔒 Reporting a Vulnerability
+## Execution and approval
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+The agent uses a separate worktree or folder snapshot for reviewable changes.
+Apply and check receipts bind decisions to the candidate patch. Manual mode
+asks before actions; Auto permits constrained source edits; Full tool approval
+grants broader tool authority after explicit confirmation. Workspace sharing,
+restored history and query embedding have separate consent scopes.
 
-Instead, please report them via email to: **security@protocol-x.example.com**
+Linux agent commands use Bubblewrap when enabled. Generated Python requires
+the isolation path and stops when it is unavailable. Explicit command-isolation
+opt-out and the native local terminal use host authority. Use a disposable VM
+for hostile repositories or tools that need broader system access.
 
-Include the following information:
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Any known mitigations
+## Private data and external models
 
-We will acknowledge receipt within 48 hours and provide a timeline for a fix.
+Model-facing file tools filter conventional credential paths and redact
+recognized values from covered output. Redaction is heuristic: keep unrelated
+secrets outside development workspaces. Source and memory content can be sent
+to the configured model endpoints after the relevant approval. Local audit
+transcripts and saved history are private application state.
 
-## 🛡️ Safety Model
+Provider keys, desktop/API authentication, paired devices and judge access are
+separate credentials. Never place a provider key in a client bundle or public
+testing instructions. If a credential is exposed, coordinate replacement access
+and revoke or rotate the exposed value.
 
-Bifang is designed with a defense-in-depth approach:
+## Review scope
 
-### Sandboxing
-- **Disposable Git worktrees** — Original checkout untouched until explicit Apply
-- **Filesystem confinement** — Tools restricted to Bifang workspace
-- **Bubblewrap support** — Linux command isolation (where available)
-
-### Approval System
-- **Three approval levels** — Manual · Auto source edits · Full tool approval
-- **Explicit confirmation** — Every mutation requires approval
-- **Destructive patterns blocked** — In every mode
-
-### Model Safety
-- **Typed model tools** — Validated before use
-- **Model routing receipts** — Requested vs reported model logged
-- **Token usage tracking** — Visible token consumption
-
-### Audit & Transparency
-- **JSONL audit transcripts** — Under `.bifang/sessions`
-- **Model routing receipts** — Requested vs reported model
-- **Check receipts** — Bound to exact candidate SHA-256
-
-## 🚫 Out of Scope
-
-The following are **not** considered security vulnerabilities:
-
-- Issues requiring physical access
-- Social engineering attacks
-- Vulnerabilities in third-party dependencies (report upstream)
-- Denial of service from resource exhaustion (rate limits apply)
-- Issues in unmaintained dependencies (we update regularly)
-
-## 🔄 Security Updates
-
-Security patches are released as:
-- **Patch releases** for critical vulnerabilities
-- **Minor releases** for moderate vulnerabilities
-- Included in next regular release for low-severity issues
-
-## 📞 Contact
-
-- **Security Email**: security@protocol-x.example.com
-- **PGP Key**: Available on request
-
----
-
-*Bifang is defense in depth, not a formally verified security boundary. Use disposable VMs for hostile repositories.*
+Security reports distinguish source review, synthetic tests, packaged binaries
+and deployed services. A passing source test does not by itself verify every
+operating system or installed build. The repository's regression tests cover
+the concrete control failures fixed by each patch.

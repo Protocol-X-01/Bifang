@@ -1,6 +1,17 @@
 # Demo recordings and evidence
 
-## Public narrated demo
+## Refreshed narrated demo — November 6
+
+[Watch Bifang's refreshed coding demo · 2:45](https://www.youtube.com/watch?v=Eg8Gcyj5ORM).
+Published on Protocol X with timed English captions, chapters and the branded
+opening frame. The edit combines the public v0.3.2 IDE capture and desktop,
+terminal and Android views with the retained native coding walkthrough at
+half speed. The task itself remains tied to its original recorded build and
+[native task receipt](evidence/native-vercel-relay.json).
+
+![Bifang IDE v0.3.2 — workspace and chat view](assets/bifang-desktop-ide.png)
+
+## Submitted narrated demo — October 30
 
 [Watch Bifang's narrated demo](https://www.youtube.com/watch?v=gwAAJcWplf0).
 The owner confirmed this is the link attached to the submitted Devpost entry.
@@ -8,8 +19,6 @@ Public playback metadata checked on November 6 reports the title
 **Bifang narrated demo**, a 170-second duration, public availability, and an
 October 30 upload by Protocol X. The [metadata receipt](evidence/submitted-video-20261106.json)
 records the scope of that check.
-
-![Bifang IDE v0.3.2 — workspace and chat view](assets/bifang-desktop-ide.png)
 
 ## Earlier native desktop run — October 23, 2026
 

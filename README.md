@@ -17,9 +17,9 @@
 
 ## Watch Bifang in Action
 
-[Watch the narrated coding demo on YouTube · 2 min 50 sec](https://www.youtube.com/watch?v=gwAAJcWplf0)
+[Watch the refreshed coding demo on YouTube · 2 min 45 sec](https://www.youtube.com/watch?v=Eg8Gcyj5ORM)
 
-<p align="center"><a href="https://www.youtube.com/watch?v=gwAAJcWplf0"><img src="docs/assets/bifang-desktop-ide.png" width="1100" alt="Bifang IDE v0.3.2 — open a workspace, choose a model and review a change. Watch the narrated coding demo." /></a></p>
+<p align="center"><a href="https://www.youtube.com/watch?v=Eg8Gcyj5ORM"><img src="docs/assets/bifang-desktop-ide.png" width="1100" alt="Bifang IDE v0.3.2 — open a workspace, choose a model and review a change. Watch the narrated coding demo." /></a></p>
 
 **From failing checks to reviewed patch:** Watch Nemotron Ultra fix a broken receipt parser through Bifang's tools. The agent proposes edits, you approve actions, run independent checks, review the diff, and control when to apply. All five original tests pass after the fix.
 

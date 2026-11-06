@@ -59,6 +59,26 @@ def read_file(policy: Policy, path: str, start: int = 1, end: int = 400) -> str:
     return "\n".join(f"{i+1}: {v}" for i, v in enumerate(lines[start-1:end], start-1))[:100000]
 
 
+def _search_file_context(path: Path, *, rg_lines: bool = False) -> tuple[list[str], list[str]] | None:
+    if path.stat().st_size > MAX_READ_FILE_BYTES:
+        return None
+    with path.open("rb") as source:
+        content = source.read(MAX_READ_FILE_BYTES + 1)
+    if len(content) > MAX_READ_FILE_BYTES:
+        return None
+    text = content.decode("utf-8", errors="replace" if rg_lines else "ignore")
+    # ripgrep counts LF-delimited lines; retain the fallback's existing splitlines behavior.
+    original_lines = ([line.rstrip("\r") for line in text.split("\n")]
+                      if rg_lines else text.splitlines())
+    clean_lines = redact_secrets("\n".join(original_lines)).split("\n")
+    if len(clean_lines) != len(original_lines):
+        # Never associate a collapsed multiline redaction with the wrong source line.
+        clean_lines = ["[REDACTED]"] * len(original_lines)
+    clean_lines = [clean or ("[REDACTED]" if original else "")
+                   for original, clean in zip(original_lines, clean_lines)]
+    return original_lines, clean_lines
+
+
 def search(root: Path, query: str) -> str:
     if not isinstance(query, str) or not query.strip() or len(query) > 512:
         return "Search query must contain 1 to 512 characters"
@@ -74,6 +94,9 @@ def search(root: Path, query: str) -> str:
         if result.returncode not in (0, 1):
             return "Search failed: invalid pattern or unavailable files"
         matches = []
+        # Retain at most one bounded file, rather than caching the whole result set.
+        cached_path = None
+        cached_context = None
         for record in result.stdout.splitlines():
             try:
                 event = json.loads(record)
@@ -102,7 +125,15 @@ def search(root: Path, query: str) -> str:
             line_text = data.get("lines", {}).get("text")
             if not isinstance(line_number, int) or not isinstance(line_text, str):
                 continue
-            clean_line = redact_secrets(line_text.rstrip("\r\n"))
+            if resolved != cached_path:
+                cached_path = resolved
+                try:
+                    cached_context = _search_file_context(resolved, rg_lines=True)
+                except OSError:
+                    cached_context = None
+            if cached_context is None or not 1 <= line_number <= len(cached_context[1]):
+                continue
+            clean_line = cached_context[1][line_number - 1]
             clean_path = redact_secrets(relative.as_posix())
             matches.append(f"{clean_path}:{line_number}:{clean_line}")
             if len(matches) >= 1000:
@@ -113,12 +144,14 @@ def search(root: Path, query: str) -> str:
     output_size = 0
     for path, relative in _workspace_files(root):
         try:
-            if path.stat().st_size > MAX_READ_FILE_BYTES:
+            context = _search_file_context(path)
+            if context is None:
                 continue
-            for i, line in enumerate(path.read_text(errors="ignore").splitlines(), 1):
+            original_lines, clean_lines = context
+            for i, line in enumerate(original_lines, 1):
                 if query.lower() in line.lower():
                     clean_path = redact_secrets(relative.as_posix())
-                    match = f"{clean_path}:{i}:{redact_secrets(line)}"
+                    match = f"{clean_path}:{i}:{clean_lines[i - 1]}"
                     matches.append(match)
                     output_size += len(match)
                     if len(matches) >= 1000 or output_size >= 100000:

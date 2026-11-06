@@ -245,28 +245,59 @@ class Agent:
 
     @staticmethod
     def _sanitize_restored_tool_history(messages: list[dict]) -> None:
-        tool_calls = {}
-        for message in messages:
-            if message.get("role") != "assistant":
-                continue
-            for call in message.get("tool_calls") or []:
-                function = call.get("function") or {}
-                arguments = function.get("arguments")
-                if isinstance(arguments, str):
-                    function["arguments"] = redact_secrets(arguments)
-                    try:
-                        arguments = json.loads(arguments)
-                    except (TypeError, json.JSONDecodeError):
-                        arguments = None
-                tool_calls[call.get("id")] = (function.get("name"), arguments)
+        pending_calls = {}
+        seen_results = {}
+        omitted_result = "[Unverifiable prior tool result omitted on restore]"
         for message in messages:
             role = message.get("role")
+            # Results belong only to the preceding assistant batch, never a later call
+            # or a previous batch that happened to use the same ID.
+            if role != "tool":
+                pending_calls = {}
+                seen_results = {}
+            if role == "assistant":
+                calls = message.get("tool_calls") or []
+                if not isinstance(calls, list):
+                    calls = []
+                for call in calls:
+                    if not isinstance(call, dict):
+                        continue
+                    identity = call.get("id")
+                    function = call.get("function")
+                    binding = None
+                    if isinstance(function, dict):
+                        arguments = function.get("arguments")
+                        if isinstance(arguments, str):
+                            function["arguments"] = redact_secrets(arguments)
+                            try:
+                                arguments = json.loads(arguments)
+                            except (TypeError, json.JSONDecodeError):
+                                arguments = None
+                        name = function.get("name")
+                        if isinstance(name, str) and name:
+                            binding = (name, arguments)
+                    if isinstance(identity, str) and identity:
+                        # A duplicate ID makes every binding for that ID ambiguous.
+                        pending_calls[identity] = None if identity in pending_calls else binding
             if role in {"user", "assistant"} and isinstance(message.get("content"), str):
                 message["content"] = redact_model_diff(message["content"])
-            if role != "tool" or not isinstance(message.get("content"), str):
+            if role != "tool":
+                continue
+            identity = message.get("tool_call_id")
+            binding = pending_calls.pop(identity, None) if isinstance(identity, str) else None
+            if isinstance(identity, str):
+                previous = seen_results.get(identity)
+                if previous is not None:
+                    # Repeated results are ambiguous too, including the first result.
+                    previous["content"] = omitted_result
+                    binding = None
+                else:
+                    seen_results[identity] = message
+            if binding is None or not isinstance(message.get("content"), str):
+                message["content"] = omitted_result
                 continue
             content = message["content"]
-            tool_name, arguments = tool_calls.get(message.get("tool_call_id"), (None, None))
+            tool_name, arguments = binding
             if tool_name == "list_files":
                 content = "\n".join(
                     line for line in content.splitlines()

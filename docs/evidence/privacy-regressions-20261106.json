@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-11-06T12:19:24.969065+00:00",
+  "reviewed_base_revision": "1b82dfc3f8f9cbf5377eed2e7229d691503cb1b2",
+  "source_and_regression_sha256": {
+    "src/bifang/agent.py": "8a362754fc792d783b02dd03790996cdcc03f2ab73978258c4189d4a8c22386d",
+    "src/bifang/secret_patterns.py": "b6d0577911ec9e06b16c168ed48fef109eae71aaba02ef0542fd99f84679d1f0",
+    "src/bifang/tools/files.py": "ceb5c98e066e7411097de201aaee28949629d3e15c3496674fa55280da582d5f",
+    "tests/test_restored_tool_binding.py": "9c4d31a8c44653e39ae5a4b33d9f3911eef9f66b27907a4a1971452bd9a4cd8a",
+    "tests/test_search_private_key_context.py": "6c444d9894f6aa6fbee69a572fafb8572072e9bfe99f645733261bbfe97047f5",
+    "tests/test_secret_value_and_diff_paths.py": "75046455bf0e8049c5a02dc4a6ef1df8d571734a51daffbc598d389a9f8fbd7e"
+  },
+  "backend_suite": {
+    "passed": 1170,
+    "skipped": 4,
+    "seconds": 114.8,
+    "dotenv_disabled": true,
+    "provider_credentials_excluded_from_environment": true,
+    "full_log_sha256": "84680dc5360229a1ae4d3b14f0b1677041674161db6427f110a802b2ac86bc75"
+  },
+  "maintained_ci_lint": {
+    "exit_code": 0,
+    "mutates_source": false
+  },
+  "fixed_cases": [
+    "Restored tool-ID association",
+    "Unquoted credential punctuation",
+    "Search private-key block context",
+    "Sensitive Git paths containing spaces"
+  ],
+  "scope": "Local source and synthetic regression evidence; this is not a release, installed-app, provider-inference or deployment receipt."
+}
