@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bifang_slate">#0F172A</color>
+    <color name="bifang_cloud_white">#F7F7F7</color>
+    <color name="bifang_red">#E63946</color>
+    <color name="bifang_flame_orange">#FF8A3D</color>
+</resources>

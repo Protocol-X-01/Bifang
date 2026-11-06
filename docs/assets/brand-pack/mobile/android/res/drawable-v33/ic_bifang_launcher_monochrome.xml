@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="1080" android:viewportHeight="1080">
+    <group android:translateX="204" android:translateY="204" android:scaleX="1.3125" android:scaleY="1.3125">
+        <group android:translateY="52">
+            <path android:name="bifang_part_0" android:pathData="M140 170 Q100 140 80 110 Q60 80 70 50 Q80 20 120 30 Q160 40 170 80 Q180 120 160 150 Q140 180 110 170" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="8" android:strokeLineCap="round" android:strokeLineJoin="round" />
+            <path android:name="bifang_part_1" android:pathData="M372 170 Q412 140 432 110 Q452 80 442 50 Q432 20 392 30 Q352 40 342 80 Q332 120 352 150 Q372 180 402 170" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="8" android:strokeLineCap="round" android:strokeLineJoin="round" />
+            <path android:name="bifang_part_2" android:pathData="M200 120 L200 320 L312 320 L312 120 Z" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="4" />
+            <path android:name="bifang_part_3" android:pathData="M236 160 L256 180 L236 200" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="6" android:strokeLineCap="round" android:strokeLineJoin="round" />
+            <path android:name="bifang_part_4" android:pathData="M276 160 L256 180 L276 200" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="6" android:strokeLineCap="round" android:strokeLineJoin="round" />
+            <path android:name="bifang_part_5" android:pathData="M256 320 L256 380" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="6" android:strokeLineCap="round" />
+            <path android:name="bifang_part_6" android:pathData="M240 380 L272 380" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="6" android:strokeLineCap="round" />
+            <path android:name="bifang_part_7" android:pathData="M228,80 A28,20 0,1,0 284,80 A28,20 0,1,0 228,80 Z" android:fillColor="#00000000" android:strokeColor="#FFFFFF" android:strokeWidth="4" />
+            <path android:name="bifang_part_8" android:pathData="M270 80 Q290 75 295 80 Q290 85 270 80" android:fillColor="#FFFFFF" android:strokeColor="#00000000" />
+            <path android:name="bifang_part_9" android:pathData="M243,76 A5,5 0,1,0 253,76 A5,5 0,1,0 243,76 Z" android:fillColor="#FFFFFF" android:strokeColor="#00000000" />
+        </group>
+    </group>
+</vector>

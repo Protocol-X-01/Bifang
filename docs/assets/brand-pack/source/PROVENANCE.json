@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-06",
+  "font": {
+    "family": "Space Grotesk",
+    "license": "SIL Open Font License 1.1",
+    "source": "https://github.com/google/fonts/tree/main/ofl/spacegrotesk",
+    "files": [
+      {
+        "path": "fonts/SpaceGrotesk-variable.ttf",
+        "git_blob_sha1": "a1b2e6c26093066510a31147e7aec9abdc8d6c5e"
+      },
+      {
+        "path": "fonts/OFL-SpaceGrotesk.txt",
+        "git_blob_sha1": "cb512b9af44ff61e75e1aad387b7424cdfab36a3"
+      }
+    ]
+  },
+  "logo": {
+    "source": "https://github.com/Protocol-X-01/Bifang/blob/main/docs/assets/bifang-symbol.svg",
+    "local_original": "source/bifang-symbol-original.svg",
+    "changes": [
+      "Explicit stroke gradients for axis-aligned paths",
+      "Corrected monochrome strokes",
+      "Canvas centering",
+      "Outlined Space Grotesk lettering",
+      "Dedicated small-size favicon",
+      "Preserved the original head ellipse radius in every native and SVG export"
+    ]
+  },
+  "background": {
+    "mode": "built-in image_gen",
+    "intent": "generate",
+    "use_case": "ads-marketing",
+    "date": "2026-11-06",
+    "prompt": "Use case: ads-marketing. Asset type: one premium abstract background for the Bifang coding workspace brand, for editable promotional banners and YouTube thumbnails. Create a refined 16:9 landscape background, ideally 3840 by 2160. Base palette: almost-black navy and deep slate #0F172A. A restrained ember-red #E63946 to flame-orange #FF8A3D flow of light and delicate luminous traces belongs mainly along the far right edge and lower-right corner. The left two thirds must stay dark, calm and uncluttered for large white typography. Subtle precision grid, very fine material grain, generous negative space, sophisticated technical keynote/editorial finish. Controlled energy, practical engineering, quiet confidence. No text, no letters, no logos, no birds, no people, no devices, no invented software interfaces, no badges, no watermark. Avoid purple/cyan neon, fantasy flames, chrome emblems, excessive bloom, decorative clutter and generic cyberpunk imagery. This is a reusable brand background, not a new logo.",
+    "transparent_background": false,
+    "reference_images": [],
+    "output": "backgrounds/ember-atmosphere.png",
+    "pixel_edits": false,
+    "note": "Optional backdrop embedded in the vector-built brand thumbnail; core logos preserve the existing vector mark."
+  },
+  "product_captures": [
+    {
+      "path": "source/bifang-desktop-ide.png",
+      "kind": "Actual public desktop UI capture"
+    },
+    {
+      "path": "source/bifang-tests-passing.png",
+      "kind": "Retained original native coding task results; five checks"
+    }
+  ],
+  "edition": "mobile-and-tablet-v2",
+  "mobile": {
+    "apple": "Modern Any/Dark/Tinted catalog plus explicit iPhone/iPad sizes",
+    "android": "Adaptive gradient vectors, monochrome themed layer, legacy densities and Play artwork",
+    "promotional_covers": "Phone and tablet, portrait and landscape",
+    "sources": [
+      "https://developer.apple.com/documentation/xcode/configuring-your-app-icon",
+      "https://developer.apple.com/library/archive/documentation/Xcode/Reference/xcode_ref-Asset_Catalog_Format/AppIconType.html",
+      "https://developer.android.com/develop/ui/compose/system/icon_design_adaptive",
+      "https://developer.android.com/distribute/google-play/resources/icon-design-specifications"
+    ]
+  }
+}

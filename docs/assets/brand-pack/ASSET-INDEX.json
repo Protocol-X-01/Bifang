@@ -1,0 +1,996 @@
+{
+  "brand": "Bifang",
+  "version": "2026-11-06",
+  "assets": [
+    {
+      "path": "logos/svg/bifang-symbol-ember-dark.svg",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 ember-dark",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-ember-dark-256.png",
+      "width": 256,
+      "height": 256,
+      "purpose": "Bifang symbol \u00b7 ember-dark",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-ember-dark-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 ember-dark",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-ember-dark-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang symbol \u00b7 ember-dark",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-horizontal-ember-dark.svg",
+      "width": 749,
+      "height": 256,
+      "purpose": "Bifang horizontal lockup \u00b7 ember-dark",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-horizontal-ember-dark-2400.png",
+      "width": 2400,
+      "height": 821,
+      "purpose": "Bifang horizontal lockup \u00b7 ember-dark",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-symbol-ember-light.svg",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 ember-light",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-ember-light-256.png",
+      "width": 256,
+      "height": 256,
+      "purpose": "Bifang symbol \u00b7 ember-light",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-ember-light-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 ember-light",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-ember-light-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang symbol \u00b7 ember-light",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-horizontal-ember-light.svg",
+      "width": 749,
+      "height": 256,
+      "purpose": "Bifang horizontal lockup \u00b7 ember-light",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-horizontal-ember-light-2400.png",
+      "width": 2400,
+      "height": 821,
+      "purpose": "Bifang horizontal lockup \u00b7 ember-light",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-symbol-white.svg",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 white",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-white-256.png",
+      "width": 256,
+      "height": 256,
+      "purpose": "Bifang symbol \u00b7 white",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-white-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 white",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-white-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang symbol \u00b7 white",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-horizontal-white.svg",
+      "width": 749,
+      "height": 256,
+      "purpose": "Bifang horizontal lockup \u00b7 white",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-horizontal-white-2400.png",
+      "width": 2400,
+      "height": 821,
+      "purpose": "Bifang horizontal lockup \u00b7 white",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-symbol-black.svg",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 black",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-black-256.png",
+      "width": 256,
+      "height": 256,
+      "purpose": "Bifang symbol \u00b7 black",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-black-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang symbol \u00b7 black",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/png/bifang-symbol-black-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang symbol \u00b7 black",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-horizontal-black.svg",
+      "width": 749,
+      "height": 256,
+      "purpose": "Bifang horizontal lockup \u00b7 black",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-horizontal-black-2400.png",
+      "width": 2400,
+      "height": 821,
+      "purpose": "Bifang horizontal lockup \u00b7 black",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-stacked-ember-dark.svg",
+      "width": 1000,
+      "height": 850,
+      "purpose": "Bifang stacked lockup \u00b7 ember-dark",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-stacked-ember-dark-2048.png",
+      "width": 2048,
+      "height": 1741,
+      "purpose": "Bifang stacked lockup \u00b7 ember-dark",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-stacked-ember-light.svg",
+      "width": 1000,
+      "height": 850,
+      "purpose": "Bifang stacked lockup \u00b7 ember-light",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-stacked-ember-light-2048.png",
+      "width": 2048,
+      "height": 1741,
+      "purpose": "Bifang stacked lockup \u00b7 ember-light",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-wordmark-ember.svg",
+      "width": 654,
+      "height": 188,
+      "purpose": "Bifang outlined wordmark \u00b7 ember",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-wordmark-ember-2400.png",
+      "width": 2400,
+      "height": 690,
+      "purpose": "Bifang outlined wordmark \u00b7 ember",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-wordmark-white.svg",
+      "width": 654,
+      "height": 188,
+      "purpose": "Bifang outlined wordmark \u00b7 white",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-wordmark-white-2400.png",
+      "width": 2400,
+      "height": 690,
+      "purpose": "Bifang outlined wordmark \u00b7 white",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-wordmark-black.svg",
+      "width": 654,
+      "height": 188,
+      "purpose": "Bifang outlined wordmark \u00b7 black",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-wordmark-black-2400.png",
+      "width": 2400,
+      "height": 690,
+      "purpose": "Bifang outlined wordmark \u00b7 black",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/bifang-avatar-slate.svg",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang avatar \u00b7 slate",
+      "format": "SVG"
+    },
+    {
+      "path": "icons/bifang-avatar-slate-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang avatar \u00b7 slate",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/bifang-avatar-slate-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang avatar \u00b7 slate",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/bifang-avatar-cloud.svg",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang avatar \u00b7 cloud",
+      "format": "SVG"
+    },
+    {
+      "path": "icons/bifang-avatar-cloud-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Bifang avatar \u00b7 cloud",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/bifang-avatar-cloud-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang avatar \u00b7 cloud",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/favicon.svg",
+      "width": 32,
+      "height": 32,
+      "purpose": "Bifang simplified favicon",
+      "format": "SVG"
+    },
+    {
+      "path": "icons/favicon-16.png",
+      "width": 16,
+      "height": 16,
+      "purpose": "Bifang simplified favicon",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/favicon-32.png",
+      "width": 32,
+      "height": 32,
+      "purpose": "Bifang simplified favicon",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/favicon-48.png",
+      "width": 48,
+      "height": 48,
+      "purpose": "Bifang simplified favicon",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/favicon-64.png",
+      "width": 64,
+      "height": 64,
+      "purpose": "Bifang simplified favicon",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/favicon-180.png",
+      "width": 180,
+      "height": 180,
+      "purpose": "Bifang simplified favicon",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/favicon-192.png",
+      "width": 192,
+      "height": 192,
+      "purpose": "Bifang simplified favicon",
+      "format": "PNG"
+    },
+    {
+      "path": "icons/favicon.ico",
+      "width": 48,
+      "height": 48,
+      "sizes": [
+        16,
+        32,
+        48
+      ],
+      "purpose": "Multi-resolution browser favicon",
+      "format": "ICO"
+    },
+    {
+      "path": "thumbnails/youtube-coding-demo.svg",
+      "width": 1920,
+      "height": 1080,
+      "purpose": "Coding demo thumbnail",
+      "format": "SVG"
+    },
+    {
+      "path": "thumbnails/youtube-coding-demo-1920.png",
+      "width": 1920,
+      "height": 1080,
+      "purpose": "Coding demo thumbnail",
+      "format": "PNG"
+    },
+    {
+      "path": "thumbnails/youtube-reviewed-patch.svg",
+      "width": 1920,
+      "height": 1080,
+      "purpose": "Reviewed-patch thumbnail",
+      "format": "SVG"
+    },
+    {
+      "path": "thumbnails/youtube-reviewed-patch-1920.png",
+      "width": 1920,
+      "height": 1080,
+      "purpose": "Reviewed-patch thumbnail",
+      "format": "PNG"
+    },
+    {
+      "path": "thumbnails/youtube-brand.svg",
+      "width": 1920,
+      "height": 1080,
+      "purpose": "Brand thumbnail",
+      "format": "SVG"
+    },
+    {
+      "path": "thumbnails/youtube-brand-1920.png",
+      "width": 1920,
+      "height": 1080,
+      "purpose": "Brand thumbnail",
+      "format": "PNG"
+    },
+    {
+      "path": "social/social-preview.svg",
+      "width": 1200,
+      "height": 630,
+      "purpose": "Social Preview",
+      "format": "SVG"
+    },
+    {
+      "path": "social/social-preview-1200.png",
+      "width": 1200,
+      "height": 630,
+      "purpose": "Social Preview",
+      "format": "PNG"
+    },
+    {
+      "path": "social/profile-banner.svg",
+      "width": 1584,
+      "height": 396,
+      "purpose": "Profile Banner",
+      "format": "SVG"
+    },
+    {
+      "path": "social/profile-banner-1584.png",
+      "width": 1584,
+      "height": 396,
+      "purpose": "Profile Banner",
+      "format": "PNG"
+    },
+    {
+      "path": "social/square-post.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Square social post",
+      "format": "SVG"
+    },
+    {
+      "path": "social/square-post-1080.png",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Square social post",
+      "format": "PNG"
+    },
+    {
+      "path": "social/vertical-story.svg",
+      "width": 1080,
+      "height": 1920,
+      "purpose": "Vertical story / reel cover",
+      "format": "SVG"
+    },
+    {
+      "path": "social/vertical-story-1080.png",
+      "width": 1080,
+      "height": 1920,
+      "purpose": "Vertical story / reel cover",
+      "format": "PNG"
+    },
+    {
+      "path": "social/youtube-channel-banner.svg",
+      "width": 2560,
+      "height": 1440,
+      "purpose": "YouTube channel banner \u00b7 centered logo safe area",
+      "format": "SVG"
+    },
+    {
+      "path": "social/youtube-channel-banner-2560.png",
+      "width": 2560,
+      "height": 1440,
+      "purpose": "YouTube channel banner \u00b7 centered logo safe area",
+      "format": "PNG"
+    },
+    {
+      "path": "guide/youtube-banner-safe-area.svg",
+      "width": 2560,
+      "height": 1440,
+      "purpose": "YouTube banner crop guide \u00b7 not an upload asset",
+      "format": "SVG"
+    },
+    {
+      "path": "guide/youtube-banner-safe-area-1280.png",
+      "width": 1280,
+      "height": 720,
+      "purpose": "YouTube banner crop guide \u00b7 not an upload asset",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/masters/bifang-ios-any.svg",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 any \u00b7 opaque square",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/apple/masters/bifang-ios-any-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 any \u00b7 opaque square",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon.appiconset/bifang-ios-any-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 any \u00b7 opaque square \u00b7 Single Size catalog",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/masters/bifang-ios-dark.svg",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 dark \u00b7 opaque square",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/apple/masters/bifang-ios-dark-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 dark \u00b7 opaque square",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon.appiconset/bifang-ios-dark-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 dark \u00b7 opaque square \u00b7 Single Size catalog",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/masters/bifang-ios-tinted.svg",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 tinted \u00b7 opaque square",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/apple/masters/bifang-ios-tinted-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 tinted \u00b7 opaque square",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon.appiconset/bifang-ios-tinted-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 tinted \u00b7 opaque square \u00b7 Single Size catalog",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-40.png",
+      "width": 40,
+      "height": 40,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 40px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-60.png",
+      "width": 60,
+      "height": 60,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 60px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-58.png",
+      "width": 58,
+      "height": 58,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 58px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-87.png",
+      "width": 87,
+      "height": 87,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 87px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-80.png",
+      "width": 80,
+      "height": 80,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 80px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-120.png",
+      "width": 120,
+      "height": 120,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 120px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-180.png",
+      "width": 180,
+      "height": 180,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 180px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-20.png",
+      "width": 20,
+      "height": 20,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 20px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-29.png",
+      "width": 29,
+      "height": 29,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 29px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-76.png",
+      "width": 76,
+      "height": 76,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 76px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-152.png",
+      "width": 152,
+      "height": 152,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 152px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-167.png",
+      "width": 167,
+      "height": 167,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 167px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/apple/AppIcon-AllSizes.appiconset/bifang-ios-any-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "purpose": "Bifang iOS / iPadOS app icon \u00b7 Any \u00b7 All Sizes \u00b7 1024px",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-foreground.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android adaptive foreground \u00b7 transparent",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-foreground-1080.png",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android adaptive foreground \u00b7 transparent",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-background.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android adaptive background \u00b7 full bleed",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-background-1080.png",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android adaptive background \u00b7 full bleed",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-monochrome.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android themed monochrome \u00b7 white outline",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-monochrome-1080.png",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android themed monochrome \u00b7 white outline",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/drawable-v26/ic_bifang_launcher_foreground.xml",
+      "width": 108,
+      "height": 108,
+      "dimension_unit": "dp",
+      "viewport_width": 1080,
+      "viewport_height": 1080,
+      "purpose": "Android adaptive foreground \u00b7 native gradient vector",
+      "format": "XML",
+      "artwork_type": "Android VectorDrawable"
+    },
+    {
+      "path": "mobile/android/res/drawable-v26/ic_bifang_launcher_background.xml",
+      "width": 108,
+      "height": 108,
+      "dimension_unit": "dp",
+      "viewport_width": 1080,
+      "viewport_height": 1080,
+      "purpose": "Android adaptive background \u00b7 native vector",
+      "format": "XML",
+      "artwork_type": "Android VectorDrawable"
+    },
+    {
+      "path": "mobile/android/res/drawable-v33/ic_bifang_launcher_monochrome.xml",
+      "width": 108,
+      "height": 108,
+      "dimension_unit": "dp",
+      "viewport_width": 1080,
+      "viewport_height": 1080,
+      "purpose": "Android themed monochrome \u00b7 native vector",
+      "format": "XML",
+      "artwork_type": "Android VectorDrawable"
+    },
+    {
+      "path": "mobile/android/bifang-legacy-square.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android legacy launcher \u00b7 square",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-legacy-square-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Android legacy launcher \u00b7 square",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-mdpi/ic_launcher.png",
+      "width": 48,
+      "height": 48,
+      "purpose": "Android legacy launcher \u00b7 square \u00b7 mdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-hdpi/ic_launcher.png",
+      "width": 72,
+      "height": 72,
+      "purpose": "Android legacy launcher \u00b7 square \u00b7 hdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-xhdpi/ic_launcher.png",
+      "width": 96,
+      "height": 96,
+      "purpose": "Android legacy launcher \u00b7 square \u00b7 xhdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-xxhdpi/ic_launcher.png",
+      "width": 144,
+      "height": 144,
+      "purpose": "Android legacy launcher \u00b7 square \u00b7 xxhdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-xxxhdpi/ic_launcher.png",
+      "width": 192,
+      "height": 192,
+      "purpose": "Android legacy launcher \u00b7 square \u00b7 xxxhdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-legacy-round.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android legacy launcher \u00b7 round",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-legacy-round-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Android legacy launcher \u00b7 round",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-mdpi/ic_launcher_round.png",
+      "width": 48,
+      "height": 48,
+      "purpose": "Android legacy launcher \u00b7 round \u00b7 mdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-hdpi/ic_launcher_round.png",
+      "width": 72,
+      "height": 72,
+      "purpose": "Android legacy launcher \u00b7 round \u00b7 hdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-xhdpi/ic_launcher_round.png",
+      "width": 96,
+      "height": 96,
+      "purpose": "Android legacy launcher \u00b7 round \u00b7 xhdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-xxhdpi/ic_launcher_round.png",
+      "width": 144,
+      "height": 144,
+      "purpose": "Android legacy launcher \u00b7 round \u00b7 xxhdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/res/mipmap-xxxhdpi/ic_launcher_round.png",
+      "width": 192,
+      "height": 192,
+      "purpose": "Android legacy launcher \u00b7 round \u00b7 xxxhdpi",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-google-play.svg",
+      "width": 512,
+      "height": 512,
+      "purpose": "Google Play icon master \u00b7 full square \u00b7 no shadow",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-google-play-512.png",
+      "width": 512,
+      "height": 512,
+      "purpose": "Google Play icon \u00b7 512px sRGB RGBA PNG \u00b7 full bleed",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-mask-preview-circle.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android illustrative circle mask \u00b7 artwork study, not a device capture",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-mask-preview-circle-540.png",
+      "width": 540,
+      "height": 540,
+      "purpose": "Android illustrative circle mask \u00b7 artwork study, not a device capture",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-mask-preview-rounded-square.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android illustrative rounded-square mask \u00b7 artwork study, not a device capture",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-mask-preview-rounded-square-540.png",
+      "width": 540,
+      "height": 540,
+      "purpose": "Android illustrative rounded-square mask \u00b7 artwork study, not a device capture",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-mask-preview-squircle.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android illustrative squircle mask \u00b7 artwork study, not a device capture",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-mask-preview-squircle-540.png",
+      "width": 540,
+      "height": 540,
+      "purpose": "Android illustrative squircle mask \u00b7 artwork study, not a device capture",
+      "format": "PNG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-safe-area.svg",
+      "width": 1080,
+      "height": 1080,
+      "purpose": "Android adaptive safe-area diagram \u00b7 not a launcher asset",
+      "format": "SVG"
+    },
+    {
+      "path": "mobile/android/bifang-adaptive-safe-area-540.png",
+      "width": 540,
+      "height": 540,
+      "purpose": "Android adaptive safe-area diagram \u00b7 not a launcher asset",
+      "format": "PNG"
+    },
+    {
+      "path": "promos/mobile/bifang-phone-portrait-1290x2796.svg",
+      "width": 1290,
+      "height": 2796,
+      "purpose": "Bifang phone portrait brand cover; promotional artwork only",
+      "format": "SVG"
+    },
+    {
+      "path": "promos/mobile/bifang-phone-portrait-1290x2796-1290.png",
+      "width": 1290,
+      "height": 2796,
+      "purpose": "Bifang phone portrait brand cover; promotional artwork only",
+      "format": "PNG"
+    },
+    {
+      "path": "promos/mobile/bifang-android-phone-1080x2400.svg",
+      "width": 1080,
+      "height": 2400,
+      "purpose": "Bifang android phone brand cover; promotional artwork only",
+      "format": "SVG"
+    },
+    {
+      "path": "promos/mobile/bifang-android-phone-1080x2400-1080.png",
+      "width": 1080,
+      "height": 2400,
+      "purpose": "Bifang android phone brand cover; promotional artwork only",
+      "format": "PNG"
+    },
+    {
+      "path": "promos/mobile/bifang-tablet-portrait-2048x2732.svg",
+      "width": 2048,
+      "height": 2732,
+      "purpose": "Bifang tablet portrait brand cover; promotional artwork only",
+      "format": "SVG"
+    },
+    {
+      "path": "promos/mobile/bifang-tablet-portrait-2048x2732-2048.png",
+      "width": 2048,
+      "height": 2732,
+      "purpose": "Bifang tablet portrait brand cover; promotional artwork only",
+      "format": "PNG"
+    },
+    {
+      "path": "promos/mobile/bifang-tablet-landscape-2732x2048.svg",
+      "width": 2732,
+      "height": 2048,
+      "purpose": "Bifang tablet landscape brand cover; promotional artwork only",
+      "format": "SVG"
+    },
+    {
+      "path": "promos/mobile/bifang-tablet-landscape-2732x2048-2732.png",
+      "width": 2732,
+      "height": 2048,
+      "purpose": "Bifang tablet landscape brand cover; promotional artwork only",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-family-companion-horizontal.svg",
+      "width": 1149,
+      "height": 280,
+      "purpose": "Bifang Companion family lockup; outlined lettering",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-family-companion-horizontal-2400.png",
+      "width": 2400,
+      "height": 585,
+      "purpose": "Bifang Companion family lockup; outlined lettering",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-family-terminal-horizontal.svg",
+      "width": 1077,
+      "height": 280,
+      "purpose": "Bifang Terminal family lockup; outlined lettering",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-family-terminal-horizontal-2400.png",
+      "width": 2400,
+      "height": 624,
+      "purpose": "Bifang Terminal family lockup; outlined lettering",
+      "format": "PNG"
+    },
+    {
+      "path": "logos/svg/bifang-family-ide-horizontal.svg",
+      "width": 932,
+      "height": 280,
+      "purpose": "Bifang IDE family lockup; outlined lettering",
+      "format": "SVG"
+    },
+    {
+      "path": "logos/png/bifang-family-ide-horizontal-2400.png",
+      "width": 2400,
+      "height": 722,
+      "purpose": "Bifang IDE family lockup; outlined lettering",
+      "format": "PNG"
+    },
+    {
+      "path": "guide/mobile-brand-board.svg",
+      "width": 1800,
+      "height": 2220,
+      "purpose": "Bifang phone and tablet asset overview",
+      "format": "SVG"
+    },
+    {
+      "path": "guide/mobile-brand-board-1800.png",
+      "width": 1800,
+      "height": 2220,
+      "purpose": "Bifang phone and tablet asset overview",
+      "format": "PNG"
+    },
+    {
+      "path": "guide/brand-board.svg",
+      "width": 1800,
+      "height": 2050,
+      "purpose": "Bifang brand pack overview",
+      "format": "SVG"
+    },
+    {
+      "path": "guide/brand-board-1800.png",
+      "width": 1800,
+      "height": 2050,
+      "purpose": "Bifang brand pack overview",
+      "format": "PNG"
+    }
+  ]
+}

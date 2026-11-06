@@ -1,0 +1,13 @@
+{
+  "brand": "Bifang",
+  "colors": {
+    "deepSlate": "#0F172A",
+    "cloudWhite": "#F7F7F7",
+    "bifangRed": "#E63946",
+    "flameOrange": "#FF8A3D",
+    "mutedSlate": "#94A3B8",
+    "verifiedGreen": "#22C55E"
+  },
+  "typeface": "Space Grotesk",
+  "tagline": "Build. Run. Verify."
+}
