@@ -46,9 +46,12 @@ def load_judge_token(path: Path) -> str:
         raise ValueError("Cannot read a valid private judge-token JSON file; contents withheld") from None
 
 
-async def check_access(url: str, judge_token: str, *, client: httpx.AsyncClient | None = None) -> dict:
+async def check_access(url: str, judge_token: str | None = None, *, client: httpx.AsyncClient | None = None,
+                       public_access: bool = False) -> dict:
     origin = relay_origin(url)
-    token = validate_judge_token(judge_token)
+    if type(public_access) is not bool:
+        raise TypeError("public_access must be a boolean")
+    token = None if public_access else validate_judge_token(judge_token)
     owns_client = client is None
     connection = client or httpx.AsyncClient(timeout=20, trust_env=False, follow_redirects=False)
     expected_models = frozenset(TOKEN_FACTORY_ROLES.values())
@@ -62,6 +65,16 @@ async def check_access(url: str, judge_token: str, *, client: httpx.AsyncClient 
         ("source_not_served", "/bifang/judge_relay.py", token, 404),
         ("environment_not_served", "/.env.local", token, 404),
     ]
+    if public_access:
+        requests = [
+            ("health", "/health", None, 200),
+            ("public_demo", "/", None, 200),
+            ("catalog", "/v1/models", None, 200),
+            ("no_agent_route", "/sessions", None, 404),
+            ("no_file_route", "/v1/files", None, 404),
+            ("source_not_served", "/bifang/judge_relay.py", None, 404),
+            ("environment_not_served", "/.env.local", None, 404),
+        ]
     try:
         for name, path, credential, expected_status in requests:
             headers = {"Authorization": "Bearer " + credential} if credential else {}
@@ -81,6 +94,13 @@ async def check_access(url: str, judge_token: str, *, client: httpx.AsyncClient 
                         if name == "health":
                             health = json.loads(body)
                             result["passed"] = isinstance(health, dict) and health.get("status") == "ok" and health.get("scope") == "inference-only"
+                            if public_access:
+                                result["passed"] = result["passed"] and health.get("access") == "public"
+                        elif name == "public_demo":
+                            result["passed"] = (
+                                response.headers.get("content-type", "").startswith("text/html")
+                                and b'id="prompt-form"' in body and b'Code with Bifang' in body
+                            )
                         elif name == "catalog":
                             catalog = json.loads(body)
                             rows = catalog.get("data") if isinstance(catalog, dict) else None

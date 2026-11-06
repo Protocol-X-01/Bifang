@@ -10,19 +10,28 @@ from datetime import UTC, datetime, timedelta
 import httpx
 from anyio import CancelScope
 from fastapi import FastAPI, HTTPException, Request
-from starlette.responses import JSONResponse, Response, StreamingResponse
+from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
+from .judge_demo import PUBLIC_DEMO_CSP, PUBLIC_DEMO_HTML
 from .model_ids import TOKEN_FACTORY_ROLES
 
 UPSTREAM = "https://api.tokenfactory.nebius.com/v1"
 MAX_BODY_BYTES = 2_000_000
 JUDGE_TOKEN_EXPIRES_ENV = "BIFANG_JUDGE_TOKEN_EXPIRES_AT"
+PUBLIC_ACCESS_ENV = "BIFANG_JUDGE_PUBLIC_ACCESS"
+PUBLIC_ROUTES = {("GET", "/"), ("GET", "/v1/models"), ("POST", "/v1/chat/completions")}
 REQUEST_FIELDS = {"model", "messages", "tools", "tool_choice", "temperature",
                   "max_tokens", "stream", "stream_options"}
 
 
 def reject_nonfinite(value):
     raise ValueError("Nonfinite numbers are not JSON")
+
+
+def public_access_enabled(value: str | None) -> bool:
+    if value not in (None, "", "0", "1"):
+        raise ValueError(f"{PUBLIC_ACCESS_ENV} must be 0 or 1")
+    return value == "1"
 
 
 def _parse_judge_expiry(value: str | datetime) -> datetime:
@@ -48,8 +57,11 @@ def create_app(
     token_expires_at: str | datetime | None = None,
     client: httpx.AsyncClient | None = None,
     clock: Callable[[], datetime] | None = None,
+    public_access: bool = False,
 ):
-    if len(provider_key) < 16 or len(judge_token) < 32 or provider_key == judge_token:
+    if type(public_access) is not bool:
+        raise TypeError("public_access must be a boolean")
+    if len(provider_key) < 16 or (not public_access and len(judge_token) < 32) or provider_key == judge_token:
         raise ValueError("Configure separate provider credentials and a strong judge-only token")
     if token_expires_at is None:
         raise ValueError(f"Configure {JUDGE_TOKEN_EXPIRES_ENV} before starting the judge relay")
@@ -79,6 +91,16 @@ def create_app(
             current_time = now()
             if current_time.tzinfo is None or current_time.astimezone(UTC) >= expires_at:
                 return JSONResponse({"detail": "Judge authorization required"}, status_code=401)
+            if public_access:
+                if (request.method, request.url.path) not in PUBLIC_ROUTES:
+                    return JSONResponse({"detail": "Not found"}, status_code=404)
+                if request.method == "POST":
+                    if request.headers.get("content-type", "").split(";", 1)[0].strip().lower() != "application/json":
+                        return JSONResponse({"detail": "Use application/json"}, status_code=415)
+                    origin = request.headers.get("origin")
+                    if origin and origin != str(request.base_url).rstrip("/"):
+                        return JSONResponse({"detail": "Use the demo page or an API client"}, status_code=403)
+                return await call_next(request)
             supplied = request.headers.get("authorization", "").encode()
             expected = ("Bearer " + judge_token).encode()
             if not hmac.compare_digest(supplied, expected):
@@ -87,7 +109,21 @@ def create_app(
 
     @app.get("/health")
     async def health():
-        return {"status": "ok", "scope": "inference-only"}
+        result = {"status": "ok", "scope": "inference-only"}
+        if public_access:
+            result["access"] = "public"
+        return result
+
+    @app.get("/", response_class=HTMLResponse)
+    async def demo():
+        if not public_access:
+            raise HTTPException(404, "Not found")
+        return HTMLResponse(PUBLIC_DEMO_HTML, headers={
+            "Cache-Control": "no-store",
+            "Content-Security-Policy": PUBLIC_DEMO_CSP,
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+        })
 
     async def send(method, path, payload=None, *, stream=False):
         request = upstream.build_request(method, UPSTREAM + path, json=payload,
@@ -170,6 +206,7 @@ def main():
         os.environ.get("NEBIUS_API_KEY", ""),
         os.environ.get("BIFANG_JUDGE_TOKEN", ""),
         token_expires_at=os.environ.get(JUDGE_TOKEN_EXPIRES_ENV),
+        public_access=public_access_enabled(os.environ.get(PUBLIC_ACCESS_ENV)),
     )
     uvicorn.run(app, host=os.environ.get("BIFANG_JUDGE_HOST", "127.0.0.1"),
                 port=int(os.environ.get("BIFANG_JUDGE_PORT", os.environ.get("PORT", "8010"))),

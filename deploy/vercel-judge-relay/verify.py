@@ -65,6 +65,17 @@ async def main():
             assert (await client.get("/sessions")).status_code == 404
     assert len(calls) == 3
 
+    async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as upstream:
+        public_app = create_app(PROVIDER_KEY, "", token_expires_at=JUDGE_TOKEN_EXPIRES_AT,
+                                client=upstream, public_access=True)
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=public_app), base_url="http://test") as client:
+            page = await client.get("/")
+            assert page.status_code == 200 and PROVIDER_KEY not in page.text
+            assert (await client.get("/v1/models")).status_code == 200
+            assert (await client.post("/v1/chat/completions", json=payload)).status_code == 200
+            assert (await client.get("/sessions")).status_code == 404
+    assert len(calls) == 5
+
     expiry = datetime(2030, 1, 1, tzinfo=UTC)
     current = [expiry.replace(year=2029, month=12, day=31, hour=23, minute=59, second=59)]
     boundary_calls = []
@@ -86,6 +97,7 @@ async def main():
     print(json.dumps({"status": "passed", "python": sys.version.split()[0], "hosted_requests": 0,
                       "missing_credentials_fail_closed": True, "entrypoint_health_and_auth_verified": True,
                       "synthetic_catalog_completion_and_sse_verified": True,
+                      "public_demo_without_judge_credentials_verified": True,
                       "missing_expiry_fails_closed": True, "exact_expiry_boundary_verified": True,
                       "desktop_agent_and_gpu_modules_not_imported": True, "deployed": False}))
 

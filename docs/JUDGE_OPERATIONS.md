@@ -5,6 +5,12 @@ schedule jobs or change credentials. The retained native package completed a
 real task through the relay (`evidence/native-vercel-relay.json`). Availability
 through judging remains an open gate.
 
+## Public access
+
+For an explicitly public deployment, use the [public judge demo guide](PUBLIC_JUDGE_DEMO.md)
+and the checker's `--public` mode. The token-based checks below apply to private
+relay mode. Keep the deployed mode and its evidence explicit.
+
 ## Access checks without inference
 
 From the locked Python 3.11 source environment:

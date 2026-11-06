@@ -1,7 +1,7 @@
 # Bifang inference-only relay bundle
 
 Local preparation, not deployment authorization. This directory is a template;
-use `scripts/build-vercel-judge-bundle.py` to assemble its three reviewed Bifang
+use `scripts/build-vercel-judge-bundle.py` to assemble its reviewed Bifang
 modules and metadata into a fresh directory outside the main repository.
 Do not deploy the full desktop repository or its Python 3.11-only metadata.
 
@@ -38,6 +38,20 @@ judge authorization at or after the expiry. Keep the token valid throughout
 the authorized evaluation window, then rotate or revoke it. No credentials are
 included in this bundle; `.env` files must remain outside it. The relay exposes
 no agent-execution, file-upload or training endpoints.
+
+## Public demo access
+
+Set the non-secret production variable `BIFANG_JUDGE_PUBLIC_ACCESS=1` to enable
+the public demo page at `/` and anonymous access to the model catalog and chat
+completion API. Provider credentials remain server-side. No judge token is
+required in this mode; clients that require a key field can use the non-secret
+placeholder `bifang-public-demo`. Public inference consumes the project's
+Token Factory credits. The configured access expiry still applies.
+
+Only the demo, model catalog and chat-completion routes are public. Other
+routes return 404. JSON requests from the demo's own browser origin and normal
+API clients are accepted. The default remains private access; values other
+than `0` or `1` for the public-access setting stop initialization.
 
 Validate dependencies from `uv.lock` in the chosen interpreter, then check
 authentication, live model catalog, actual desktop coding, streaming and cleanup

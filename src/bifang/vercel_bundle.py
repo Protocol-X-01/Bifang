@@ -6,7 +6,7 @@ from pathlib import Path
 
 TEMPLATES = ("pyproject.toml", "uv.lock", ".python-version", "app.py",
              "Dockerfile.vercel", ".vercelignore", "README.md", "verify.py", "vercel.json")
-MODULES = ("__init__.py", "judge_relay.py", "model_ids.py")
+MODULES = ("__init__.py", "judge_relay.py", "judge_demo.py", "model_ids.py")
 
 
 def build_bundle(repository: Path, output: Path) -> dict:

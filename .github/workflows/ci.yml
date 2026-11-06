@@ -27,6 +27,7 @@ jobs:
           tests/test_restored_tool_binding.py tests/test_search_private_key_context.py
           tests/test_secret_value_and_diff_paths.py
           src/bifang/review_workflow.py tests/test_review_completion.py
+          src/bifang/judge_demo.py tests/test_public_judge_relay.py
       - run: uv run pytest -q
 
   desktop:
