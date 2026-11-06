@@ -282,4 +282,3 @@ def build_mobile_android(b):
             "Android adaptive safe-area diagram · not a launcher asset", (540,))
     return {"foreground_alpha_bounds": alpha_bounds, "canvas": CANVAS,
             "mark_size": MARK_SIZE, "safe_inset": SAFE_INSET, "safe_radius": SAFE_RADIUS}
-
