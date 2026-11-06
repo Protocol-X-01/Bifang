@@ -179,6 +179,91 @@ PROVIDERS.update({
 })
 BASE = Path.home() / '.local/share/bifang-distros'
 PREFIX = Path('/data/data/com.termux/files/usr')
+STORAGE_ROOT = Path('/storage/emulated') / str(os.getuid() // 100000)
+STORAGE_FOLDERS = {'shared': '', 'downloads': 'Download', 'documents': 'Documents',
+                   'dcim': 'DCIM', 'pictures': 'Pictures', 'music': 'Music', 'movies': 'Movies'}
+
+
+def storage_status():
+    """Read Termux's aliases as the Termux UID; never request access or create links."""
+    aliases, unavailable = {}, []
+    storage = Path.home() / 'storage'
+    try:
+        # Export only known public targets, never a redirected ~/storage or HOME/.ssh.
+        valid_parent = not storage.is_symlink() and storage.is_dir()
+        valid_root = STORAGE_ROOT.resolve(strict=True) == STORAGE_ROOT
+    except (OSError, RuntimeError):
+        valid_parent = valid_root = False
+    for name, folder in STORAGE_FOLDERS.items():
+        alias, expected = storage / name, STORAGE_ROOT / folder
+        try:
+            valid = valid_parent and valid_root and alias.is_symlink() and alias.resolve(strict=True) == expected
+            if valid:
+                valid = expected.is_dir() and os.access(expected, os.R_OK | os.W_OK | os.X_OK)
+                if valid:
+                    with os.scandir(expected):
+                        pass
+            if valid:
+                aliases[name] = str(expected)
+            else:
+                unavailable.append(name)
+        except (OSError, RuntimeError):
+            unavailable.append(name)
+    return {'host': 'termux', 'state': 'ready' if aliases and not unavailable else 'partial' if aliases else 'unavailable',
+            'aliases': aliases, 'unavailable': unavailable}
+
+
+def storage_bindings(identity):
+    """Called only for an explicitly opted-in login. Keep existing guest data intact."""
+    aliases = storage_status()['aliases']
+    if not aliases:
+        print('Shared storage is unavailable to Termux; opening without shared folders. Check Device storage.', flush=True)
+        return []
+    directory = rootfs(identity)
+    try:
+        expected_base = Path.home().resolve() / '.local/share/bifang-distros'
+        safe_rootfs = (BASE.resolve() == expected_base and
+                       directory.parent.resolve() == expected_base / 'runtime/installed-rootfs' and
+                       not directory.is_symlink() and directory.is_dir())
+    except (OSError, RuntimeError):
+        safe_rootfs = False
+    if not safe_rootfs:
+        print('Shared storage: distribution storage is linked or unavailable; opening isolated shell without shared folders.', flush=True)
+        return []
+    guest_home = 'data/data/com.termux/files/home' if identity == 'termux' else 'root'
+
+    def destination(relative):
+        path = directory
+        try:
+            for part in Path(relative).parts:
+                path /= part
+                if path.is_symlink() or path.exists() and not path.is_dir():
+                    return False
+            # Do not hide existing files under a mount, even for a conventional path.
+            if path.exists() and any(path.iterdir()):
+                return False
+            path.mkdir(mode=0o700, parents=True, exist_ok=True)
+        except OSError:
+            return False
+        return True
+
+    bindings = []
+    for name, source in aliases.items():
+        target = f'{guest_home}/storage/{name}'
+        if destination(target):
+            bindings += ['--bind', f'{source}:/{target}']
+        else:
+            print(f'Shared storage: skipped /{target}; existing paths were kept.', flush=True)
+    if 'shared' in aliases:
+        for target in ('sdcard', 'mnt/bifang-shared'):
+            if destination(target):
+                bindings += ['--bind', f'{aliases["shared"]}:/{target}']
+                if target != 'sdcard':
+                    print('Shared storage: kept /sdcard; shared files are at /mnt/bifang-shared.', flush=True)
+                break
+        else:
+            print('Shared storage: skipped /sdcard and /mnt/bifang-shared; existing paths were kept.', flush=True)
+    return bindings
 MAX_FRAME = 131072
 
 
@@ -240,11 +325,14 @@ def rootfs(identity):
     return BASE / 'runtime/installed-rootfs' / identity
 
 
-def login_command(identity, command=None):
+def login_command(identity, command=None, shared_storage=False):
     rootfs(identity)
     home = '/data/data/com.termux/files/home' if identity == 'termux' else '/root'
     arguments = [str(PREFIX / 'bin/bash'), str(BASE / 'proot-distro-v4'), 'login', '--isolated', '--work-dir', home,
-                 '--env', 'TERM=xterm-256color', '--env', 'PS1=Bifang \\W $ ', identity, '--']
+                 '--env', 'TERM=xterm-256color', '--env', 'PS1=Bifang \\W $ ']
+    if shared_storage:
+        arguments += storage_bindings(identity)
+    arguments += [identity, '--']
     return arguments + (command if command is not None else [])
 
 
@@ -289,6 +377,8 @@ class Runtime:
 
     def dispatch(self, request):
         action = request.get('action')
+        if action == 'storage_status':
+            return storage_status()
         if action == 'catalog':
             return {'version': VERSION, 'environments': [{'id': identity, 'name': provider['name'], 'installed': ready(identity), 'packages': provider['packages']} for identity, provider in PROVIDERS.items()]}
         if action == 'uninstall':
@@ -375,7 +465,7 @@ class Runtime:
                 if operation == 'install':
                     install(identity)
                     os._exit(0)
-                arguments = login_command(identity)
+                arguments = login_command(identity, shared_storage=True) if request.get('shared_storage') is True else login_command(identity)
                 os.execvpe(arguments[0], arguments, environment)
             except (ValueError, OSError, subprocess.SubprocessError) as error:
                 print(str(error), file=sys.stderr, flush=True)

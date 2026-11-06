@@ -114,6 +114,152 @@ test('device shell starts only on explicit input and uses its native project dir
   view.unmount();
 });
 
+test('storage permission is requested only by Connect; refresh reports denial and recovery', async () => {
+  const calls = [];
+  let granted = false;
+  const view = harness(async (command, args) => {
+    calls.push({ command, action: args.request.action });
+    return { host: 'bifang', enabled: true, permission: granted,
+      state: granted ? 'ready' : 'permission_needed', aliases: granted ? { shared: '/storage/emulated/0' } : {} };
+  });
+  view.elements();
+  assert.deepEqual(calls, []);
+  view.button('Check/refresh').props.onClick();
+  await settle();
+  assert.equal(calls[0].action, 'device_storage_refresh');
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && /permission is off/.test(node.props.children)));
+  view.button('Connect shared storage').props.onClick();
+  await settle();
+  assert.equal(calls[1].action, 'device_storage_connect');
+  granted = true;
+  view.button('Check/refresh').props.onClick();
+  await settle();
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && node.props.children === 'Available: shared.'));
+  granted = false;
+  view.button('Check/refresh').props.onClick();
+  await settle();
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && /permission is off/.test(node.props.children)));
+  assert.equal(calls.filter(call => call.action === 'device_storage_connect').length, 1);
+  view.unmount();
+});
+
+test('manual Termux storage setup offers the plain command and never claims connection', async () => {
+  const calls = [];
+  const view = harness(async (command, args) => {
+    calls.push(args.request.action);
+    return { host: 'termux', enabled: true, state: 'manual_setup' };
+  });
+  view.elements().find(node => node.type === 'select').props.onChange({ target: { value: 'debian' } });
+  assert.deepEqual(calls, []);
+  view.button('Connect shared storage').props.onClick();
+  await settle();
+  assert.deepEqual(calls, ['termux_storage_connect']);
+  assert.ok(view.elements().some(node => node.props?.role === 'status' && /Open Termux and run termux-setup-storage/.test(node.props.children)));
+  assert.ok(view.button('Open Termux'));
+  assert.equal(view.elements().some(node => node.props?.role === 'status' && /Available:/.test(node.props.children)), false);
+  view.button('Open Termux').props.onClick();
+  await settle();
+  assert.deepEqual(calls, ['termux_storage_connect', 'termux_open']);
+  view.unmount();
+});
+
+for (const host of ['bifang', 'termux']) {
+  test(`${host} storage disconnect persists across remount and can reconnect without changing Android permissions`, async () => {
+    const other = host === 'bifang' ? 'termux' : 'bifang';
+    const enabled = { [host]: false, [other]: true };
+    const calls = [];
+    let permission = true;
+    const prefix = host === 'bifang' ? 'device_storage_' : 'termux_storage_';
+    const invoke = async (command, args) => {
+      assert.equal(command, 'device_runtime_request');
+      const action = args.request.action;
+      calls.push(action);
+      assert.ok(action.startsWith(prefix));
+      if (action === `${prefix}connect`) enabled[host] = true;
+      if (action === `${prefix}disconnect`) enabled[host] = false;
+      if (action === `${prefix}settings`) return { opened: true };
+      return { host, enabled: enabled[host], permission,
+        state: enabled[host] ? 'ready' : 'not_connected', aliases: enabled[host] ? { shared: '/storage/emulated/0' } : {} };
+    };
+    const open = () => {
+      const next = harness(invoke);
+      next.elements();
+      if (host === 'termux') next.elements().find(node => node.type === 'select').props.onChange({ target: { value: 'debian' } });
+      return next;
+    };
+    let view = open();
+    const click = async label => {
+      const button = view.button(label);
+      assert.ok(button);
+      assert.equal(button.props.disabled, false);
+      button.props.onClick();
+      await settle();
+    };
+    const status = () => view.elements().filter(node => node.props?.role === 'status').map(node => node.props.children).join(' ');
+    assert.deepEqual(calls, []);
+    await click('Check/refresh');
+    assert.match(status(), /disconnected/);
+    if (host === 'bifang') {
+      assert.match(status(), /links remain usable/);
+      assert.match(status(), /still granted to the whole app/);
+    } else assert.match(status(), /Existing sessions keep their mounts until closed and reopened/);
+    await click('Android storage permissions');
+    assert.equal(calls.at(-1), `${prefix}settings`);
+    assert.equal(enabled[host], false);
+    assert.equal(enabled[other], true);
+    assert.equal(permission, true);
+    await click('Connect shared storage');
+    assert.equal(enabled[host], true);
+    assert.match(status(), /Available: shared/);
+    view.unmount();
+    view = open();
+    await click('Check/refresh');
+    assert.match(status(), /Available: shared/);
+    await click('Disconnect shared storage');
+    assert.equal(calls.at(-1), `${prefix}disconnect`);
+    assert.equal(enabled[host], false);
+    assert.equal(enabled[other], true);
+    assert.equal(permission, true);
+    assert.match(status(), /disconnected/);
+    view.unmount();
+    view = open();
+    await click('Check/refresh');
+    assert.match(status(), /disconnected/);
+    if (host === 'bifang') {
+      permission = false; // Only the synthetic Android Settings state changes this grant.
+      await click('Check/refresh');
+      assert.match(status(), /Full Android storage access is currently off/);
+      permission = true;
+    }
+    await click('Connect shared storage');
+    assert.match(status(), /Available: shared/);
+    assert.equal(enabled[host], true);
+    assert.equal(enabled[other], true);
+    view.unmount();
+  });
+}
+
+test('disconnect and Android storage permissions stay available during a shell without closing it', async () => {
+  const calls = [];
+  const view = harness(async (command, args) => {
+    calls.push({ command, args });
+    if (command === 'device_terminal_directory') return '/private/synthetic-project';
+    if (command === 'terminal_open') return { id: 1, directory: args.path, program: '/system/bin/sh' };
+    if (command === 'terminal_read') return new Promise(() => {});
+    if (command === 'device_runtime_request') return { host: 'bifang', enabled: false, permission: true, state: 'not_connected' };
+  });
+  view.button('Start device shell').props.onClick();
+  await settle();
+  assert.ok(view.button('Close shell'));
+  assert.ok(view.button('Android storage permissions'));
+  view.button('Disconnect shared storage').props.onClick();
+  await settle();
+  assert.equal(calls.at(-1).args.request.action, 'device_storage_disconnect');
+  assert.ok(view.button('Close shell'));
+  assert.equal(calls.some(call => call.command === 'terminal_close'), false);
+  view.unmount();
+});
+
 test('leaving the app while the directory request is pending never starts a shell', async () => {
   const calls = [];
   let finishDirectory;
