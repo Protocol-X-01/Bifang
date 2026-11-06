@@ -1,10 +1,12 @@
 # Public judge demo
 
 Open the [public demo](https://bifang-judge-relay.vercel.app). On November 6,
-the production page, all seven anonymous metadata checks and a real Nano
-completion passed. The returned addition fixture passed five independent input
-cases. The [deployment receipt](evidence/vercel-public-demo-20261106.json)
-identifies the exact source and 258 reported production-request tokens.
+the guarded production page, all seven anonymous metadata checks, Nano streaming
+and a browser completion passed. The returned addition fixture passed five
+independent input cases. The [guarded deployment receipt](evidence/vercel-public-demo-guard-20261106.json)
+identifies the exact source, durable reservations and 475 reported tokens across
+the two guarded requests. The [initial public demo receipt](evidence/vercel-public-demo-20261106.json)
+retains the preceding deployment separately.
 
 Public access is an explicit relay setting. With `BIFANG_JUDGE_PUBLIC_ACCESS=1`,
 visitors can open the demo, choose Nano, Super or Ultra, and send a coding request
@@ -42,6 +44,13 @@ The browser requests 2,048. Reservations remain counted if a provider call fails
 or is cancelled; redeploying does not reset the allowance. Operators can review
 the counts and increase the allowance in the quota stack. These are request
 limits, not a currency-denominated spending guarantee.
+
+Use the stable production domain above for public access. Vercel Standard
+Protection covers generated deployment and preview URLs, including old versions
+that predate the usage guard. Anonymous checks verified their completion routes
+are blocked while the production domain remains open. This uses Vercel's
+[Standard Protection](https://vercel.com/docs/deployment-protection), available
+on the existing plan.
 
 The public routes are `/`, `/health`, `/v1/models` and `/v1/chat/completions`.
 The relay provides model inference; it does not expose the local agent's session

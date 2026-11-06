@@ -43,6 +43,25 @@ the current shared-usage guard and its deployment evidence. In this mode the
 browser page, catalog and completions need no judge token. Provider credentials
 stay server-side. The sections below retain the earlier private deployments.
 
+The current production runtime is `c51f410`. Its anonymous Nano stream and
+browser completion used the durable allowance and reported 475 tokens together.
+The [receipt](evidence/vercel-public-demo-guard-20261106.json) records the
+temporary two-request counter test, preserved counters after the stack update,
+and live deployment identity. Vercel Standard Protection restricts generated
+deployment URLs; share the stable production domain for judge access.
+
+The Git-connected project's **Ignored Build Step** also prevents an automatic
+production build from older source lacking the guard:
+
+```sh
+if [ "$VERCEL_ENV" = production ] && [ ! -f ../../src/bifang/judge_quota.py ]; then exit 0; else exit 1; fi
+```
+
+Vercel interprets exit 0 as skip and exit 1 as build. This setting was read back
+and its production/preview source cases checked locally. Preview builds
+continue. A standalone bundle uses its own root/install settings and should
+clear this Git-specific check. Keep `main` aligned with the guarded source.
+
 ## Judging-window credential expiry — 2026-11-06
 
 The production alias now points to READY deployment `dpl_AsKKXBMwzCt3rv71sqhQBAy2iYJe`,

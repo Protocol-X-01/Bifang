@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-06T18:15:52.215375+00:00",
+  "origin": "https://bifang-judge-relay.vercel.app",
+  "deployment_id": "dpl_BLKCsR5srsAoQSezPidbsM1iGDKz",
+  "runtime_source_commit": "c51f41057797bf2aaa4e9204eff2d7511dae2ed4",
+  "access": "anonymous on production domain",
+  "provider": "Nebius Token Factory",
+  "quota_backend": "Dedicated AWS Lambda and DynamoDB transaction",
+  "quota_handler_sha256": "14c50c9286c393b64145808bfff35147e5dcd2d2a8f26068b8c1eb9e461876ec",
+  "live_service_boundary_statuses": [
+    401,
+    401,
+    200,
+    200,
+    429
+  ],
+  "service_rejection_preserved_counters": true,
+  "normal_allowance": {
+    "requests": 1000,
+    "requested_output_tokens": 4000000,
+    "input_body_bytes": 16777216,
+    "per_utc_minute": 60
+  },
+  "counters_survived_stack_update": true,
+  "browser_completion": {
+    "selected_model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "reported_tokens": 406,
+    "independent_input_cases_passed": 5,
+    "horizontal_overflow": false,
+    "reservation_before": {
+      "requests": 3,
+      "output_tokens": 712,
+      "input_bytes": 395
+    },
+    "reservation_after": {
+      "requests": 4,
+      "output_tokens": 2760,
+      "input_bytes": 636
+    }
+  },
+  "anonymous_staged_stream": {
+    "status": 200,
+    "finish_reason": "stop",
+    "reported_models": [
+      "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
+    ],
+    "reported_tokens": 69,
+    "reservation_verified": true
+  },
+  "guarded_provider_requests": 2,
+  "guarded_reported_tokens": 475,
+  "page_matches_source": true,
+  "page_sha256": "3b24539b6da8247815ac81d55f5ef357f073a8ad1c556356e2dacd032af5063f",
+  "old_deployment_url_protection": [
+    {
+      "name": "production",
+      "method": "GET",
+      "path": "/v1/models",
+      "status": 200,
+      "passed": true,
+      "authentication_redirect": false
+    },
+    {
+      "name": "old_public_deployment",
+      "method": "GET",
+      "path": "/v1/models",
+      "status": 302,
+      "passed": true,
+      "authentication_redirect": true
+    },
+    {
+      "name": "old_public_deployment",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "status": 401,
+      "passed": true,
+      "authentication_redirect": false
+    },
+    {
+      "name": "current_generated_deployment",
+      "method": "GET",
+      "path": "/v1/models",
+      "status": 302,
+      "passed": true,
+      "authentication_redirect": true
+    },
+    {
+      "name": "current_generated_deployment",
+      "method": "POST",
+      "path": "/v1/chat/completions",
+      "status": 401,
+      "passed": true,
+      "authentication_redirect": false
+    }
+  ],
+  "provider_credentials_or_prompts_sent_to_counter": false,
+  "scope": "Point-in-time guarded Nano completion/SSE, synthetic addition and access protection. No new Super/Ultra completion, sustained-load, funding, currency spending guarantee or installed-client acceptance claim.",
+  "metadata_observed_at_utc": "2026-11-06T18:18:37.204356+00:00",
+  "metadata_checks": [
+    {
+      "name": "health",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "public_demo",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "catalog",
+      "expected_status": 200,
+      "passed": true,
+      "status": 200,
+      "model_count": 3,
+      "enabled_models": [
+        "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+        "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "nvidia/nemotron-3-super-120b-a12b"
+      ]
+    },
+    {
+      "name": "no_agent_route",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "no_file_route",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "source_not_served",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    },
+    {
+      "name": "environment_not_served",
+      "expected_status": 404,
+      "passed": true,
+      "status": 404
+    }
+  ],
+  "automatic_production_source_check": {
+    "configured": true,
+    "project_setting_readback_matched": true,
+    "local_fixture_cases_passed": 3,
+    "hosted_skipped_build_not_exercised": true
+  }
+}
