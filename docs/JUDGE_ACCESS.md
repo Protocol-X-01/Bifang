@@ -39,8 +39,11 @@ Bifang agent API as a substitute for this inference-only service.
 
 Supply `NEBIUS_API_KEY` and a separate cryptographically random judge token
 of at least 32 characters through a private environment or secret manager.
-Do not put either in source, images, CLI arguments or testing screenshots.
-Run from the locked Python 3.11 environment:
+Also set `BIFANG_JUDGE_TOKEN_EXPIRES_AT` to a future RFC 3339 UTC timestamp;
+for this hackathon judging window, use `2026-12-23T20:00:00Z`. The relay
+rejects judge authorization at or after that time. Do not put either secret in
+source, images, CLI arguments or testing screenshots. Run from the locked
+Python 3.11 environment:
 
 ```bash
 uv run python -m bifang.judge_relay

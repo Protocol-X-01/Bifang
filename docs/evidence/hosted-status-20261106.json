@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-11-06T10:16:52.359241+00:00",
+  "origin": "https://184.195.233.161",
+  "tls_default_trust_verified": true,
+  "certificate_not_before": "Nov  4 11:02:40 2026 GMT",
+  "certificate_not_after": "Nov 11 03:02:39 2026 GMT",
+  "health_status": 200,
+  "cache_control": "no-store",
+  "unauthenticated_checks": [
+    {
+      "path": "/v1/schema",
+      "auth": "missing",
+      "status": 401
+    },
+    {
+      "path": "/v1/schema",
+      "auth": "synthetic-invalid",
+      "status": 401
+    },
+    {
+      "path": "/v1/coding/schema",
+      "auth": "missing",
+      "status": 401
+    },
+    {
+      "path": "/v1/coding/schema",
+      "auth": "synthetic-invalid",
+      "status": 401
+    },
+    {
+      "path": "/v1/models/nebius",
+      "auth": "missing",
+      "status": 401
+    },
+    {
+      "path": "/v1/models/nebius",
+      "auth": "synthetic-invalid",
+      "status": 401
+    }
+  ],
+  "plain_http_health_status": 404,
+  "hosted_model_requests": 0,
+  "remote_configuration_changed": false,
+  "positive_authenticated_workflow_checked": false
+}

@@ -65,6 +65,17 @@ def test_archive_rejects_incomplete_tui_client(project, tmp_path):
         EXPORTER["build_archive"](project, tmp_path / "incomplete-tui.tar.gz")
 
 
+def test_archive_requires_the_documented_tui_build_entrypoint(project, tmp_path):
+    for name in ("tui/Cargo.toml", "tui/Cargo.lock", "tui/src/main.rs", "tui/src/lib.rs"):
+        source = project / name
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("Synthetic TUI source")
+    destination = tmp_path / "missing-tui-entrypoint.tar.gz"
+    with pytest.raises(ValueError, match="build-tui.sh"):
+        EXPORTER["build_archive"](project, destination)
+    assert not destination.exists()
+
+
 def test_archive_preserves_android_sources_and_wrapper_without_local_sdk_or_signing_state(project, tmp_path):
     android = project / "companion/src-tauri/gen/android"
     prefix = "companion/src-tauri/gen/android/"

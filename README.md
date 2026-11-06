@@ -17,12 +17,16 @@
 
 ## Watch Bifang in Action
 
-https://github.com/Protocol-X-01/Bifang/releases/download/v0.3.1/bifang-live-demo.mp4
+[Watch the narrated coding demo on YouTube · 2 min 50 sec](https://www.youtube.com/watch?v=gwAAJcWplf0)
+
+<p align="center"><a href="https://www.youtube.com/watch?v=gwAAJcWplf0"><img src="docs/assets/bifang-desktop-ide.png" width="1100" alt="Bifang IDE v0.3.2 — open a workspace, choose a model and review a change. Watch the narrated coding demo." /></a></p>
 
 **From failing checks to reviewed patch:** Watch Nemotron Ultra fix a broken receipt parser through Bifang's tools. The agent proposes edits, you approve actions, run independent checks, review the diff, and control when to apply. All five original tests pass after the fix.
 
 <details>
-<summary><strong>📹 Video details and evidence</strong></summary>
+<summary><strong>Short TUI clip and runtime evidence</strong></summary>
+
+[Watch the 45-second terminal clip](https://github.com/Protocol-X-01/Bifang/releases/download/v0.3.1/bifang-live-demo.mp4)
 
 **Duration:** 45 seconds  
 **Task:** Fix CSV quoted-comma handling in receipt parser  
@@ -30,7 +34,7 @@ https://github.com/Protocol-X-01/Bifang/releases/download/v0.3.1/bifang-live-dem
 **Flow:** failing baseline → agent fix proposed in the TUI → write/command approvals → live diff → apply → all 5 checks pass  
 **Outcome:** All 5 original checks pass, parser fixed  
 
-**Evidence:** [`native-vercel-relay.json`](docs/evidence/native-vercel-relay.json) · [`docs/DEMO_EVIDENCE.md`](docs/DEMO_EVIDENCE.md)
+**Runtime evidence:** [Native desktop task](docs/evidence/native-vercel-relay.json) · [Clip and build notes](docs/DEMO_EVIDENCE.md)
 
 </details>
 
@@ -172,13 +176,11 @@ Built for **Track 1 · Coding and Agentic Engineering** at the Nebius × NVIDIA 
 The [receipt-parser demo](docs/DEMO.md) starts with two broken CSV cases. Nemotron Ultra fixes the parser through Bifang's tools, leaving the original checks intact. The release-profile desktop app completed the live task, approval dialogs, diff review, and patch application. All five original checks passed in the source checkout afterward.
 
 <details>
-<summary><strong>Screenshots · desktop, terminal and mobile companion</strong></summary>
+<summary><strong>More screenshots · terminal, checks and companion</strong></summary>
 
 These captures show Bifang across the desktop, terminal and Android companion.
 The desktop image is from v0.3.2; the other screenshots show their recorded
 coding, approval and terminal workflows.
-
-![Bifang IDE v0.3.2 — workspaces, server control, model selection and chat.](docs/assets/bifang-desktop-ide.png)
 
 ![Bifang TUI — chat turn with a live diff and connected status line.](docs/assets/bifang-tui-chat.png)
 
@@ -188,7 +190,7 @@ coding, approval and terminal workflows.
 
 ![Baseline before Bifang: two broken CSV cases and failing checks.](docs/assets/bifang-baseline-fail.png)
 
-![Bifang companion on Android — terminal, distributions and theme picker.](docs/assets/bifang-companion-mobile.png)
+<p align="center"><img src="docs/assets/bifang-companion-mobile.png" width="360" alt="Bifang companion on Android — terminal, distributions and theme picker." /></p>
 
 ![Visual review preview using synthetic inference and explicit chat handoff.](docs/assets/bifang-vision-native.png)
 

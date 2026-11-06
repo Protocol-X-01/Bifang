@@ -1,6 +1,48 @@
-# Hackathon readiness — 2026-10-30
+# Hackathon readiness — November 6, 2026
 
-## Current delivery checkpoint
+## Current delivery
+
+Bifang's entry is the Track 1 coding workflow: inspect a project, propose a
+change, approve actions, run checks and review the patch before Apply.
+The retained native task used Nemotron Ultra through Nebius Token Factory,
+changed only `receipts.py` and passed all five original checks
+([task receipt](evidence/native-vercel-relay.json)).
+
+| Deliverable | Latest checked evidence | Next check |
+| --- | --- | --- |
+| Public source | Apache-2.0 repository; main `1a467218`; the four presentation files are published in [PR #4](https://github.com/Protocol-X-01/Bifang/pull/4) | Review and merge the presentation PR separately from this local readiness candidate |
+| Linux desktop | v0.3.2 supplemental `a479d91` Debian, RPM and AppImage packages; extracted CI payload checks target GLIBC 2.35 | Fresh installed-GUI acceptance for those exact supplemental packages |
+| Windows and macOS | Supplemental desktop and Companion installers are in the v0.3.2 release; sidecar authentication and independent-instance CI checks passed | Installed-GUI acceptance and distribution signing |
+| Android and iOS | Android Companion v0.3.1 package and retained Xiaomi 12T testing; iOS unsigned build archive | iOS signing and device acceptance |
+| Public video | [Submitted narrated demo](https://www.youtube.com/watch?v=gwAAJcWplf0), public and 170 seconds; [metadata receipt](evidence/submitted-video-20261106.json) | Owner review of the separate refreshed local edit |
+| AWS hosted workflow | November 6 HTTPS health 200; checked protected routes reject missing/invalid credentials; certificate renewed November 4 | Authenticated full workflow and renewal-timer inspection after AWS sign-in |
+| Vercel relay | Production HTTPS relay; required access expiry configured through December 23 at 20:00 UTC | Fresh positive authenticated check and coordinated replacement of exposed judge access |
+| Submission | Owner-confirmed receipt: October 30, 16:59 GMT; public entry at [Devpost](https://devpost.com/software/bifang) | Owner/organizer review of any requested submitted-entry correction |
+
+The [release audit](evidence/public-release-audit-20261106.json) identifies
+the package set precisely. Prefer filenames containing `a479d91` for the
+supplemental desktop builds. The v0.3.2 tag remains at `8c9a2472`; its
+supplemental packages were built from `a479d91`. The TUI retains its separate
+runtime requirement. CI build checks and installed application checks cover
+different artifacts and are recorded separately.
+
+The [hosted status receipt](evidence/hosted-status-20261106.json) is a
+point-in-time availability check. Provider funding, authenticated access and
+continued service through judging still need operator verification.
+
+The [official rules](https://nebiusglobalaihackathon.devpost.com/rules), checked
+November 6, set judging for December 9–23 and require free testing access
+through December 23 at noon Pacific. They allow Token Factory inference for
+the Nebius runtime requirement. Submitted-entry corrections after the deadline
+require the organizer's permission. Continue product development separately
+from changes to the submitted entry.
+
+KV-cache optimization and GPU-serving experiments remain deferred research.
+The delivered coding path uses managed inference; the NIM compatibility tests
+exercise an OpenAI-compatible endpoint contract. The public video preserves
+the recorded version and task evidence.
+
+## October 30 delivery checkpoint (historical)
 
 October 30: v0.3.1 was followed by v0.3.2 the same day. The release set —
 Android companion 0.3.1 (version code 3001), Debian desktop 0.3.2 with the
@@ -253,7 +295,8 @@ require a working app using an NVIDIA open model on Token Factory or Nebius AI
 Cloud, a public code repository with an open-source license and setup README, a
 working demo, hosted app, or test-build URL, and a public YouTube demo of no
 more than three minutes. Testing access must remain free and unrestricted
-through the judging period ending December 15. The
+through the current judging period ending December 23, 2026 at noon Pacific.
+This supersedes the December 15 date in earlier local notes. The
 submission deadline is October 30, 2026 at 10:00 PDT.
 
 ## Verified implementation

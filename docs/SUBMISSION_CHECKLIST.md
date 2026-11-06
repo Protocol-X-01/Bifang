@@ -1,5 +1,15 @@
 # Submission handoff — October 24, 2026
 
+**November 6 status:** the owner supplied a submission-confirmation timestamp
+of October 30, 2026, 16:59 GMT. The public entry is
+[Bifang on Devpost](https://devpost.com/software/bifang); its confirmed video
+is the [170-second narrated demo](https://www.youtube.com/watch?v=gwAAJcWplf0).
+The four-file presentation repair is published in
+[PR #4](https://github.com/Protocol-X-01/Bifang/pull/4). This supersedes the
+historical “Not submitted” and video-publication statuses below. Current
+delivery and remaining operator checks are in
+[readiness](HACKATHON_READINESS.md#current-delivery).
+
 **Historical handoff:** the artifact identities and status table below describe
 the October 24 checkpoint, not the newest local build. The current
 [readiness checkpoint](HACKATHON_READINESS.md) and [dev11 evidence](evidence/dev11-local.json)
@@ -11,7 +21,9 @@ Local preparation, not permission to publish. Use the current
 October 24: submit by October 30 at 10:00 am Pacific (17:00 UTC), select Track
 1, supply public licensed source, a working demo/test-build link, a public
 YouTube video under three minutes, a feature description and tool feedback.
-Free judge access must remain available through December 15 at noon Pacific.
+The current rules require free judge access through December 23, 2026 at noon
+Pacific; this supersedes the earlier December 15 date recorded in this
+historical handoff.
 
 ## Evidence already retained
 

@@ -1,4 +1,5 @@
 import asyncio
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -11,9 +12,15 @@ from bifang.routing import TOKEN_FACTORY_ROLES
 
 PROVIDER_KEY = "synthetic-provider-key-not-live"
 JUDGE_TOKEN = "synthetic-judge-token-with-more-than-32-characters"
+JUDGE_EXPIRY = datetime(2099, 1, 1, tzinfo=UTC)
 MODEL = TOKEN_FACTORY_ROLES["reasoning"]
 PAYLOAD = {"model": MODEL, "messages": [{"role": "user", "content": "Synthetic fixture"}]}
 AUTH = {"Authorization": "Bearer " + JUDGE_TOKEN}
+
+
+def _create_app(*, client=None, token_expires_at=JUDGE_EXPIRY, clock=None):
+    return create_app(PROVIDER_KEY, JUDGE_TOKEN, token_expires_at=token_expires_at,
+                      client=client, clock=clock)
 
 
 def test_relay_auth_fixed_upstream_and_native_provider_compatibility():
@@ -31,7 +38,7 @@ def test_relay_auth_fixed_upstream_and_native_provider_compatibility():
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as upstream:
-            app = create_app(PROVIDER_KEY, JUDGE_TOKEN, client=upstream)
+            app = _create_app(client=upstream)
             transport = httpx.ASGITransport(app=app)
             async with httpx.AsyncClient(transport=transport, base_url="http://relay") as browser:
                 assert (await browser.get("/health")).status_code == 200
@@ -66,7 +73,7 @@ def test_relay_rejects_invalid_requests_without_upstream_calls(change):
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(forbidden)) as upstream:
-            app = create_app(PROVIDER_KEY, JUDGE_TOKEN, client=upstream)
+            app = _create_app(client=upstream)
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://relay") as client:
                 response = await client.post("/v1/chat/completions", json={**PAYLOAD, **change}, headers=AUTH)
                 assert response.status_code == 400
@@ -86,7 +93,7 @@ def test_relay_does_not_follow_redirects_or_expose_provider_errors(status):
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as upstream:
-            app = create_app(PROVIDER_KEY, JUDGE_TOKEN, client=upstream)
+            app = _create_app(client=upstream)
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://relay") as client:
                 response = await client.post("/v1/chat/completions", json=PAYLOAD, headers=AUTH)
                 assert response.status_code == (429 if status == 429 else 502)
@@ -112,7 +119,7 @@ def test_relay_preserves_stream_bytes_and_closes_upstream():
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(
                 lambda request: httpx.Response(200, stream=Stream()))) as upstream:
-            app = create_app(PROVIDER_KEY, JUDGE_TOKEN, client=upstream)
+            app = _create_app(client=upstream)
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://relay") as client:
                 response = await client.post("/v1/chat/completions", json={**PAYLOAD, "stream": True}, headers=AUTH)
                 assert response.content == wire
@@ -125,11 +132,11 @@ def test_relay_preserves_stream_bytes_and_closes_upstream():
 def test_relay_caps_actual_body_and_rejects_missing_or_shared_credentials():
     for provider, token in [("", JUDGE_TOKEN), (PROVIDER_KEY, "short"), (JUDGE_TOKEN, JUDGE_TOKEN)]:
         with pytest.raises(ValueError):
-            create_app(provider, token)
+            create_app(provider, token, token_expires_at=JUDGE_EXPIRY)
 
     async def scenario():
         async with httpx.AsyncClient(transport=httpx.MockTransport(lambda request: pytest.fail("Oversized request forwarded"))) as upstream:
-            app = create_app(PROVIDER_KEY, JUDGE_TOKEN, client=upstream)
+            app = _create_app(client=upstream)
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://relay") as client:
                 response = await client.post("/v1/chat/completions", content=b" " * (MAX_BODY_BYTES + 1), headers=AUTH)
                 assert response.status_code == 413
@@ -156,7 +163,7 @@ def test_relay_disconnect_finishes_async_upstream_close():
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(
                 lambda request: httpx.Response(200, stream=Stream()))) as upstream:
-            app = create_app(PROVIDER_KEY, JUDGE_TOKEN, client=upstream)
+            app = _create_app(client=upstream)
             body = ('{"model":"' + MODEL + '","messages":[{"role":"user",'
                     '"content":"Synthetic fixture"}],"stream":true}').encode()
             received = False
@@ -182,5 +189,43 @@ def test_relay_disconnect_finishes_async_upstream_close():
             await asyncio.wait_for(app(scope, receive, send), timeout=2)
             assert disconnected.is_set()
             assert closed.is_set(), "Disconnect interrupted upstream cleanup"
+
+    asyncio.run(scenario())
+
+
+def test_relay_requires_a_future_utc_judge_token_expiry():
+    with pytest.raises(ValueError, match="Configure BIFANG_JUDGE_TOKEN_EXPIRES_AT"):
+        create_app(PROVIDER_KEY, JUDGE_TOKEN)
+    for invalid in (
+        "not-a-timestamp",
+        "2030-01-01T00:00:00",
+        "2030-01-01T00:00:00+01:00",
+        datetime(2000, 1, 1, tzinfo=UTC),
+    ):
+        with pytest.raises((TypeError, ValueError)):
+            create_app(PROVIDER_KEY, JUDGE_TOKEN, token_expires_at=invalid)
+
+
+def test_judge_token_expires_at_exact_boundary():
+    expiry = datetime(2030, 1, 1, tzinfo=UTC)
+    current = [expiry - timedelta(seconds=1)]
+    calls = []
+
+    def respond(request):
+        calls.append(request)
+        return httpx.Response(200, json={"data": [{"id": MODEL}]})
+
+    async def scenario():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as upstream:
+            app = _create_app(client=upstream, token_expires_at=expiry, clock=lambda: current[0])
+            async with httpx.AsyncClient(
+                    transport=httpx.ASGITransport(app=app), base_url="http://relay") as client:
+                before = await client.get("/v1/models", headers=AUTH)
+                assert before.status_code == 200
+                current[0] = expiry
+                at_expiry = await client.get("/v1/models", headers=AUTH)
+                assert at_expiry.status_code == 401
+                assert (await client.get("/health")).status_code == 200
+        assert len(calls) == 1
 
     asyncio.run(scenario())

@@ -60,7 +60,7 @@ Hobby limits can pause service; verify actual remaining capacity before judging.
 ## Funding and availability gate
 
 The [official rules](https://nebiusglobalaihackathon.devpost.com/rules) require
-free testing access through December 15, 2026 at noon Pacific time and permit
+free testing access through December 23, 2026 at noon Pacific time and permit
 private-site credentials. Do not assume an exception for arbitrary daily or
 lifetime judge caps, offline-only replies or requiring a paid provider key.
 
