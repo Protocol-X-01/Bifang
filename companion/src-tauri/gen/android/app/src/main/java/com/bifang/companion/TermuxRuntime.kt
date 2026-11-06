@@ -27,7 +27,7 @@ class TermuxRuntime(private val activity: Activity) {
     private var key = ByteArray(0)
     private val random = SecureRandom()
     private var manualConnection = false
-    private val storagePreferences = activity.getSharedPreferences("shared-storage", 0)
+    private val storageConsent = SharedStorageConsent(activity.getSharedPreferences("shared-storage", 0), "termux")
 
     fun status(): JSObject = JSObject().apply {
         val installed = try {
@@ -69,7 +69,7 @@ class TermuxRuntime(private val activity: Activity) {
     @Synchronized
     fun setupStorage(): JSONObject {
         check(status().getBoolean("installed")) { "Install and open Termux first" }
-        storagePreferences.edit().putBoolean("termux", true).apply()
+        storageConsent.setEnabled(true)
         val available = status()
         if (!available.getBoolean("command_api") || !available.getBoolean("permission")) {
             return JSONObject().put("host", "termux").put("enabled", true).put("state", "manual_setup")
@@ -82,10 +82,19 @@ class TermuxRuntime(private val activity: Activity) {
     }
 
     @Synchronized
+    fun disconnectStorage(): JSONObject {
+        storageConsent.setEnabled(false)
+        return JSONObject().put("host", "termux").put("enabled", false).put("state", "not_connected")
+    }
+
+    @Synchronized
     fun storageStatus(): JSONObject {
+        if (!storageConsent.enabled()) {
+            return JSONObject().put("host", "termux").put("enabled", false).put("state", "not_connected")
+        }
         val result = if (port == 0) JSONObject().put("host", "termux").put("state", "runtime_disconnected") else
             exchange(JSONObject().put("action", "storage_status"))
-        result.put("enabled", storagePreferences.getBoolean("termux", false))
+        result.put("enabled", true)
         return result
     }
 
@@ -148,7 +157,7 @@ class TermuxRuntime(private val activity: Activity) {
         check(port != 0) { "Connect the distribution runtime first" }
         if (action == "terminal_open") {
             // Native-held opt-in overrides webview input; every login rechecks Termux access.
-            request.put("shared_storage", storagePreferences.getBoolean("termux", false))
+            request.put("shared_storage", storageConsent.enabled())
         }
         return exchange(request)
     }

@@ -62,7 +62,9 @@ class DeviceRuntimePlugin(private val activity: Activity) : Plugin(activity) {
         val request = JSONObject(invoke.parseArgs(RuntimeRequest::class.java).request)
         runtimeWorker.execute {
             try {
-                val result = DeviceStorage(activity, request.getString("terminal_home")).status(createMissing)
+                val storage = DeviceStorage(activity, request.getString("terminal_home"))
+                if (request.optString("action") == "device_storage_disconnect") storage.optOut()
+                val result = storage.status(createMissing)
                 activity.runOnUiThread { invoke.resolve(result) }
             } catch (_: Exception) {
                 activity.runOnUiThread { invoke.reject("Could not check shared storage; existing files were kept") }
@@ -90,8 +92,24 @@ class DeviceRuntimePlugin(private val activity: Activity) : Plugin(activity) {
             }
             return
         }
-        if (action == "device_storage_status" || action == "device_storage_refresh") {
+        if (action == "device_storage_status" || action == "device_storage_refresh" || action == "device_storage_disconnect") {
             refreshStorage(invoke, action == "device_storage_refresh")
+            return
+        }
+        if (action == "device_storage_settings" || action == "termux_storage_settings") {
+            activity.runOnUiThread {
+                try {
+                    if (action == "device_storage_settings") {
+                        DeviceStorage(activity, JSONObject(arguments.request).getString("terminal_home")).openSettings()
+                    } else {
+                        activity.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:com.termux")))
+                    }
+                    invoke.resolve(JSObject().put("opened", true))
+                } catch (error: Exception) {
+                    invoke.reject(error.message ?: "Open Android Settings and review this app's storage permissions")
+                }
+            }
             return
         }
         if (action == "termux_open") {
@@ -136,6 +154,7 @@ class DeviceRuntimePlugin(private val activity: Activity) : Plugin(activity) {
                     "setup" -> runtime.setup()
                     "connect" -> runtime.connect()
                     "termux_storage_connect" -> runtime.setupStorage()
+                    "termux_storage_disconnect" -> runtime.disconnectStorage()
                     "termux_storage_status" -> runtime.storageStatus()
                     else -> runtime.request(request)
                 }

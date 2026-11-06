@@ -15,10 +15,15 @@ interface StorageStatus {
 }
 
 function storageDescription(status: StorageStatus): string {
+  if (!status.enabled) {
+    if (status.host === 'termux') return 'Shared storage is disconnected for new distribution shells. Existing sessions keep their mounts until closed and reopened. Termux links and Android permissions were kept.';
+    return status.permission
+      ? 'Storage setup is disconnected. Existing ~/storage links remain usable while Android access is allowed. Android storage access is still granted to the whole app; revoke it yourself in Android storage permissions.'
+      : 'Storage setup is disconnected. Existing ~/storage links were kept. Full Android storage access is currently off; review Android storage permissions in Settings.';
+  }
   if (status.state === 'setup_dispatched') return 'Finish setup in Termux, then return and check/refresh. Answer any existing-storage prompt yourself.';
   if (status.state === 'manual_setup') return 'Open Termux and run termux-setup-storage, then return and check/refresh. Answer any existing-storage prompt yourself.';
   if (status.state === 'runtime_disconnected') return 'Connect the distribution runtime, then check/refresh.';
-  if (status.state === 'not_connected') return 'Shared storage is not connected.';
   if (status.state === 'permission_needed') return 'Storage permission is off. Connect shared storage to allow it in Android Settings, then check/refresh.';
   const names = Object.keys(status.aliases ?? {});
   if (names.length) return `${status.enabled ? 'Available' : 'Found · connect to use'}: ${names.join(', ')}.${status.state === 'partial' ? ' Some folders are unavailable.' : ''}`;
@@ -72,16 +77,17 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
     finally { if (mounted.current) setHardwareBusy(false); }
   }
 
-  async function storageAction(operation: 'connect' | 'refresh' | 'open') {
+  async function storageAction(operation: 'connect' | 'disconnect' | 'refresh' | 'open' | 'permissions') {
     if (storageBusy) return;
     setStorageBusy(true);
     setError('');
-    setStorage(null);
-    const action = operation === 'open' ? 'termux_open' : storageHost === 'bifang'
-      ? `device_storage_${operation}` : operation === 'connect' ? 'termux_storage_connect' : 'termux_storage_status';
+    if (operation !== 'open' && operation !== 'permissions') setStorage(null);
+    const prefix = storageHost === 'bifang' ? 'device_storage_' : 'termux_storage_';
+    const action = operation === 'open' ? 'termux_open'
+      : prefix + (operation === 'permissions' ? 'settings' : operation === 'refresh' && storageHost === 'termux' ? 'status' : operation);
     try {
       const result = await invoke<StorageStatus>('device_runtime_request', { request: { action } });
-      if (mounted.current && operation !== 'open') setStorage(result);
+      if (mounted.current && operation !== 'open' && operation !== 'permissions') setStorage(result);
     } catch (reason) { if (mounted.current) setError(String(reason)); }
     finally { if (mounted.current) setStorageBusy(false); }
   }
@@ -224,7 +230,7 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
   useEffect(() => { if (visible && host.current?.offsetWidth) fitting.current?.fit(); }, [visible]);
 
   async function start(operation: 'install' | 'login' = 'login') {
-    if (starting || session || !emulator.current || environment !== 'android' && (!chosenDistribution || operation === 'login' && !chosenDistribution.installed)) return;
+    if (starting || storageBusy || session || !emulator.current || environment !== 'android' && (!chosenDistribution || operation === 'login' && !chosenDistribution.installed)) return;
     setStarting(true);
     setError('');
     const terminal = emulator.current;
@@ -294,29 +300,13 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
       {session && <button type="button" className="btn-secondary" aria-pressed={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? 'Restore layout' : 'Expand terminal'}</button>}
       {!session && <div className="space-y-2">
         <label className="block text-sm" htmlFor="terminal-environment">Choose your environment</label>
-        <select id="terminal-environment" className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2" value={environment} disabled={starting} onChange={event => setEnvironment(event.target.value)}>
+        <select id="terminal-environment" className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2" value={environment} disabled={starting || storageBusy} onChange={event => setEnvironment(event.target.value)}>
           <option value="android">{standalone ? 'Bifang local shell · ready' : 'Android system shell · ready'}</option>
           {[...distroCatalog.environments.map(item => [item.id === 'archlinux' ? 'arch' : item.id, item.name]), ['kali', 'Kali NetHunter Minimal'], ['blackarch', 'BlackArch on Arch Linux ARM']].map(([identity, name]) => <option key={identity} value={identity}>{name}{catalog?.environments.find(item => item.id === identity)?.installed ? ' · installed' : ''}</option>)}
         </select>
-        {(environment === 'android' || !standalone) && <details className="device-storage text-sm">
-          <summary>Device storage</summary>
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">{storageHost === 'bifang'
-              ? 'Connect shared files to this shell at ~/storage. Allow Bifang access in Android Settings, then check/refresh here.'
-              : 'Connect Termux shared files to new distribution shells at ~/storage and /sdcard. Termux needs its own storage permission.'}</p>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" className="btn-secondary" disabled={storageBusy || starting || runtimeBusy} onClick={() => void storageAction('connect')}>Connect shared storage</button>
-              <button type="button" className="btn-secondary" disabled={storageBusy || starting || runtimeBusy} onClick={() => void storageAction('refresh')}>{storageBusy ? 'Checking…' : 'Check/refresh'}</button>
-              {storageHost === 'termux' && <button type="button" className="btn-secondary" disabled={storageBusy} onClick={() => void storageAction('open')}>Open Termux</button>}
-            </div>
-            {currentStorage && <p role="status" className="text-xs text-muted-foreground">{storageDescription(currentStorage)}</p>}
-            {!!currentStorage?.conflicts?.length && <p className="text-xs text-muted-foreground">Kept existing: {currentStorage.conflicts.join(', ')}.</p>}
-            {storageHost === 'termux' && <p className="text-xs text-muted-foreground">Manual setup in Termux: <code>termux-setup-storage</code>. Existing files and links stay under your control.</p>}
-          </div>
-        </details>}
         {environment === 'android' ? <>
           <p className="text-xs text-muted-foreground">Local system tools in private project storage.</p>
-          <button type="button" className="btn-primary" disabled={starting} onClick={() => void start()}>{starting ? 'Starting…' : 'Start device shell'}</button>
+          <button type="button" className="btn-primary" disabled={starting || storageBusy} onClick={() => void start()}>{starting ? 'Starting…' : 'Start device shell'}</button>
         </> : standalone ? <div className="space-y-2">
           <p className="text-xs text-muted-foreground">Distribution catalogue · proot-distro {distroCatalog.version}</p>
           <p role="status" className="text-xs text-muted-foreground">The bundled Linux installer is in development. This preview can run the local device shell.</p>
@@ -345,7 +335,7 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
           </details>
           {!catalog ? <button type="button" className="btn-primary" disabled={runtimeBusy} onClick={() => void runtimeAction('connect')}>{runtimeBusy ? 'Connecting…' : 'Connect runtime'}</button> : <>
             <p className="text-xs text-muted-foreground">{chosenDistribution?.installed ? `Installed · packages via ${chosenDistribution.packages}` : environment === 'blackarch' ? 'Installs an Arch Linux ARM base and adds the BlackArch repository. Add tool packages when needed.' : 'Installs a minimal environment. Add languages and tools through its package manager.'}</p>
-            <button type="button" className="btn-primary" disabled={starting || !chosenDistribution} onClick={() => void start(chosenDistribution?.installed ? 'login' : 'install')}>{starting ? 'Starting…' : chosenDistribution?.installed ? 'Open terminal' : 'Install distribution'}</button>
+            <button type="button" className="btn-primary" disabled={starting || storageBusy || !chosenDistribution} onClick={() => void start(chosenDistribution?.installed ? 'login' : 'install')}>{starting ? 'Starting…' : chosenDistribution?.installed ? 'Open terminal' : 'Install distribution'}</button>
             {chosenDistribution?.installed && (confirmingUninstall ? <div className="space-y-2 rounded-lg border border-red-400/40 p-3">
               <p className="text-xs text-red-300">Delete every file of {chosenDistribution.name}? This cannot be undone.</p>
               <div className="flex flex-wrap gap-2">
@@ -357,6 +347,24 @@ export function DeviceTerminal({ visible, onAskAgent, standalone = false }: { vi
           {runtimeMessage && <p role="status" className="text-xs text-muted-foreground">{runtimeMessage}</p>}
         </div>}
       </div>}
+      {(environment === 'android' || !standalone) && <details className="device-storage text-sm">
+        <summary>Device storage</summary>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">{storageHost === 'bifang'
+            ? 'Connect shared files at ~/storage. Disconnect stops creating links; existing links remain usable while Android access is allowed. Android storage access applies to the whole app. Revoke it yourself in Android storage permissions, then check/refresh.'
+            : 'Connect Termux shared files to new distribution shells at ~/storage and /sdcard. Disconnect stops new binds; existing sessions need closing and reopening. Termux links and Android permissions stay in place.'}</p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary" disabled={storageBusy || starting || runtimeBusy} onClick={() => void storageAction('connect')}>Connect shared storage</button>
+            <button type="button" className="btn-secondary" disabled={storageBusy || starting || runtimeBusy} onClick={() => void storageAction('disconnect')}>Disconnect shared storage</button>
+            <button type="button" className="btn-secondary" disabled={storageBusy || starting || runtimeBusy} onClick={() => void storageAction('refresh')}>{storageBusy ? 'Checking…' : 'Check/refresh'}</button>
+            <button type="button" className="btn-secondary" disabled={storageBusy} onClick={() => void storageAction('permissions')}>Android storage permissions</button>
+            {storageHost === 'termux' && <button type="button" className="btn-secondary" disabled={storageBusy} onClick={() => void storageAction('open')}>Open Termux</button>}
+          </div>
+          {currentStorage && <p role="status" className="text-xs text-muted-foreground">{storageDescription(currentStorage)}</p>}
+          {!!currentStorage?.conflicts?.length && <p className="text-xs text-muted-foreground">Kept existing: {currentStorage.conflicts.join(', ')}.</p>}
+          {storageHost === 'termux' && <p className="text-xs text-muted-foreground">Manual setup in Termux: <code>termux-setup-storage</code>. Existing files and links stay under your control.</p>}
+        </div>
+      </details>}
       {session && <details className="min-w-0 text-xs text-muted-foreground"><summary>{session.program.split('/').pop()} · {session.directory.split('/').filter(Boolean).pop() || '/'}</summary><details><summary>Full working path</summary><p className="break-all">{session.directory}</p></details></details>}
       {!session && <details className="min-w-0 text-xs text-muted-foreground"><summary>Device compute</summary>
         <button type="button" className="btn-secondary my-2" disabled={hardwareBusy} onClick={() => void checkHardware()}>{hardwareBusy ? 'Checking…' : 'Check CPU and GPU'}</button>

@@ -44,7 +44,8 @@ pub async fn device_runtime_request(window: WebviewWindow, request: Value) -> Re
     {
         let mut request = request;
         if request.get("action").and_then(Value::as_str)
-            .is_some_and(|action| action.starts_with("device_storage_")) {
+            .is_some_and(|action| matches!(action, "device_storage_connect" | "device_storage_disconnect"
+                | "device_storage_status" | "device_storage_refresh" | "device_storage_settings")) {
             request["terminal_home"] = serde_json::json!(crate::device_terminal::terminal_home(&window)?);
         }
         let app = window.app_handle().clone();

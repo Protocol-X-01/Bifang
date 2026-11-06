@@ -134,25 +134,73 @@ def test_linked_guest_storage_is_not_followed(storage):
     assert not (home / 'downloads').exists()
 
 
-def test_linked_rootfs_cannot_receive_mount_placeholders(storage):
+def test_linked_rootfs_cannot_receive_mount_placeholders(storage, capsys):
     home, _ = storage
     guest = runtime.rootfs('alpine')
     guest.symlink_to(home)
-    with pytest.raises(ValueError, match='non-linked distribution'):
-        runtime.storage_bindings('alpine')
+    command = runtime.login_command('alpine', shared_storage=True)
+    assert '--isolated' in command and '--bind' not in command
+    assert 'distribution storage is linked or unavailable' in capsys.readouterr().out
     assert not (home / 'root').exists()
 
 
-def test_linked_runtime_parent_cannot_write_into_private_home(storage):
+def test_linked_runtime_parent_cannot_write_into_private_home(storage, capsys):
     home, _ = storage
     parent = runtime.BASE / 'runtime'
     parent.rename(runtime.BASE / 'previous-runtime')
     private = home / '.ssh'
     (private / 'installed-rootfs/debian').mkdir(parents=True)
     parent.symlink_to(private)
-    with pytest.raises(ValueError, match='non-linked distribution'):
-        runtime.storage_bindings('debian')
+    command = runtime.login_command('debian', shared_storage=True)
+    assert '--isolated' in command and '--bind' not in command
+    assert 'distribution storage is linked or unavailable' in capsys.readouterr().out
     assert not (private / 'installed-rootfs/debian/root').exists()
+
+
+@pytest.mark.parametrize('linked', ['rootfs', 'runtime'])
+def test_linked_storage_still_opens_isolated_shell_without_binds_or_rootfs_writes(storage, monkeypatch, capfd, linked):
+    home, _ = storage
+    guest = runtime.rootfs('debian')
+    if linked == 'rootfs':
+        guest.rename(home / 'guest')
+        guest.symlink_to(home / 'guest')
+    else:
+        parent = runtime.BASE / 'runtime'
+        parent.rename(home / 'private-runtime')
+        parent.symlink_to(home / 'private-runtime')
+    (guest / '.bifang-ready').write_text('{}')
+    prefix = home / 'prefix'
+    (prefix / 'bin').mkdir(parents=True)
+    (prefix / 'bin/bash').symlink_to('/bin/sh')
+    (runtime.BASE / 'proot-distro-v4').write_text(
+        'printf \'%s\\n\' "$@" > "$HOME/linked-launch"\n'
+        'IFS= read -r line\n'
+        'printf \'linked-shell-input:%s\\n\' "$line"\n'
+    )
+    monkeypatch.setattr(runtime, 'PREFIX', prefix)
+    before = sorted(str(path.relative_to(guest)) for path in guest.rglob('*'))
+    service = runtime.Runtime()
+    with capfd.disabled():
+        opened = service.open({'environment': 'debian', 'operation': 'login', 'confirmed': True,
+                               'shared_storage': True, 'rows': 24, 'cols': 80})
+    try:
+        service.dispatch({'action': 'terminal_write', 'id': opened['id'], 'data': list(b'ping\n')})
+        output = bytearray()
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            frame = service.dispatch({'action': 'terminal_read', 'id': opened['id']})
+            output.extend(frame['data'])
+            if frame['exited']:
+                break
+            time.sleep(0.01)
+        assert frame['exited'] and frame['exit_code'] == 0
+        assert b'linked-shell-input:ping' in output
+        assert b'distribution storage is linked or unavailable' in output
+        arguments = (home / 'linked-launch').read_text().splitlines()
+        assert '--isolated' in arguments and '--bind' not in arguments
+        assert sorted(str(path.relative_to(guest)) for path in guest.rglob('*')) == before
+    finally:
+        service.close()
 
 
 @pytest.mark.parametrize('approved', [False, True])

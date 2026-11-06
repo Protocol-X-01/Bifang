@@ -220,11 +220,16 @@ def storage_bindings(identity):
         print('Shared storage is unavailable to Termux; opening without shared folders. Check Device storage.', flush=True)
         return []
     directory = rootfs(identity)
-    expected_base = Path.home().resolve() / '.local/share/bifang-distros'
-    if (BASE.resolve() != expected_base or
-            directory.parent.resolve() != expected_base / 'runtime/installed-rootfs' or
-            directory.is_symlink() or not directory.is_dir()):
-        raise ValueError('Shared storage needs an existing, non-linked distribution')
+    try:
+        expected_base = Path.home().resolve() / '.local/share/bifang-distros'
+        safe_rootfs = (BASE.resolve() == expected_base and
+                       directory.parent.resolve() == expected_base / 'runtime/installed-rootfs' and
+                       not directory.is_symlink() and directory.is_dir())
+    except (OSError, RuntimeError):
+        safe_rootfs = False
+    if not safe_rootfs:
+        print('Shared storage: distribution storage is linked or unavailable; opening isolated shell without shared folders.', flush=True)
+        return []
     guest_home = 'data/data/com.termux/files/home' if identity == 'termux' else 'root'
 
     def destination(relative):
