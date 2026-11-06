@@ -65,9 +65,23 @@ async def main():
             assert (await client.get("/sessions")).status_code == 404
     assert len(calls) == 3
 
+    class SyntheticQuota:
+        async def reserve(self, **reservation):
+            pass
+
+        async def aclose(self):
+            pass
+
+    try:
+        create_app(PROVIDER_KEY, "", token_expires_at=JUDGE_TOKEN_EXPIRES_AT, public_access=True)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Public access must require the shared usage guard")
+
     async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as upstream:
         public_app = create_app(PROVIDER_KEY, "", token_expires_at=JUDGE_TOKEN_EXPIRES_AT,
-                                client=upstream, public_access=True)
+                                client=upstream, public_access=True, public_quota=SyntheticQuota())
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=public_app), base_url="http://test") as client:
             page = await client.get("/")
             assert page.status_code == 200 and PROVIDER_KEY not in page.text
@@ -98,6 +112,7 @@ async def main():
                       "missing_credentials_fail_closed": True, "entrypoint_health_and_auth_verified": True,
                       "synthetic_catalog_completion_and_sse_verified": True,
                       "public_demo_without_judge_credentials_verified": True,
+                      "public_guard_required_before_upstream": True,
                       "missing_expiry_fails_closed": True, "exact_expiry_boundary_verified": True,
                       "desktop_agent_and_gpu_modules_not_imported": True, "deployed": False}))
 

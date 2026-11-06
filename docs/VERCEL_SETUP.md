@@ -10,10 +10,12 @@ The project now selects `deploy/vercel-judge-relay` as its Root Directory,
 enables source files outside that directory, and uses this Install Command:
 
 ```sh
-mkdir -p bifang && cp ../../src/bifang/__init__.py ../../src/bifang/judge_relay.py ../../src/bifang/model_ids.py bifang/ && uv sync --frozen
+mkdir -p bifang && for m in __init__ judge_relay judge_demo judge_quota model_ids; do if [ -f ../../src/bifang/$m.py ]; then cp ../../src/bifang/$m.py bifang/ || exit 1; fi; done && uv sync --frozen
 ```
 
-Only the three relay modules are copied into the deployment package. Its own
+Current source copies five relay modules, including the public page and usage
+guard. The conditional copies also support older commits that do not import
+those modules. Its own
 Python version and dependency lock remain separate from the desktop runtime.
 The generated standalone bundle remains an alternative; it already contains
 these modules and should use the default install command rather than the
@@ -31,8 +33,15 @@ The production deployment reached READY; HTTPS checks verified health 200,
 missing/wrong tokens 401, and the authenticated three-model catalog 200.
 One bounded Nemotron Nano completion returned nonempty content (100 reported
 tokens). The provider and judge keys remain sensitive server-side variables;
-the same judge bearer token is required. AWS was unchanged. This deployment
+that earlier private deployment required the judge bearer token. AWS was unchanged. This deployment
 repair is separate from the GitHub Actions account/billing lock.
+
+## Public demo — 2026-11-06
+
+The [public demo guide](PUBLIC_JUDGE_DEMO.md) describes the explicit public mode,
+the current shared-usage guard and its deployment evidence. In this mode the
+browser page, catalog and completions need no judge token. Provider credentials
+stay server-side. The sections below retain the earlier private deployments.
 
 ## Judging-window credential expiry — 2026-11-06
 

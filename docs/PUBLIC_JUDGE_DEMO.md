@@ -28,6 +28,21 @@ Keep `NEBIUS_API_KEY` as a server-side secret. A judge token is optional in publ
 mode. Without the explicit public setting, the relay retains its existing
 judge-token authentication. The expiry applies in both modes.
 
+Public mode requires the [shared usage counter](../deploy/aws-judge-quota/README.md).
+Set its `QuotaUrl` output as `BIFANG_PUBLIC_QUOTA_URL` and keep the matching
+`BIFANG_PUBLIC_QUOTA_TOKEN` in a Vercel server-side secret. The counter uses a
+single DynamoDB transaction for the global allowance and minute rate; it
+receives counts and sizes, not prompts or provider keys. Missing configuration
+stops public-mode initialization. A failed reservation never calls Token Factory.
+
+The initial allowance is 1,000 reserved completions, 4,000,000 requested output
+tokens and 16 MiB of input bodies, with 60 reservations per UTC minute across
+the deployment. Individual requests accept 32 KiB and up to 8,192 output tokens.
+The browser requests 2,048. Reservations remain counted if a provider call fails
+or is cancelled; redeploying does not reset the allowance. Operators can review
+the counts and increase the allowance in the quota stack. These are request
+limits, not a currency-denominated spending guarantee.
+
 The public routes are `/`, `/health`, `/v1/models` and `/v1/chat/completions`.
 The relay provides model inference; it does not expose the local agent's session
 or file routes. The demo page uses plain text for model output and a content

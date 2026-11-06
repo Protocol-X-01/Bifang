@@ -13,10 +13,13 @@ from fastapi import FastAPI, HTTPException, Request
 from starlette.responses import HTMLResponse, JSONResponse, Response, StreamingResponse
 
 from .judge_demo import PUBLIC_DEMO_CSP, PUBLIC_DEMO_HTML
+from .judge_quota import PublicQuotaExceeded, PublicQuotaUnavailable, public_quota_from_env
 from .model_ids import TOKEN_FACTORY_ROLES
 
 UPSTREAM = "https://api.tokenfactory.nebius.com/v1"
 MAX_BODY_BYTES = 2_000_000
+PUBLIC_MAX_BODY_BYTES = 32768
+PUBLIC_MAX_OUTPUT_TOKENS = 8192
 JUDGE_TOKEN_EXPIRES_ENV = "BIFANG_JUDGE_TOKEN_EXPIRES_AT"
 PUBLIC_ACCESS_ENV = "BIFANG_JUDGE_PUBLIC_ACCESS"
 PUBLIC_ROUTES = {("GET", "/"), ("GET", "/v1/models"), ("POST", "/v1/chat/completions")}
@@ -58,6 +61,7 @@ def create_app(
     client: httpx.AsyncClient | None = None,
     clock: Callable[[], datetime] | None = None,
     public_access: bool = False,
+    public_quota=None,
 ):
     if type(public_access) is not bool:
         raise TypeError("public_access must be a boolean")
@@ -70,6 +74,8 @@ def create_app(
     startup_time = now()
     if startup_time.tzinfo is None or startup_time.astimezone(UTC) >= expires_at:
         raise ValueError(f"{JUDGE_TOKEN_EXPIRES_ENV} must be in the future")
+    if public_access and public_quota is None:
+        raise ValueError("Configure the shared public-demo usage guard before enabling public access")
 
     upstream = client or httpx.AsyncClient(timeout=120, trust_env=False, follow_redirects=False)
     owns_client = client is None
@@ -82,6 +88,8 @@ def create_app(
         finally:
             if owns_client:
                 await upstream.aclose()
+            if public_quota is not None:
+                await public_quota.aclose()
 
     app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -156,8 +164,9 @@ def create_app(
     @app.post("/v1/chat/completions")
     async def complete(request: Request):
         body = bytearray()
+        body_limit = PUBLIC_MAX_BODY_BYTES if public_access else MAX_BODY_BYTES
         async for chunk in request.stream():
-            if len(body) + len(chunk) > MAX_BODY_BYTES:
+            if len(body) + len(chunk) > body_limit:
                 raise HTTPException(413, "Inference request exceeds relay body limit")
             body.extend(chunk)
         try:
@@ -172,12 +181,21 @@ def create_app(
         if not isinstance(messages, list) or not messages or any(not isinstance(row, dict) for row in messages):
             raise HTTPException(400, "Expected nonempty message objects")
         maximum = payload.get("max_tokens", 4096)
-        if type(maximum) is not int or not 1 <= maximum <= 32768:
-            raise HTTPException(400, "max_tokens must be between 1 and 32768")
+        output_limit = PUBLIC_MAX_OUTPUT_TOKENS if public_access else 32768
+        if type(maximum) is not int or not 1 <= maximum <= output_limit:
+            raise HTTPException(400, f"max_tokens must be between 1 and {output_limit}")
         payload["max_tokens"] = maximum
         streaming = payload.get("stream", False)
         if type(streaming) is not bool:
             raise HTTPException(400, "stream must be a boolean")
+        if public_access:
+            try:
+                await public_quota.reserve(output_tokens=maximum, body_bytes=len(body))
+            except PublicQuotaExceeded as error:
+                raise HTTPException(429, "Public demo usage limit reached; please retry later",
+                                    headers={"Retry-After": str(error.retry_after)}) from None
+            except PublicQuotaUnavailable:
+                raise HTTPException(503, "Public demo usage guard temporarily unavailable") from None
         response = await send("POST", "/chat/completions", payload, stream=streaming)
         if streaming:
             async def chunks():
@@ -202,11 +220,13 @@ def create_app(
 def main():
     import uvicorn
 
+    public = public_access_enabled(os.environ.get(PUBLIC_ACCESS_ENV))
     app = create_app(
         os.environ.get("NEBIUS_API_KEY", ""),
         os.environ.get("BIFANG_JUDGE_TOKEN", ""),
         token_expires_at=os.environ.get(JUDGE_TOKEN_EXPIRES_ENV),
-        public_access=public_access_enabled(os.environ.get(PUBLIC_ACCESS_ENV)),
+        public_access=public,
+        public_quota=public_quota_from_env() if public else None,
     )
     uvicorn.run(app, host=os.environ.get("BIFANG_JUDGE_HOST", "127.0.0.1"),
                 port=int(os.environ.get("BIFANG_JUDGE_PORT", os.environ.get("PORT", "8010"))),

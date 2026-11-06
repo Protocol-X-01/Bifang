@@ -28,6 +28,8 @@ jobs:
           tests/test_secret_value_and_diff_paths.py
           src/bifang/review_workflow.py tests/test_review_completion.py
           src/bifang/judge_demo.py tests/test_public_judge_relay.py
+          src/bifang/judge_quota.py tests/test_judge_quota.py
+          deploy/aws-judge-quota/handler.py deploy/aws-judge-quota/template.py
       - run: uv run pytest -q
 
   desktop:
