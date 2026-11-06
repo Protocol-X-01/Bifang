@@ -22,7 +22,7 @@ source-export checks and platform boundaries are in the
 | Brand pack | [139 editable artworks](BRAND_ASSETS.md), including native Apple/Android icon inputs and phone/tablet covers; download and checksums verified | Integrate icons into a separately verified app build |
 | Public video | [Refreshed demo](https://youtu.be/Eg8Gcyj5ORM), public and 2:45, with captions; [receipt](evidence/refreshed-video-20261106.json) | Organizer permission before replacing the submitted entry's video link |
 | AWS workflow | November 6 Nano proposal, reviewed patch, five unchanged checks, staging and Apply passed with 780 reported tokens; HTTPS renewal timer verified | Check provider funding and continued availability through judging; identify any later deployment separately |
-| Vercel relay | Production READY on `af63fa9`; health 200 and missing-auth model list 401; required expiry configured through December 23 at 20:00 UTC | Fresh positive authenticated check and coordinated replacement of exposed judge access |
+| Vercel relay | Public demo READY on `30eed9c`; seven anonymous metadata checks and a live Nano completion passed; five independent addition cases passed with 258 reported tokens; access expiry remains December 23 at 20:00 UTC | [Deployment receipt](evidence/vercel-public-demo-20261106.json); monitor funding and availability, and recheck later deployments |
 | Submission | Owner-confirmed receipt: October 30, 16:59 GMT; [submitted entry](https://devpost.com/software/bifang) retained | Organizer review of any requested submitted-entry correction |
 
 The existing [v0.3.2 release audit](evidence/public-release-audit-20261106.json)
