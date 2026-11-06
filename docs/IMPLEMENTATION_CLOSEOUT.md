@@ -1,9 +1,15 @@
-# Implementation closeout — local development
+# Implementation closeout — development record
 
-Updated October 23, 2026. The creator has deferred the Devpost draft and
-requested that updates remain local, except the subsequently authorized
-curated dataset upload to Token Factory (not training). This describes working-copy
-changes, not capabilities already shipped in the public preview.
+**November 6 checkpoint:** source, presentation and brand PRs #4–#6 are merged.
+Main `af63fa9` passed Linux, Windows, both Mac architectures, Android and iOS build
+workflows. The current source export also builds and installs on Python 3.11.
+See [current delivery](HACKATHON_READINESS.md#current-delivery) and its
+[receipt](evidence/main-delivery-20261106.json) for exact identities.
+
+The October records below describe implementation at that time. Their local-only
+publication restrictions and early package identities have been superseded by
+the owner's later publication approvals and merged changes. Signing, native
+acceptance and submitted-entry corrections retain their separate gates.
 
 ## Fixed and regression-tested locally
 

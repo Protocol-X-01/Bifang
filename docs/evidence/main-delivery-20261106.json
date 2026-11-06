@@ -1,0 +1,75 @@
+{
+  "checked_at": "2026-11-06",
+  "verified_main": "af63fa902cf43663377e401663d8391b8f96546a",
+  "merged_pull_requests": [
+    4,
+    5,
+    6
+  ],
+  "workflows": [
+    {
+      "name": "ci",
+      "id": 42223622832,
+      "conclusion": "success",
+      "url": "https://github.com/Protocol-X-01/Bifang/actions/runs/42223622832"
+    },
+    {
+      "name": "desktop-platforms",
+      "id": 42223622746,
+      "conclusion": "success",
+      "url": "https://github.com/Protocol-X-01/Bifang/actions/runs/42223622746"
+    },
+    {
+      "name": "Android builds",
+      "id": 42223622694,
+      "conclusion": "success",
+      "url": "https://github.com/Protocol-X-01/Bifang/actions/runs/42223622694"
+    },
+    {
+      "name": "iOS companion build",
+      "id": 42223622790,
+      "conclusion": "success",
+      "url": "https://github.com/Protocol-X-01/Bifang/actions/runs/42223622790"
+    }
+  ],
+  "source_export": {
+    "archive_sha256": "d3a8e4586e002cebe290de39c7e7c79badfa469982f34da645eed437d34feb40",
+    "file_count": 961,
+    "source_bytes": 35223886,
+    "repeat_identical": true,
+    "every_manifest_file_matches_worktree": true,
+    "safe_extraction": true
+  },
+  "package_smoke": {
+    "interpreter": "CPython 3.11.15",
+    "source_dependency_install": "locked, offline, fresh environment",
+    "wheel_install": "passed",
+    "cli_help": "passed",
+    "package_version": "0.3.0"
+  },
+  "bounded_secret_scan": {
+    "matches": 12,
+    "triage": "Matched files are byte-identical to the previously triaged e9cacf4 export: synthetic fixtures, hash metadata and nonsecret metrics.",
+    "scope": "Selected exported source, not a universal secret-absence proof."
+  },
+  "vercel": {
+    "source_commit": "af63fa902cf43663377e401663d8391b8f96546a",
+    "production_state": "READY",
+    "health_status": 200,
+    "unauthenticated_models_status": 401
+  },
+  "tablet_layout": {
+    "closed_or_disconnected_states": 24,
+    "open_expanded_selection_states": 36,
+    "method": "Same-source browser viewport tests; open-terminal transport synthetic.",
+    "physical_tablet": false,
+    "native_keyboard_and_touch_acceptance": "pending"
+  },
+  "signing_and_release": {
+    "existing_public_release": "v0.3.2",
+    "newer_ci_artifacts_are_a_separate_set": true,
+    "android_ci_apks": "unsigned",
+    "ios_ci_archive": "unsigned",
+    "new_installer_gui_acceptance": "pending"
+  }
+}
