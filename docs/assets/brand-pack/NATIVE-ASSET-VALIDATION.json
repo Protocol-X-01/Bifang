@@ -1,0 +1,69 @@
+{
+  "edition": "mobile-and-tablet-v2",
+  "status": "passed",
+  "android": {
+    "build_tools": "36.0.0",
+    "compile_sdk": 36,
+    "minimum_sdk_for_validation": 26,
+    "target_sdk_for_validation": 36,
+    "operations": [
+      {
+        "operation": "compile",
+        "exit_code": 0
+      },
+      {
+        "operation": "link",
+        "exit_code": 0
+      }
+    ],
+    "resource_sha256": {
+      "mobile/android/res/drawable-v26/ic_bifang_launcher_background.xml": "a33b8c6fc822e2d0fdbaaa843b7fb5851a577fad9bc3d537ea3efdf7b9c970cb",
+      "mobile/android/res/drawable-v26/ic_bifang_launcher_foreground.xml": "cacc5b540cd8aaa0c2ef608dda755466c37fccee572eead6e8257b4e7d28d98a",
+      "mobile/android/res/drawable-v33/ic_bifang_launcher_monochrome.xml": "f6aa0d59e75311f4e766336ae45a2c2e8649dce100820fd85bbba6da72acd1d6",
+      "mobile/android/res/mipmap-anydpi-v26/ic_launcher.xml": "6e11b2615b7e349cdfa0754c1efbc4689cbe3a7560f1a6474c3ac2287a390019",
+      "mobile/android/res/mipmap-anydpi-v26/ic_launcher_round.xml": "6e11b2615b7e349cdfa0754c1efbc4689cbe3a7560f1a6474c3ac2287a390019",
+      "mobile/android/res/mipmap-anydpi-v33/ic_launcher.xml": "1ce8a41e826953bdc91d969c3d506461ba7f5efcb81c21cb399d1a6509e29833",
+      "mobile/android/res/mipmap-anydpi-v33/ic_launcher_round.xml": "1ce8a41e826953bdc91d969c3d506461ba7f5efcb81c21cb399d1a6509e29833",
+      "mobile/android/res/mipmap-hdpi/ic_launcher.png": "978222263d76a7d24771732e9d552fb77458ec5dc320510201a45013e22b08e0",
+      "mobile/android/res/mipmap-hdpi/ic_launcher_round.png": "265fa70d2003e9926089cc40b0dee9a113a90b5efb0b82a5bc08ca310d6970ec",
+      "mobile/android/res/mipmap-mdpi/ic_launcher.png": "66f369b6c2fd6f89a599292bfd849a7681755c8ae0caa667d8bfde656a16b5f2",
+      "mobile/android/res/mipmap-mdpi/ic_launcher_round.png": "cf7be64f27e223e8928038ffa9ff0530b1e2138306a6787031a43fb93f4968b2",
+      "mobile/android/res/mipmap-xhdpi/ic_launcher.png": "ff4361d6dcb7c8bd905b317cf8c5b971a8d9233de00470d403b5bfb8b8388927",
+      "mobile/android/res/mipmap-xhdpi/ic_launcher_round.png": "6c00b285191b14d135eb75b473042a480ed4e771b6e255288a715ee50d82cba2",
+      "mobile/android/res/mipmap-xxhdpi/ic_launcher.png": "49f956b14365ed7ccf11cece4af701c0e3d99891f634104375eb730172bdc96a",
+      "mobile/android/res/mipmap-xxhdpi/ic_launcher_round.png": "80577e6975a7e2ed75902f5e9c4e31954aebcd677f4ddbba83084c02d3c96bfd",
+      "mobile/android/res/mipmap-xxxhdpi/ic_launcher.png": "345fb40a6c36d21b8d44f0554874de06c0b7b75a64a1e84c8f688264f0bfc180",
+      "mobile/android/res/mipmap-xxxhdpi/ic_launcher_round.png": "b299b6e235aa0999e54ebb1d204d22cdafa32202aa4d74fcbc44995f719fdcf3",
+      "mobile/android/res/values/bifang_colors.xml": "2db518839bf89976b40f01830127d8383681398da41bb58de1cb25b6b9d5ee51"
+    },
+    "scope": "Android icon resources compiled and linked with a minimal validation manifest; no app was installed."
+  },
+  "apple": {
+    "checks": "21 asset-catalog slots checked for required dimensions and opaque RGB PNGs; grayscale Tinted channels verified.",
+    "xcode_compile": "not run on this Linux host",
+    "device_acceptance": "pending app integration"
+  },
+  "repeated_artwork_build": {
+    "files": 139,
+    "byte_identical": true
+  },
+  "catalogue_browser": {
+    "filters_checked": [
+      "All assets",
+      "Logos",
+      "iPhone + iPad",
+      "Android",
+      "Phone + tablet art",
+      "Social + video"
+    ],
+    "visible_counts": [
+      44,
+      19,
+      3,
+      10,
+      4,
+      8
+    ],
+    "broken_images": 0
+  }
+}

@@ -75,6 +75,10 @@ bifang doctor && bifang sandbox-check
 cd your-project && bifang chat
 ```
 
+## Brand and press kit
+
+[Download the Bifang brand pack](https://github.com/Protocol-X-01/Bifang/releases/tag/brand-pack-2026-11-06) for editable logos, transparent PNGs, video thumbnails, social artwork, and native iPhone/iPad and Android icon sets. Phone and tablet covers share the same ember-and-slate identity. [Preview the pack and choose an asset](docs/BRAND_ASSETS.md).
+
 ## 🔍 Web Intelligence with Tavily
 
 **Real-time web search and extraction** powered by [Tavily](https://tavily.com)

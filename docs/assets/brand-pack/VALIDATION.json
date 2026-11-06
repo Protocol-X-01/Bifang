@@ -1,0 +1,45 @@
+{
+  "brand": "Bifang",
+  "edition": "2026-11-06",
+  "status": "passed",
+  "artwork_files": 139,
+  "checks": {
+    "artwork_files_present": 139,
+    "portable_outlined_svgs": 47,
+    "png_dimensions_and_decode": 88,
+    "transparent_logo_with_clear_margins": 24,
+    "multi_resolution_ico": 1,
+    "thumbnail_under_2mb": 3,
+    "original_head_ellipse_preserved": 4,
+    "supporting_leg_visible": 4,
+    "offline_links_resolve": 95,
+    "font_source_blob_verified": 2,
+    "apple_catalog_slot_dimensions_and_no_alpha": 21,
+    "apple_tinted_neutral_channels": 1,
+    "android_foreground_inside_safe_circle": 2,
+    "play_full_square_rgba_icon": 1
+  },
+  "generated_background": {
+    "width": 1672,
+    "height": 941,
+    "mode": "RGB",
+    "pixel_edits": false
+  },
+  "visual_review": [
+    "Brand board",
+    "Horizontal dark lockup",
+    "48px favicon",
+    "Brand thumbnail",
+    "Coding-demo thumbnail",
+    "Social and banner layouts",
+    "Mobile brand board",
+    "Apple icon master",
+    "Android 48px launcher icon",
+    "Tablet landscape cover"
+  ],
+  "notes": [
+    "Core logo geometry preserved; gradients, mono strokes and canvas placement repaired.",
+    "PNG transparency checked on logo exports; promo layouts intentionally have backgrounds.",
+    "Visual review describes this delivered edition, not a claim about a deployed app or video thumbnail."
+  ]
+}

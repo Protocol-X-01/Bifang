@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="Bifang simplified favicon"><title>Bifang simplified favicon</title><defs>
+<linearGradient id="ember" gradientUnits="userSpaceOnUse" x1="70" y1="380" x2="442" y2="30"><stop stop-color="#E63946"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient>
+<linearGradient id="ember-reverse" gradientUnits="userSpaceOnUse" x1="442" y1="380" x2="70" y2="30"><stop stop-color="#E63946"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient>
+<linearGradient id="word-ember" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#E63946"/><stop offset="1" stop-color="#FF8A3D"/></linearGradient>
+<radialGradient id="ambient"><stop stop-color="#E63946" stop-opacity=".15"/><stop offset="1" stop-color="#0F172A" stop-opacity="0"/></radialGradient>
+<linearGradient id="backdrop" x2="1" y2="1"><stop stop-color="#090F1B"/><stop offset="1" stop-color="#172238"/></linearGradient>
+</defs><rect width="32" height="32" rx="7" fill="#0F172A"/><path d="M10 11C4 9 5 3 9 6L11 10M22 11C28 9 27 3 23 6L21 10" fill="none" stroke="#FF8A3D" stroke-width="1.8" stroke-linecap="round"/><path d="M12 12H20V24H12Z" fill="none" stroke="#E63946" stroke-width="1.5"/><path d="M14.5 16L17.5 19M17.5 16L14.5 19" stroke="#F7F7F7" stroke-width="1.4" stroke-linecap="round"/><path d="M16 24V28M14 28H18" stroke="#FF8A3D" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="16" cy="8" rx="2" ry="1.5" fill="#FF8A3D"/></svg>
