@@ -26,6 +26,7 @@ jobs:
           src/bifang/secret_patterns.py src/bifang/tools/files.py
           tests/test_restored_tool_binding.py tests/test_search_private_key_context.py
           tests/test_secret_value_and_diff_paths.py
+          src/bifang/review_workflow.py tests/test_review_completion.py
       - run: uv run pytest -q
 
   desktop:

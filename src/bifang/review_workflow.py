@@ -4,6 +4,8 @@ import asyncio
 import hashlib
 from dataclasses import replace
 
+import httpx
+
 from .agent import Agent
 from .subagent import SubAgentConfig, SubAgentManager, SubAgentRole
 
@@ -67,7 +69,21 @@ class ReviewWorkflow:
                 async with asyncio.timeout(60):
                     row["analysis"] = (await worker.ask(self.prompt))[:16000]
                 last = worker.context.get_messages()[-1]
-                row["status"] = "completed" if last.get("role") == "assistant" and not last.get("tool_calls") else "stopped"
+                row["status"] = "stopped"
+                if last.get("role") != "assistant" or last.get("tool_calls"):
+                    row["stop_reason"] = "step_limit"
+                    row["error"] = "The review reached its step limit before a final answer."
+                elif last.get("finish_reason") in {"length", "max_tokens"}:
+                    row["stop_reason"] = "output_limit"
+                    row["error"] = "The model reached its response limit before finishing the review."
+                elif last.get("finish_reason") == "content_filter":
+                    row["stop_reason"] = "provider_filter"
+                    row["error"] = "The provider stopped the review before a final answer."
+                elif not row["analysis"].strip():
+                    row["stop_reason"] = "empty_analysis"
+                    row["error"] = "The model returned no final review. Choose another model or a smaller task."
+                else:
+                    row["status"] = "completed"
             except asyncio.CancelledError:
                 row["status"] = "cancelled"
                 raise
@@ -80,6 +96,9 @@ class ReviewWorkflow:
                 if isinstance(outcome, BaseException):
                     row["status"] = "failed"
                     row["error"] = type(outcome).__name__
+                    if isinstance(outcome, httpx.HTTPStatusError):
+                        row["provider_http_status"] = outcome.response.status_code
+                        row["error"] = f"The provider rejected the review request (HTTP {outcome.response.status_code})."
             self.status = "completed" if all(row["status"] == "completed" for row in self.workers) else "failed"
         except asyncio.CancelledError:
             self.status = "cancelled"

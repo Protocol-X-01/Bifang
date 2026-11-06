@@ -1,8 +1,9 @@
-# Bifang product expansion — October 24, 2026
+# Bifang product expansion — November 6, 2026
 
-These are additional requested requirements, not a claim of completion or a
-replacement for the existing hackathon delivery gates. The working desktop,
-Token Factory path and reproducible coding workflow remain the foundation.
+These requirements extend the working desktop, Token Factory path and checked
+coding workflow. The [November 6 delivery receipt](evidence/main-delivery-20261106.json)
+records the merged source and successful platform builds; installed-device and
+signing checks remain explicit below.
 
 | Workstream | Verified/current source | Remaining acceptance gate |
 |---|---|---|
@@ -13,11 +14,11 @@ Token Factory path and reproducible coding workflow remain the foundation.
 | Text models | Existing configurable providers/router; CLI no longer hides non-NVIDIA catalog IDs | Live catalog and measured task-based model comparisons |
 | Embeddings | Existing embedding API, validation and retrieval path | Live selected model/dimension/space compatibility and measured retrieval quality |
 | Vision | Attachments, capabilities/consent, cancellation and image-free handoff; live Nemotron card and three coding cases; fresh-Ubuntu native image/coding runs passed | Broader visual-debugging evaluations; see [Vision](VISION.md) |
-| iOS | [Companion source](../companion/README.md) shares remote UI, integrity checks and native session-only transport; no iOS build | Mac/Xcode toolchain, optional keychain persistence, signed native build and device proof |
-| Android | Actual ARM64 debug APK builds; packaged signature, manifest, backup policy and 16 KiB alignment pass; [exact APK](evidence/companion-android-build.json) installs and starts on a [physical Xiaomi 12T / Android 15](evidence/companion-android-device.json); owner confirms rendering, keyboard and orientation | [Pairing/Authenticator onboarding](MOBILE_PAIRING.md), background reconnect and full remote approval/check/review/Apply proof; production signing and optional keystore persistence |
-| Developer workbench | Read-only CLI toolchain preview, explicit existing-workspace selection and CLI plugin trust/disable controls | Native/TUI plugin management, optional language bootstraps, package-manager UI, embedded terminals and system metrics; see [acceptance criteria](DEVELOPER_WORKBENCH.md) |
+| iOS | Companion source shares remote UI and native session transport; main CI produced an unsigned ARM64 archive with iPhone/iPad device families | Signing, native-device acceptance and optional keychain persistence |
+| Android | ARM64 debug APK and retained Xiaomi 12T / Android 15 testing; installed Companion 0.3.1 now passes native shell command entry and touch scrollback, with landscape output observed ([November 6 receipt](evidence/xiaomi-terminal-20261106.json)) | [Pairing/Authenticator onboarding](MOBILE_PAIRING.md), background reconnect and full remote approval/check/review/Apply proof; production signing and optional keystore persistence |
+| Developer workbench | New/existing workspaces, native and F8 plugin controls, manifest-bound npm/uv/Cargo setup, embedded PTY and one-shot system metrics are implemented; see [workbench](DEVELOPER_WORKBENCH.md) | Native-window/accessibility walkthrough, packaged platform acceptance and further installer adapters |
 | Embedded desktop terminal | [Native PTY and renderer source](EMBEDDED_TERMINAL.md); actual Linux engine checks, installed btop and frontend transport tests | Native-window/accessibility walkthrough, packaged cleanup and Windows/macOS runs; Textual/mobile terminal work remains separate |
-| Desktop distribution | Published Ubuntu Debian preview; newer local Ubuntu 22.04 release-profile Debian/AppImage/RPM builds pass ABI, extracted-helper and API checks; exact Debian candidate also passes fresh Ubuntu 24.04.5 apt install, loader, management and service-health checks | Exact-candidate native-window acceptance, AppImage target launch, RPM distribution install/launch, Windows/macOS binaries; see [packaging gates](RELEASING.md#linux-package-baseline) |
+| Desktop distribution | Existing v0.3.2 release plus newer main CI Debian/RPM/AppImage, Windows x64 and Intel/Apple Silicon Mac packages; native sidecar checks and Linux ABI audit passed | Exact-candidate native-window and distribution-install acceptance, signing and separately identified release publication; see [packaging gates](RELEASING.md#linux-package-baseline) |
 
 The developer workbench and additional desktop packages are explicit submission
 requirements confirmed on October 25, not a post-submission roadmap. Language

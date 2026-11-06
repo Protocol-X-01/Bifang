@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-11-06T16:05:01.629863+00:00",
+  "device": {
+    "model": "Xiaomi 12T",
+    "android_version": "15",
+    "package": "com.bifang.companion",
+    "installed_version_name": "0.3.1",
+    "installed_version_code": 3001,
+    "source_commit": "not established from installed package"
+  },
+  "checks": {
+    "portrait_soft_keyboard": {
+      "result": "passed",
+      "evidence": "Visible keyboard and focused command field after starting a new Android system shell."
+    },
+    "command_entry_and_execution": {
+      "result": "passed",
+      "method": "ADB injected text into the focused application command field, then tapped its Run button. Echo marker appeared in the native terminal."
+    },
+    "touch_scrollback": {
+      "result": "passed",
+      "method": "ADB injected slow touch swipe inside terminal output",
+      "before_visible_range": [
+        95,
+        120
+      ],
+      "after_visible_range": [
+        72,
+        98
+      ]
+    },
+    "landscape_output_and_controls": {
+      "result": "observed",
+      "evidence": "Live 120-row terminal output and full command row rendered in a 2712 x 1220 capture with keyboard closed."
+    },
+    "landscape_soft_keyboard": {
+      "result": "pending"
+    },
+    "output_text_selection": {
+      "result": "pending"
+    }
+  },
+  "test_controls": {
+    "phone_checks_stopped_at_owner_request": true,
+    "temporary_rotation_settings_restored": true,
+    "app_install_or_update": false,
+    "app_data_clear": false,
+    "pairing_or_ssh_files_accessed": false,
+    "clipboard_read_or_write": false
+  },
+  "capture_sha256": {
+    "portrait-shell.png": "e0412cf65cc8b7561bf5d4593603fb35f17c99036a1e5d75ffc18eef2d3497eb",
+    "portrait-command-keyboard.png": "daa8cb943b4a985500daf718e20fb8c922f4ae8e3feb7a19f8e6b0a29eba96a3",
+    "portrait-scrollback-tail.png": "1d2a83dad2038ada1163cc14c4f6985d7ac4ea07feb47fcb2ad32d47d6abb8ee",
+    "touch-scrollback-earlier.png": "e901cb28c45dbf7a74269acbaca2a9e32863a42af1b046bae0e016642090b324"
+  },
+  "scope": "Installed Companion 0.3.1 only. These results do not establish acceptance of newer CI artifacts, production signing, remote pairing or all input methods."
+}

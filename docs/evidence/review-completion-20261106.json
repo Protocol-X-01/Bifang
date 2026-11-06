@@ -1,0 +1,35 @@
+{
+  "based_on_main": "af63fa902cf43663377e401663d8391b8f96546a",
+  "behavior": "Empty, output-limited and filtered reviews are stopped rather than marked complete. Provider HTTP errors expose only status codes.",
+  "source_sha256": {
+    "src/bifang/review_workflow.py": "7c0cd3f7e86d88d936dec9a090ba5431d87c7d8c3835731458d9a3bb890d4c9d",
+    "tests/test_review_completion.py": "eb2b7af4552b2c44329a28677283df242ed33edeb24c7743cfa1430620cba4c5"
+  },
+  "focused_tests": {
+    "passed": 16,
+    "seconds": 0.61,
+    "scope": "Final source and test cleanup; repeated after replacing mutable test-fake class attributes."
+  },
+  "full_backend_suite": {
+    "passed": 1179,
+    "skipped": 4,
+    "seconds": 188.45,
+    "scope": "Same application source; final test-fake cleanup verified by the focused suite."
+  },
+  "first_full_attempt": {
+    "failed": 13,
+    "passed": 1166,
+    "skipped": 4,
+    "cause": "Test runner temporary HOME hid existing managed Python/Rust toolchains; corrected environment retained toolchain HOME with provider credentials excluded."
+  },
+  "live_provider_probe": {
+    "provider": "NVIDIA hosted API Catalog",
+    "model": "nvidia/nemotron-3.5-bolt-e4b",
+    "http_status": 200,
+    "reported_model_matched": true,
+    "direct_answer": "READY",
+    "reported_tokens": 18,
+    "scope": "Minimal inference readiness, not coding quality or a self-hosted NIM deployment."
+  },
+  "source_commit": "e48fd03c2a23b55449f2040d86060ed78278896e"
+}

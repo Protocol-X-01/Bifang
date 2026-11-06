@@ -4,8 +4,10 @@
 of October 30, 2026, 16:59 GMT. The public entry is
 [Bifang on Devpost](https://devpost.com/software/bifang); its confirmed video
 is the [170-second narrated demo](https://www.youtube.com/watch?v=gwAAJcWplf0).
-The four-file presentation repair is published in
-[PR #4](https://github.com/Protocol-X-01/Bifang/pull/4). This supersedes the
+The four-file presentation repair is merged through
+[PR #4](https://github.com/Protocol-X-01/Bifang/pull/4), alongside source and brand
+updates in PRs #5 and #6. The main checkpoint and platform builds are identified
+in the [delivery receipt](evidence/main-delivery-20261106.json). This supersedes the
 historical “Not submitted” and video-publication statuses below. Current
 delivery and remaining operator checks are in
 [readiness](HACKATHON_READINESS.md#current-delivery).
