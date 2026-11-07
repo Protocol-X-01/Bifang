@@ -247,18 +247,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Bifang API", version="0.3.0", lifespan=lifespan)
 app.add_api_route("/models", selectable_models, methods=["GET"])
 
-allowed_origins = [origin.strip() for origin in os.getenv(
-    "BIFANG_CORS_ORIGINS",
-    "http://localhost:1420,tauri://localhost,http://tauri.localhost,https://tauri.localhost",
-).split(",") if origin.strip()]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Content-Type", "X-API-Key"],
-)
-
 
 @app.middleware("http")
 async def authenticate_remote_requests(request: Request, call_next):
@@ -270,6 +258,23 @@ async def authenticate_remote_requests(request: Request, call_next):
         if not expected or not hmac.compare_digest(supplied, expected):
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
     return await call_next(request)
+
+
+# Register CORS after authentication so it wraps early auth responses too.
+# Desktop WebViews also require explicit permission for loopback private-network
+# preflights; the configured origin allow-list scopes this permission to trusted UIs.
+allowed_origins = [origin.strip() for origin in os.getenv(
+    "BIFANG_CORS_ORIGINS",
+    "http://localhost:1420,tauri://localhost,http://tauri.localhost,https://tauri.localhost",
+).split(",") if origin.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "DELETE"],
+    allow_headers=["Content-Type", "X-API-Key"],
+    allow_private_network=True,
+)
 
 
 @app.get("/health")
