@@ -1,0 +1,97 @@
+{
+  "title": "Bifang production Nebius Token Factory relay smoke",
+  "observed_date_utc": "2026-11-07",
+  "target": {
+    "base_url": "https://bifang-judge-relay.vercel.app",
+    "environment": "production",
+    "authentication": "none; public demo access",
+    "health": {
+      "path": "/health",
+      "http_status": 200,
+      "status": "ok",
+      "scope": "inference-only",
+      "access": "public"
+    },
+    "catalog": {
+      "path": "/v1/models",
+      "http_status": 200,
+      "model_ids": [
+        "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+        "nvidia/Nemotron-3-Ultra-550b-a55b",
+        "nvidia/nemotron-3-super-120b-a12b"
+      ]
+    }
+  },
+  "upstream": {
+    "provider": "Nebius Token Factory",
+    "base_url": "https://api.tokenfactory.nebius.com/v1",
+    "credential_handling": "NEBIUS_API_KEY is read server-side; no credential value is included"
+  },
+  "requests": [
+    {
+      "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "prompt": "Reply exactly OK.",
+      "max_tokens": 8,
+      "http_status": 200,
+      "visible_content": null,
+      "usage": {
+        "prompt_tokens": 20,
+        "completion_tokens": 8,
+        "total_tokens": 28
+      },
+      "note": "The output cap was too small to produce visible text; this request is retained for transparent accounting."
+    },
+    {
+      "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "prompt": "Answer with exactly OK and no other text.",
+      "max_tokens": 128,
+      "http_status": 200,
+      "finish_reason": "stop",
+      "visible_content": "OK",
+      "usage": {
+        "prompt_tokens": 25,
+        "completion_tokens": 58,
+        "total_tokens": 83
+      }
+    },
+    {
+      "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "prompt": "Reply with only OK.",
+      "max_tokens": 256,
+      "http_status": 200,
+      "finish_reason": "stop",
+      "visible_content": "OK",
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 14,
+        "completion_reasoning_tokens": 11,
+        "total_tokens": 35
+      }
+    },
+    {
+      "model": "nvidia/nemotron-3-super-120b-a12b",
+      "prompt": "Reply with only OK.",
+      "max_tokens": 256,
+      "http_status": 200,
+      "finish_reason": "stop",
+      "visible_content": "OK",
+      "usage": {
+        "prompt_tokens": 21,
+        "completion_tokens": 43,
+        "completion_reasoning_tokens": 39,
+        "total_tokens": 64
+      }
+    }
+  ],
+  "aggregate_usage": {
+    "requests": 4,
+    "prompt_tokens": 87,
+    "completion_tokens": 123,
+    "total_tokens": 210
+  },
+  "scope_limits": [
+    "Short text completion smoke only; not a model-quality or coding-task benchmark.",
+    "Does not verify sustained availability, concurrency, latency distributions, or provider cost.",
+    "Verifies the hosted Nebius Token Factory path; does not prove a self-hosted NVIDIA NIM deployment or local desktop routing."
+  ]
+}
