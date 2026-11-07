@@ -54,11 +54,14 @@ def test_independent_instances_require_their_own_keys():
                 preflight = client.options("/sessions", headers={
                     "Origin": "tauri://localhost", "Access-Control-Request-Method": "POST",
                     "Access-Control-Request-Headers": "X-API-Key,Content-Type",
+                    "Access-Control-Request-Private-Network": "true",
                 })
                 assert preflight.status_code == 200
                 assert preflight.headers["access-control-allow-origin"] == "tauri://localhost"
+                assert preflight.headers["access-control-allow-private-network"] == "true"
                 rejected = client.options("/sessions", headers={
                     "Origin": "https://untrusted.example", "Access-Control-Request-Method": "POST",
+                    "Access-Control-Request-Private-Network": "true",
                 })
                 assert rejected.status_code == 400
                 assert "access-control-allow-origin" not in rejected.headers

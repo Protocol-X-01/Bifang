@@ -1,5 +1,5 @@
 import { localFetch } from '../api/localApi';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, RefreshCw, Sparkles, Zap, Shield } from 'lucide-react';
 import { parseModelCatalog, selectionFor, selectionValue, type ModelCatalog, type ModelSelection } from '../api/models';
 
@@ -13,18 +13,27 @@ export function ModelPicker({ selection, busy, onChange }: Props) {
   const [catalog, setCatalog] = useState<ModelCatalog | null>(null);
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
+  const hasLoadedCatalog = useRef(false);
 
   useEffect(() => {
     const controller = new AbortController();
     setError('');
-    setCatalog(null);
     localFetch('/models', { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error('The live model catalog is unavailable.');
         const result = parseModelCatalog(await response.json());
-        if (!controller.signal.aborted) setCatalog(result);
+        if (!controller.signal.aborted) {
+          setCatalog(result);
+          hasLoadedCatalog.current = true;
+        }
       })
-      .catch(() => { if (!controller.signal.aborted) setError('Catalog unavailable; the configured deployment remains selectable.'); });
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setError(hasLoadedCatalog.current
+            ? 'Catalog refresh failed; the last successful model list remains available.'
+            : 'Catalog unavailable; the configured deployment remains selectable.');
+        }
+      });
     return () => controller.abort();
   }, [revision]);
 
