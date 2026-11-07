@@ -7,6 +7,9 @@ type Worker = {
   role: string;
   status: string;
   analysis: string;
+  error?: string;
+  stop_reason?: string;
+  provider_http_status?: number;
   observations: { tool: string; path: string | null; start: number | null; end: number | null; result_sha256: string }[];
   routing: { requested_model?: string; reported_model?: string }[];
 };
@@ -159,6 +162,9 @@ export function ReviewPanel() {
                 {worker.status}
               </span>
             </div>
+            {(worker.status === 'stopped' || worker.status === 'failed') && worker.error && (
+              <p role="alert" className="text-body-sm text-bifang-brand-red mb-2">{worker.error}</p>
+            )}
             <p className="text-caption text-bifang-warning mb-2">Unverified model analysis</p>
             <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-words text-code text-bifang-text-secondary bg-bifang-canvas border border-bifang-border p-3 rounded-lg">{worker.analysis}</pre>
             <p className="mt-2 text-caption text-bifang-text-muted">{worker.routing.length} model receipts · {worker.observations.length} observed reads/searches</p>
