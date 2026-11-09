@@ -156,7 +156,7 @@ def test_authenticated_local_protocol_rejects_wrong_key_and_replayed_proof(tmp_p
     nonce = os.urandom(32)
     previous_proof = None
     try:
-        for mode in ('valid', 'replay', 'wrong', 'stop'):
+        for mode in ('valid', 'storage', 'replay', 'wrong', 'stop'):
             with connection() as channel:
                 runtime.send(channel, {'nonce': nonce.hex()})
                 hello = runtime.receive(channel)
@@ -164,13 +164,18 @@ def test_authenticated_local_protocol_rejects_wrong_key_and_replayed_proof(tmp_p
                 assert hello['proof'] == hmac.new(key, challenge + b'server', hashlib.sha256).hexdigest()
                 proof = hmac.new(key, challenge + b'client', hashlib.sha256).hexdigest()
                 sent = previous_proof if mode == 'replay' else '0' * 64 if mode == 'wrong' else proof
-                runtime.send(channel, {'proof': sent, 'request': {'action': 'stop' if mode == 'stop' else 'catalog'}})
+                runtime.send(channel, {'proof': sent, 'request': {'action': 'stop' if mode == 'stop' else 'storage_status' if mode == 'storage' else 'catalog'}})
                 if mode in ('replay', 'wrong'):
                     with pytest.raises(ValueError, match='Connection ended'):
                         runtime.receive(channel)
                 else:
                     result = runtime.receive(channel)['result']
-                    assert result.get('stopped') or result['version'] == '4.34.2'
+                    if mode == 'storage':
+                        assert result['host'] == 'termux'
+                        assert result['aliases'] == {}
+                        assert not (tmp_path / 'storage').exists()
+                    else:
+                        assert result.get('stopped') or result['version'] == '4.34.2'
                 previous_proof = proof
         assert process.wait(timeout=3) == 0
     finally:

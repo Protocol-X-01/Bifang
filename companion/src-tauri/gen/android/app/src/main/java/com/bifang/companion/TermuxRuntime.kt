@@ -27,6 +27,7 @@ class TermuxRuntime(private val activity: Activity) {
     private var key = ByteArray(0)
     private val random = SecureRandom()
     private var manualConnection = false
+    private val storageConsent = SharedStorageConsent(activity.getSharedPreferences("shared-storage", 0), "termux")
 
     fun status(): JSObject = JSObject().apply {
         val installed = try {
@@ -63,6 +64,38 @@ class TermuxRuntime(private val activity: Activity) {
     fun setup(): JSObject {
         run("/data/data/com.termux/files/usr/bin/bash", arrayOf("-c", "termux-wake-lock; pkg install -y python proot curl tar xz-utils bzip2 gzip unzip file util-linux gawk coreutils findutils grep sed"), false)
         return JSObject().put("dispatched", true)
+    }
+
+    @Synchronized
+    fun setupStorage(): JSONObject {
+        check(status().getBoolean("installed")) { "Install and open Termux first" }
+        storageConsent.setEnabled(true)
+        val available = status()
+        if (!available.getBoolean("command_api") || !available.getBoolean("permission")) {
+            return JSONObject().put("host", "termux").put("enabled", true).put("state", "manual_setup")
+                .put("command", "termux-setup-storage")
+        }
+        // A foreground terminal lets the owner answer Termux's existing-storage prompt.
+        // Never pipe input, rebuild links ourselves, or run this under the Bifang UID.
+        run("/data/data/com.termux/files/usr/bin/termux-setup-storage", emptyArray(), false)
+        return JSONObject().put("host", "termux").put("enabled", true).put("state", "setup_dispatched")
+    }
+
+    @Synchronized
+    fun disconnectStorage(): JSONObject {
+        storageConsent.setEnabled(false)
+        return JSONObject().put("host", "termux").put("enabled", false).put("state", "not_connected")
+    }
+
+    @Synchronized
+    fun storageStatus(): JSONObject {
+        if (!storageConsent.enabled()) {
+            return JSONObject().put("host", "termux").put("enabled", false).put("state", "not_connected")
+        }
+        val result = if (port == 0) JSONObject().put("host", "termux").put("state", "runtime_disconnected") else
+            exchange(JSONObject().put("action", "storage_status"))
+        result.put("enabled", true)
+        return result
     }
 
     @Synchronized
@@ -122,6 +155,10 @@ class TermuxRuntime(private val activity: Activity) {
         val action = request.optString("action")
         require(action in setOf("catalog", "uninstall", "terminal_open", "terminal_read", "terminal_write", "terminal_resize", "terminal_close", "stop")) { "Unknown runtime action" }
         check(port != 0) { "Connect the distribution runtime first" }
+        if (action == "terminal_open") {
+            // Native-held opt-in overrides webview input; every login rechecks Termux access.
+            request.put("shared_storage", storageConsent.enabled())
+        }
         return exchange(request)
     }
 

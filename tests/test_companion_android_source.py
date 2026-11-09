@@ -14,9 +14,35 @@ def test_android_manifest_disables_backup_and_keeps_file_provider_private():
     provider = application.find("provider")
     assert provider.get(ATTRIBUTE + "exported") == "false"
     assert provider.get(ATTRIBUTE + "grantUriPermissions") == "true"
-    permissions = {node.get(ATTRIBUTE + "name") for node in manifest.findall("uses-permission")}
-    assert permissions == {"android.permission.INTERNET", "com.termux.permission.RUN_COMMAND"}
+    permissions = {node.get(ATTRIBUTE + "name"): node for node in manifest.findall("uses-permission")}
+    assert set(permissions) == {
+        "android.permission.INTERNET", "com.termux.permission.RUN_COMMAND",
+        "android.permission.MANAGE_EXTERNAL_STORAGE",
+        "android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE",
+    }
+    for name in ("android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE"):
+        assert permissions[name].get(ATTRIBUTE + "maxSdkVersion") == "29"
+    assert permissions["android.permission.MANAGE_EXTERNAL_STORAGE"].get(ATTRIBUTE + "maxSdkVersion") is None
+    assert application.get(ATTRIBUTE + "requestLegacyExternalStorage") == "true"
     assert manifest.find('queries/package').get(ATTRIBUTE + 'name') == 'com.termux'
+
+
+def test_android_shared_storage_settings_do_not_opt_in_or_create_links():
+    sources = ANDROID / "app/src/main/java/com/bifang/companion"
+    plugin = (sources / "DeviceRuntimePlugin.kt").read_text()
+    storage = (sources / "DeviceStorage.kt").read_text()
+    connect = plugin.split('if (action == "device_storage_connect") {', 1)[1].split(
+        'if (action == "device_storage_status"', 1)[0]
+    settings = plugin.split('if (action == "device_storage_settings" || action == "termux_storage_settings") {', 1)[1].split(
+        'if (action == "termux_open") {', 1)[0]
+    assert "storage.optIn()" in connect
+    assert "storage.openSettings()" in connect
+    assert ".openSettings()" in settings
+    assert "optIn" not in settings and "refreshStorage" not in settings
+    open_settings = storage.split("fun openSettings() {", 1)[1].split('@Suppress("DEPRECATION")', 1)[0]
+    assert "Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION" in open_settings
+    assert "Settings.ACTION_APPLICATION_DETAILS_SETTINGS" in open_settings
+    assert "setEnabled" not in open_settings and "symlink" not in open_settings
 
 
 def test_android_gradle_wrapper_matches_published_distribution_and_bootstrap_checksums():

@@ -79,6 +79,19 @@
   color: #F7F7F7;
 }
 
+.device-storage {
+  min-width: 0;
+  max-height: min(45vh, 18rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+
+/* An inactive command bar must not cover setup controls on a short screen. */
+.device-terminal[data-session="closed"] .device-terminal-controls {
+  position: static;
+}
+
 .companion-footer {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   background: linear-gradient(0deg, #1A2338 0%, #151D30 100%);

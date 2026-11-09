@@ -1,6 +1,8 @@
 package com.bifang.companion
 
 import android.app.Activity
+import android.Manifest
+import android.os.Build
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -21,7 +23,10 @@ class RuntimeRequest {
     var request: String = "{}"
 }
 
-@TauriPlugin(permissions = [Permission(strings = ["com.termux.permission.RUN_COMMAND"], alias = "termux")])
+@TauriPlugin(permissions = [
+    Permission(strings = ["com.termux.permission.RUN_COMMAND"], alias = "termux"),
+    Permission(strings = [Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE], alias = "storage")
+])
 class DeviceRuntimePlugin(private val activity: Activity) : Plugin(activity) {
     private val checking = AtomicBoolean(false)
     private val runtime = TermuxRuntime(activity)
@@ -48,9 +53,76 @@ class DeviceRuntimePlugin(private val activity: Activity) : Plugin(activity) {
         invoke.resolve(runtime.status())
     }
 
+    @PermissionCallback
+    fun storagePermissionResult(invoke: Invoke) {
+        refreshStorage(invoke, true)
+    }
+
+    private fun refreshStorage(invoke: Invoke, createMissing: Boolean) {
+        val request = JSONObject(invoke.parseArgs(RuntimeRequest::class.java).request)
+        runtimeWorker.execute {
+            try {
+                val storage = DeviceStorage(activity, request.getString("terminal_home"))
+                if (request.optString("action") == "device_storage_disconnect") storage.optOut()
+                val result = storage.status(createMissing)
+                activity.runOnUiThread { invoke.resolve(result) }
+            } catch (_: Exception) {
+                activity.runOnUiThread { invoke.reject("Could not check shared storage; existing files were kept") }
+            }
+        }
+    }
+
     @Command
     fun runtimeRequest(invoke: Invoke) {
         val arguments = invoke.parseArgs(RuntimeRequest::class.java)
+        val action = JSONObject(arguments.request).optString("action")
+        if (action == "device_storage_connect") {
+            activity.runOnUiThread {
+                try {
+                    val storage = DeviceStorage(activity, JSONObject(arguments.request).getString("terminal_home"))
+                    storage.optIn()
+                    if (storage.granted()) refreshStorage(invoke, true)
+                    else if (Build.VERSION.SDK_INT >= 30) {
+                        storage.openSettings()
+                        refreshStorage(invoke, false)
+                    } else requestPermissionForAlias("storage", invoke, "storagePermissionResult")
+                } catch (error: Exception) {
+                    invoke.reject(error.message ?: "Open Android storage permissions, then check/refresh here")
+                }
+            }
+            return
+        }
+        if (action == "device_storage_status" || action == "device_storage_refresh" || action == "device_storage_disconnect") {
+            refreshStorage(invoke, action == "device_storage_refresh")
+            return
+        }
+        if (action == "device_storage_settings" || action == "termux_storage_settings") {
+            activity.runOnUiThread {
+                try {
+                    if (action == "device_storage_settings") {
+                        DeviceStorage(activity, JSONObject(arguments.request).getString("terminal_home")).openSettings()
+                    } else {
+                        activity.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:com.termux")))
+                    }
+                    invoke.resolve(JSObject().put("opened", true))
+                } catch (error: Exception) {
+                    invoke.reject(error.message ?: "Open Android Settings and review this app's storage permissions")
+                }
+            }
+            return
+        }
+        if (action == "termux_open") {
+            activity.runOnUiThread {
+                try {
+                    val intent = activity.packageManager.getLaunchIntentForPackage("com.termux")
+                        ?: throw IllegalStateException("Install and open Termux first")
+                    activity.startActivity(intent)
+                    invoke.resolve(JSObject().put("opened", true))
+                } catch (_: Exception) { invoke.reject("Open Termux from your Android launcher") }
+            }
+            return
+        }
         if (JSONObject(arguments.request).optString("action") == "manual") {
             activity.runOnUiThread {
                 try {
@@ -81,6 +153,9 @@ class DeviceRuntimePlugin(private val activity: Activity) : Plugin(activity) {
                     "status" -> runtime.status()
                     "setup" -> runtime.setup()
                     "connect" -> runtime.connect()
+                    "termux_storage_connect" -> runtime.setupStorage()
+                    "termux_storage_disconnect" -> runtime.disconnectStorage()
+                    "termux_storage_status" -> runtime.storageStatus()
                     else -> runtime.request(request)
                 }
                 activity.runOnUiThread { invoke.resolve(JSObject(result.toString())) }
